@@ -17,6 +17,7 @@ class NeuralNetwork
 {
 public:
 
+    // Declarations of types.
     DECLARE_ID(NodeId);
     DECLARE_ID(EdgeId);
 
@@ -25,6 +26,7 @@ public:
     using NodeIds = std::vector<NodeId>;
     using EdgeIds = std::vector<EdgeId>;
 
+    // Base struct of node.
     struct NodeBase
     {
         virtual float getValue() const = 0;
@@ -32,35 +34,41 @@ public:
         virtual EdgeIds getIncomingEdges() const = 0;
     };
 
+    // Base struct of edge.
     struct EdgeBase
     {
-        virtual NodeId getFromNode() const = 0;
-        virtual NodeId getToNode() const = 0;
+        virtual NodeId getInNode() const = 0;
+        virtual NodeId getOutNode() const = 0;
         virtual float getWeight() const = 0;
         virtual void setWeight(float weight) = 0;
     };
 
+    // Constructor
     NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
 
     inline auto getNodes() const->NodeIds;
 
     inline bool hasNode(NodeId id) const { return m_nodes.find(id) != m_nodes.end(); }
     inline auto getNode(NodeId id) const->const Node&;
-    inline void setNode(NodeId id, const Node& node);
+    inline void setNodeValue(NodeId id, float value);
 
     inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
     inline float getWeight(EdgeId id) const;
     inline void setWeight(EdgeId id, float weight);
-    inline auto getFromNode(EdgeId id) const->NodeId;
+    inline auto getInNode(EdgeId id) const->NodeId;
+    inline auto getOutNode(EdgeId id) const->NodeId;
 
-    auto getOutputNodes() const->Nodes;
+    auto getOutputNodes() const->NodeIds;
 
+    // Evaluates this network and calculate new values for each node.
     void evaluate();
 
-    bool validate() const;
+    // Returns false if this network has invalid data.
+    virtual bool validate() const;
 
 protected:
 
+    // Data used evaluation
     struct EvaluationData
     {
         enum class NodeState
@@ -79,6 +87,7 @@ protected:
     };
 
     inline auto accessNode(NodeId id)->Node&;
+
     void evaluateNodeRecursive(NodeId id, EvaluationData& data);
 
     Nodes m_nodes;
@@ -128,10 +137,16 @@ inline auto NeuralNetwork<Node, Edge>::accessNode(NodeId id)->Node&
 }
 
 template <typename Node, typename Edge>
-inline void NeuralNetwork<Node, Edge>::setNode(NodeId id, const Node& node)
+inline void NeuralNetwork<Node, Edge>::setNodeValue(NodeId id, float value)
 {
-    assert(hasNode(id));
-    m_nodes[id] = node;
+    if (hasNode(id))
+    {
+        m_nodes[id].setValue(value);
+    }
+    else
+    {
+        WARN("Trying to set a value for a node which doesn't exist.");
+    }
 }
 
 template <typename Node, typename Edge>
@@ -149,20 +164,28 @@ inline void NeuralNetwork<Node, Edge>::setWeight(EdgeId id, float weight)
 }
 
 template <typename Node, typename Edge>
-inline auto NeuralNetwork<Node, Edge>::getFromNode(EdgeId id) const->NodeId
+inline auto NeuralNetwork<Node, Edge>::getInNode(EdgeId id) const->NodeId
 {
     assert(hasEdge(id));
-    return m_edges[id].getFromNode();
+    return m_edges[id].getInNode();
 }
 
 template <typename Node, typename Edge>
-auto NeuralNetwork<Node, Edge>::getOutputNodes() const->Nodes
+inline auto NeuralNetwork<Node, Edge>::getOutNode(EdgeId id) const->NodeId
 {
-    Nodes nodesOut;
+    assert(hasEdge(id));
+    return m_edges[id].getOutNode();
+}
+
+
+template <typename Node, typename Edge>
+auto NeuralNetwork<Node, Edge>::getOutputNodes() const->NodeIds
+{
+    NodeIds nodesOut;
     nodesOut.reserve(m_outputNodes.size());
     for (NodeId outputNode : m_outputNodes)
     {
-        nodesOut.insert(getNode(outputNode));
+        nodesOut.insert(outputNode);
     }
 
     return nodesOut;
@@ -187,18 +210,21 @@ template <typename Node, typename Edge>
 void NeuralNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData& data)
 {
     const Node& node = getNode(id);
+
+    // Calculate value of this node by visiting all parent nodes.
     float sumValue = 0;
     for (EdgeId incomingId : node.getIncomingEdges())
     {
-        NodeId fromNodeId = getFromNode(incomingId);
-        EvaluationData::NodeState state = data.getNodeState(fromNodeId);
+        NodeId inNodeId = getInNode(incomingId);
 
-        if (state != EvaluationData::NodeState::EVALUATED)
+        // Recurse if we haven't evaluated this parent node yet.
+        if (data.getNodeState(inNodeId) != EvaluationData::NodeState::EVALUATED)
         {
             evaluateNodeRecursive(incomingId, data);
         }
 
-        sumValue += getNode(fromNodeId).getValue() * getWeight(incomingId);
+        // Add a value from this parent.
+        sumValue += getNode(inNodeId).getValue() * getWeight(incomingId);
     }
 
     data.setNodeState(id, EvaluationData::NodeState::EVALUATED);
@@ -210,6 +236,7 @@ NeuralNetwork<Node, Edge>::EvaluationData::EvaluationData(const NeuralNetwork* n
 {
     NodeIds nodeIds = network->getNodes();
     const int numNodes = nodes.size();
+
     m_id2Index.reserve(numNodes);
     int counter = 0;
     for (NodeId node : nodeIds)

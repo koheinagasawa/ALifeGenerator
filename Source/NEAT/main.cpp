@@ -6,7 +6,7 @@
 
 // Temporary entry of NEAT
 
-#include <NEAT/Graph.h>
+#include <NEAT/NeuralNetwork.h>
 
 int main()
 {

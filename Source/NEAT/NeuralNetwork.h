@@ -281,6 +281,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
     }
     if (numInputOrBiasNode == 0) return false;
 
+    // Make sure the the network doesn't contain circular edges.
     if (hasCircularEdges()) return false;
 
     return true;
@@ -324,9 +325,11 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
             continue;
         }
 
+        // Check if this node is a part of circular links.
         std::unordered_set<NodeId> visitedNodes;
         if (hasCircularEdgesRecursive(id, visitedNodes)) return true;
 
+        // Concatenate visited nodes to checked nodes.
         for (NodeId n : visitedNodes)
         {
             checkedNodes.insert(n);

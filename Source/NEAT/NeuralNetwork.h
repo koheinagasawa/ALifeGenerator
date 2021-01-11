@@ -12,36 +12,38 @@
 
 #include <Common/BaseType.h>
 
+// Declarations of types.
+DECLARE_ID(NodeId);
+DECLARE_ID(EdgeId);
+
+// Base struct of node.
+struct NodeBase
+{
+    using EdgeIds = std::vector<EdgeId>;
+
+    virtual float getValue() const = 0;
+    virtual void setValue(float value) = 0;
+    virtual EdgeIds getIncomingEdges() const = 0;
+};
+
+// Base struct of edge.
+struct EdgeBase
+{
+    virtual NodeId getInNode() const = 0;
+    virtual NodeId getOutNode() const = 0;
+    virtual float getWeight() const = 0;
+    virtual void setWeight(float weight) = 0;
+};
+
 template <typename Node, typename Edge>
 class NeuralNetwork
 {
 public:
-
     // Declarations of types.
-    DECLARE_ID(NodeId);
-    DECLARE_ID(EdgeId);
-
     using Nodes = std::unordered_map<NodeId, Node>;
     using Edges = std::unordered_map<EdgeId, Edge>;
     using NodeIds = std::vector<NodeId>;
     using EdgeIds = std::vector<EdgeId>;
-
-    // Base struct of node.
-    struct NodeBase
-    {
-        virtual float getValue() const = 0;
-        virtual void setValue(float value) = 0;
-        virtual EdgeIds getIncomingEdges() const = 0;
-    };
-
-    // Base struct of edge.
-    struct EdgeBase
-    {
-        virtual NodeId getInNode() const = 0;
-        virtual NodeId getOutNode() const = 0;
-        virtual float getWeight() const = 0;
-        virtual void setWeight(float weight) = 0;
-    };
 
     // Constructor
     NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);

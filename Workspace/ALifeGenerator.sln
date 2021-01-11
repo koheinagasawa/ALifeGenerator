@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "..\Source\Common\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NEAT", "..\Source\NEAT\NEAT.vcxproj", "{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "..\Test\UnitTest\UnitTest.vcxproj", "{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4}.Release|x64.Build.0 = Release|x64
 		{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4}.Release|x86.ActiveCfg = Release|Win32
 		{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4}.Release|x86.Build.0 = Release|Win32
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Debug|x64.ActiveCfg = Debug|x64
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Debug|x64.Build.0 = Debug|x64
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Debug|x86.ActiveCfg = Debug|Win32
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Debug|x86.Build.0 = Debug|Win32
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x64.ActiveCfg = Release|x64
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x64.Build.0 = Release|x64
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x86.ActiveCfg = Release|Win32
+		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

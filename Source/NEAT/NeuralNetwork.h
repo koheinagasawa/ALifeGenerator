@@ -44,6 +44,7 @@ public:
     using NodeIds = std::vector<NodeId>;
     using EdgeIds = NodeBase::EdgeIds;
 
+    // Node and some additional data for shortcut access.
     struct NodeData
     {
         Node m_node;
@@ -77,7 +78,9 @@ public:
     virtual bool validate() const;
 
 protected:
+    // Construct m_nodes. This is called from constructor.
     void constructNodeData(const Nodes& nodes);
+
     inline auto accessNode(NodeId id)->Node&;
 
     // Data used evaluation
@@ -94,8 +97,8 @@ protected:
         inline NodeState getNodeState(NodeId id) const { return m_nodeStates[m_id2Index.at(id)]; }
         inline void setNodeState(NodeId id, NodeState state) { m_nodeStates[m_id2Index.at(id)] = state; }
 
-        std::unordered_map<NodeId, int> m_id2Index;
-        std::vector<NodeState> m_nodeStates;
+        std::unordered_map<NodeId, int> m_id2Index; // Map between NodeId and its index in m_nodeStates.
+        std::vector<NodeState> m_nodeStates; // Status of each node.
     };
 
     void evaluateNodeRecursive(NodeId id, EvaluationData& data);
@@ -104,9 +107,9 @@ protected:
     bool hasCircularEdges() const;
     bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId>& visitedNodes) const;
 
-    NodeDatas m_nodes;
-    Edges m_edges;
-    NodeIds m_outputNodes;
+    NodeDatas m_nodes; // Nodes of this network.
+    Edges m_edges; // Edges of this network.
+    NodeIds m_outputNodes; // A list of output nodes of this network.
 };
 
 
@@ -126,15 +129,16 @@ NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges,
 template <typename Node, typename Edge>
 void NeuralNetwork<Node, Edge>::constructNodeData(const Nodes& nodes)
 {
+    // Allocate NodeDatas
     m_nodes.clear();
     m_nodes.reserve(nodes.size());
-
-    for (auto itr : nodes)
+    for (const auto& itr : nodes)
     {
         m_nodes[itr.first] = NodeData{ itr.second };
     }
 
-    for (auto itr : m_edges)
+    // Set incoming edges array in each node
+    for (const auto& itr : m_edges)
     {
         const Edge& e = itr.second;
         NodeId outNode = e.getOutNode();

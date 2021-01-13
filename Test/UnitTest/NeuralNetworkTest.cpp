@@ -43,8 +43,11 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
     NN::Edges edges;
     NN::NodeIds outputNodes;
 
-    NN nn(nodes, edges, outputNodes);
-    EXPECT_FALSE(nn.validate());
+    // Empty network
+    {
+        NN nn(nodes, edges, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
 
     NodeId inNode(0);
     NodeId outNode(1);
@@ -54,16 +57,41 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
 
     edges[EdgeId(0)] = Edge(inNode, outNode);
 
-    NN nn2(nodes, edges, outputNodes);
-    EXPECT_FALSE(nn2.validate());
+    // No output node
+    {
+        NN nn(nodes, edges, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
 
     outputNodes.push_back(outNode);
 
-    NN::Edges edges2 = edges;
-    edges2[EdgeId(1)] = Edge(NodeId(2), NodeId(3));
+    // Invalid edge
+    {
+        NN::Edges edges2 = edges;
+        edges2[EdgeId(1)] = Edge(NodeId(2), NodeId(3));
 
-    NN nn3(nodes, edges2, outputNodes);
-    EXPECT_FALSE(nn3.validate());
+        NN nn(nodes, edges2, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
+
+    // Circular network
+    {
+        NodeId node1(2);
+        NodeId node2(3);
+        NodeId node3(4);
+        nodes[node1] = Node();
+        nodes[node2] = Node();
+        nodes[node3] = Node();
+
+        edges[EdgeId(1)] = Edge(inNode, node1);
+        edges[EdgeId(2)] = Edge(node1, node2);
+        edges[EdgeId(3)] = Edge(node2, node3);
+        edges[EdgeId(4)] = Edge(node3, node1);
+        edges[EdgeId(5)] = Edge(node3, outNode);
+
+        NN nn(nodes, edges, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
 }
 
 TEST(NeuralNetwork, CreateMinimumNetwork)

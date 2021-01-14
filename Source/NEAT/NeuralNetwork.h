@@ -34,6 +34,7 @@ struct EdgeBase
     virtual void setWeight(float weight) = 0;
 };
 
+// Base class of neural network
 template <typename Node, typename Edge>
 class NeuralNetwork
 {

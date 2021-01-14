@@ -105,7 +105,7 @@ protected:
 
     // Used by validate().
     bool hasCircularEdges() const;
-    bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId>& visitedNodes) const;
+    bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
 
     NodeDatas m_nodes; // Nodes of this network.
     Edges m_edges; // Edges of this network.
@@ -372,7 +372,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
 }
 
 template <typename Node, typename Edge>
-bool NeuralNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId>& visitedNodes) const
+bool NeuralNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const
 {
     if (visitedNodes.find(id) != visitedNodes.end())
     {

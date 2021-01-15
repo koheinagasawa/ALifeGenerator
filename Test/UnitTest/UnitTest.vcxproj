@@ -52,6 +52,7 @@
     <ClInclude Include="UnitTestPch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MutableNetworkTest.cpp" />
     <ClCompile Include="NeuralNetworkTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

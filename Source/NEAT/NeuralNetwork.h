@@ -79,10 +79,14 @@ public:
     virtual bool validate() const;
 
 protected:
+    // Default constructor.
+    NeuralNetwork() = default;
+
     // Construct m_nodes. This is called from constructor.
     void constructNodeData(const Nodes& nodes);
 
     inline auto accessNode(NodeId id)->Node&;
+    inline auto accessEdge(EdgeId id)->Edge&;
 
     // Data used evaluation
     struct EvaluationData
@@ -192,6 +196,13 @@ inline void NeuralNetwork<Node, Edge>::setNodeValue(NodeId id, float value)
     {
         WARN("Trying to set a value for a node which doesn't exist.");
     }
+}
+
+template <typename Node, typename Edge>
+inline auto NeuralNetwork<Node, Edge>::accessEdge(EdgeId id)->Edge&
+{
+    assert(hasEdge(id));
+    return m_edges[id];
 }
 
 template <typename Node, typename Edge>

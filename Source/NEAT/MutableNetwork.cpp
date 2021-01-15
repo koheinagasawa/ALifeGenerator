@@ -16,6 +16,11 @@ InnovationId InnovationCounter::getNewInnovationId()
     return idOut;
 }
 
+void InnovationCounter::reset()
+{
+    s_id = 0;
+}
+
 SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight)
     : m_inNode(inNode)
     , m_outNode(outNode)

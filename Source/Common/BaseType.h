@@ -31,6 +31,8 @@ struct TypedIndex
 
     inline TYPE val() const { return m_val; }
 
+    static inline TypedIndex invalid() { return TypedIndex(INVALID); }
+
     TYPE m_val;
 };
 

@@ -151,10 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Genome.h" />
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="NeuralNetwork.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Genome.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MutableNetwork.cpp" />
   </ItemGroup>

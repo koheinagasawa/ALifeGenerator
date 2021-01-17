@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MutableNetwork.cpp" />
+    <ClCompile Include="Genome.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="MutableNetwork.h" />
+    <ClInclude Include="Genome.h" />
   </ItemGroup>
 </Project>

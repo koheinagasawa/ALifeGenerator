@@ -19,8 +19,6 @@ DECLARE_ID(EdgeId);
 // Base struct of node.
 struct NodeBase
 {
-    using EdgeIds = std::vector<EdgeId>;
-
     virtual float getValue() const = 0;
     virtual void setValue(float value) = 0;
 };
@@ -43,7 +41,7 @@ public:
     using Nodes = std::unordered_map<NodeId, Node>;
     using Edges = std::unordered_map<EdgeId, Edge>;
     using NodeIds = std::vector<NodeId>;
-    using EdgeIds = NodeBase::EdgeIds;
+    using EdgeIds = std::vector<EdgeId>;
 
     // Node and some additional data for shortcut access.
     struct NodeData

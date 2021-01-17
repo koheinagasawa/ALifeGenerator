@@ -28,6 +28,10 @@ struct TypedIndex
     inline bool operator==(const TypedIndex& other) const { return m_val == other.m_val; }
     inline bool operator!=(TYPE val) const { return !(*this == val); }
     inline bool operator!=(const TypedIndex& other) const { return !(*this == other); }
+    inline bool operator<(const TypedIndex& other) const { return m_val < other.m_val; }
+    inline bool operator<=(const TypedIndex& other) const { return m_val <= other.m_val; }
+    inline bool operator>(const TypedIndex& other) const { return m_val > other.m_val; }
+    inline bool operator>=(const TypedIndex& other) const { return m_val >= other.m_val; }
 
     inline TYPE val() const { return m_val; }
 
@@ -51,14 +55,16 @@ struct TypedIndex
 #define DECLARE_ID_2_ARGS(Name, Type, ...) \
     struct Name : TypedIndex<Type> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type); }; \
     DECLARE_TYPED_INDEX_HASHER_2_ARGS(Name, Type)
-#define DECLARE_ID_1_ARG(Name, ...) \
+#define DECLARE_ID_1_ARG(Name) \
     struct Name : TypedIndex<> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, uint32_t); }; \
     DECLARE_TYPED_INDEX_HASHER_1_ARG(Name)
 
 // If the number of arguments passed to DECLARE_ID is N, then the 4th argument of this macro is going to be DECLARE_ID_N_ARGS
 // assuming that the maximum number of arguments are 3.
 #define GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
-#define DECLARE_ID(...) GET_4TH_ARG(__VA_ARGS__, DECLARE_ID_3_ARGS, DECLARE_ID_2_ARGS, DECLARE_ID_1_ARG, )(__VA_ARGS__)
+// Macro to just pass whatever it received. This is needed for the macro below to prevent the inner macro name doesn't not get expanded in msvc.
+#define PASS_ON(...) __VA_ARGS__
+#define DECLARE_ID(...) PASS_ON(PASS_ON(GET_4TH_ARG(__VA_ARGS__, DECLARE_ID_3_ARGS, DECLARE_ID_2_ARGS, DECLARE_ID_1_ARG, ))(__VA_ARGS__))
 
 //////////////
 

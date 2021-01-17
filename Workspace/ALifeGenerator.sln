@@ -6,8 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "..\Source\Common\Common.vcxproj", "{656DD23A-07D7-4488-B9A7-9BB5028A3F8E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NEAT", "..\Source\NEAT\NEAT.vcxproj", "{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{656DD23A-07D7-4488-B9A7-9BB5028A3F8E} = {656DD23A-07D7-4488-B9A7-9BB5028A3F8E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "..\Test\UnitTest\UnitTest.vcxproj", "{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{656DD23A-07D7-4488-B9A7-9BB5028A3F8E} = {656DD23A-07D7-4488-B9A7-9BB5028A3F8E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

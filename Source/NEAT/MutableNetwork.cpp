@@ -6,11 +6,11 @@
 
 #include <NEAT/MutableNetwork.h>
 
-SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight)
+SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight, bool enabled)
     : m_inNode(inNode)
     , m_outNode(outNode)
     , m_weight(weight)
-    , m_enabled(true)
+    , m_enabled(enabled)
 {
 }
 

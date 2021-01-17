@@ -17,7 +17,7 @@ struct Node : public NodeBase
     virtual float getValue() const { return m_value; }
     virtual void setValue(float value) { m_value = value; }
 
-    float m_value;
+    float m_value = 0.f;
 };
 
 // Basic edge class.
@@ -31,8 +31,9 @@ struct Edge : public EdgeBase
     virtual float getWeight() const { return m_weight; }
     virtual void setWeight(float weight) { m_weight = weight; }
 
-    NodeId m_inNode, m_outNode;
-    float m_weight;
+    NodeId m_inNode = NodeId::invalid();
+    NodeId m_outNode = NodeId::invalid();
+    float m_weight = 0.f;
 };
 
 using NN = NeuralNetwork<Node, Edge>;
@@ -119,8 +120,8 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_TRUE(nn.hasNode(outNode));
     EXPECT_FALSE(nn.hasNode(NodeId(2)));
 
-    NN::NodeIds nodeIds = nn.getNodes();
-    EXPECT_EQ(nodeIds.size(), 2);
+    EXPECT_EQ(nn.getNodes().size(), 2);
+    EXPECT_EQ(nn.getNumEdges(), 1);
 
     EXPECT_TRUE(nn.hasEdge(edge));
     EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
@@ -218,6 +219,9 @@ TEST(NeuralNetwork, EvaluateSimpleNetwork)
     outputNodes.push_back(outNode);
 
     NN nn(nodes, edges, outputNodes);
+
+    EXPECT_EQ(nn.getNodes().size(), 3);
+    EXPECT_EQ(nn.getNumEdges(), 2);
 
     EXPECT_TRUE(nn.validate());
 

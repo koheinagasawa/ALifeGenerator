@@ -62,6 +62,7 @@ public:
     inline void setNodeValue(NodeId id, float value);
     inline auto getIncomingEdges(NodeId id) const->EdgeIds;
 
+    inline int getNumEdges() const { return m_edges.size(); }
     inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
     inline float getWeight(EdgeId id) const;
     inline void setWeight(EdgeId id, float weight);
@@ -84,7 +85,6 @@ protected:
     void constructNodeData(const Nodes& nodes);
 
     inline auto accessNode(NodeId id)->Node&;
-    inline auto accessEdge(EdgeId id)->Edge&;
 
     // Data used evaluation
     struct EvaluationData
@@ -197,13 +197,6 @@ inline void NeuralNetwork<Node, Edge>::setNodeValue(NodeId id, float value)
 }
 
 template <typename Node, typename Edge>
-inline auto NeuralNetwork<Node, Edge>::accessEdge(EdgeId id)->Edge&
-{
-    assert(hasEdge(id));
-    return m_edges[id];
-}
-
-template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->EdgeIds
 {
     return m_nodes.at(id).m_incomingEdges;
@@ -309,7 +302,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
     // Validate all edges.
     {
         std::unordered_set<EdgeId> edges;
-        for (auto itr : m_edges)
+        for (const auto& itr : m_edges)
         {
             // Make sure that the id is unique.
             EdgeId id = itr.first;
@@ -336,7 +329,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
             if (getIncomingEdges(n).empty()) return false;
 
             // Make sure that no edge has this node as its inNode.
-            for (auto itr : m_edges)
+            for (const auto& itr : m_edges)
             {
                 const Edge& e = itr.second;
                 if (e.getInNode() == n) return false;
@@ -348,7 +341,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
     {
         int numInputOrBiasNode = 0;
         std::unordered_set<NodeId> nodes;
-        for (auto itr : m_nodes)
+        for (const auto& itr : m_nodes)
         {
             // Make sure that the id is unique.
             NodeId id = itr.first;
@@ -408,7 +401,7 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
 {
     std::unordered_set<NodeId> checkedNodes;
 
-    for (auto itr : m_nodes)
+    for (const auto& itr : m_nodes)
     {
         NodeId id = itr.first;
 

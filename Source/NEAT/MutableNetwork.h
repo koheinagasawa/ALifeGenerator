@@ -11,7 +11,7 @@
 // Edge which can be turned on and off without losing previous weight value.
 struct SwitchableEdge : public EdgeBase
 {
-    SwitchableEdge(NodeId inNode, NodeId outNode, float weight = 1.f);
+    SwitchableEdge(NodeId inNode, NodeId outNode, float weight = 1.f, bool enabled = true);
     SwitchableEdge();
 
     virtual NodeId getInNode() const override;
@@ -27,6 +27,8 @@ protected:
     float m_weight;
     bool m_enabled;
 };
+
+struct SwitchableEdge;
 
 // Mutable network for NEAT.
 template <typename Node>
@@ -57,6 +59,8 @@ public:
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
 
+    bool isEdgeEnabled(EdgeId edgeId) const;
+
 protected:
     NodeId m_maxNodeId;
     EdgeId m_maxEdgeId;
@@ -80,7 +84,7 @@ MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, con
     {
         if (m_maxEdgeId < itr.first)
         {
-            m_maxEdgeId < itr.first;
+            m_maxEdgeId = itr.first;
         }
     }
 }
@@ -100,28 +104,28 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId
     // Create a new node.
     NodeData newNode;
     {
+        m_maxNodeId = m_maxNodeId.val() + 1;
         newNodeIdOut = m_maxNodeId;
-        m_maxNodeId = m_maxNodeId + 1;
         newNode.m_incomingEdges.push_back(edgeId);
         this->m_nodes[newNodeIdOut] = newNode;
     }
 
     // Update outNode of the divided edge
-    Edge& edgeToDivide = this->accessEdge(edgeId);
+    const Edge& edgeToDivide = this->m_edges.at(edgeId);
     NodeId outNodeId = edgeToDivide.getOutNode();
-    edgeToDivide.m_outNode = newNodeIdOut;
+    this->m_edges[edgeId] = Edge(edgeToDivide.getInNode(), newNodeIdOut, edgeToDivide.getWeight(), edgeToDivide.isEnabled());
 
     // Create a new edge between the new node and the original out node.
     Edge newEdge(newNodeIdOut, outNodeId, 1.0f);
     {
+        m_maxEdgeId = m_maxEdgeId.val() + 1;
         newEdgeIdOut = m_maxEdgeId;
-        m_maxEdgeId = m_maxEdgeId + 1;
         this->m_edges[newEdgeIdOut] = newEdge;
     }
 
     // Update incoming edges of the out node.
-    EdgeIds& edgesToOutNode = this->m_nodes.at(outNodeId).m_incomingEdges;
-    for (EdgeIds::iterator itr : edgesToOutNode)
+    EdgeIds& edgesToOutNode = this->m_nodes[outNodeId].m_incomingEdges;
+    for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); ++itr)
     {
         if (*itr == edgeId)
         {
@@ -129,6 +133,7 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId
             break;
         }
     }
+    edgesToOutNode.push_back(newEdgeIdOut);
 }
 
 template <typename Node>
@@ -154,9 +159,19 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
         }
     }
 
+    // Make sure that the node1 is not output node.
+    for (NodeId id : this->m_outputNodes)
+    {
+        if (id == node1)
+        {
+            WARN("Output node cannot have an outgoing edge. Abort adding a new edge.");
+            return EdgeId::invalid();
+        }
+    }
+
     // Create a new edge
     Edge newEdge(node1, node2, weight);
-    EdgeId newEdgeId = m_maxEdgeId;
+    EdgeId newEdgeId = m_maxEdgeId.val() + 1;
     this->m_edges[newEdgeId] = newEdge;
 
     edgesToOutNode.push_back(newEdgeId);
@@ -167,15 +182,23 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
         // Revert the change
         this->m_edges.erase(newEdgeId);
         edgesToOutNode.pop_back();
+        WARN("Cannot add an edge because it would cause a circular network.");
         return EdgeId::invalid();
     }
 
-    m_maxEdgeId = m_maxEdgeId + 1;
+    m_maxEdgeId = m_maxEdgeId.val() + 1;
     return newEdgeId;
 }
 
 template <typename Node>
 void MutableNetwork<Node>::setEdgeEnabled(EdgeId edgeId, bool enable)
 {
-    this->accessEdge(edgeId).setEnabled(enable);
+    this->m_edges[edgeId].setEnabled(enable);
 }
+
+template <typename Node>
+bool MutableNetwork<Node>::isEdgeEnabled(EdgeId edgeId) const
+{
+    return this->m_edges.at(edgeId).isEnabled();
+}
+

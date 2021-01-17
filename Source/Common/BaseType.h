@@ -33,9 +33,9 @@ struct TypedIndex
     inline bool operator>(const TypedIndex& other) const { return m_val > other.m_val; }
     inline bool operator>=(const TypedIndex& other) const { return m_val >= other.m_val; }
 
-    inline TYPE val() const { return m_val; }
+    inline bool isValid() const { return m_val != INVALID; }
 
-    static inline TypedIndex invalid() { return TypedIndex(INVALID); }
+    inline TYPE val() const { return m_val; }
 
     TYPE m_val;
 };
@@ -44,19 +44,20 @@ struct TypedIndex
 #define DECLARE_TYPED_INDEX_HASHER_2_ARGS(Name, Type) DECLARE_TYPED_INDEX_HASHER(Name, Type)
 #define DECLARE_TYPED_INDEX_HASHER_1_ARG(Name) DECLARE_TYPED_INDEX_HASHER(Name, uint32_t)
 
-#define DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type) \
+#define DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type, Invalid) \
     Name() : TypedIndex() {} \
     Name(Type val) : TypedIndex(val) {} \
-    Name(const Name& other) : TypedIndex(other) {}
+    Name(const Name& other) : TypedIndex(other) {} \
+    static inline Name invalid() { return Name(Invalid); }
 
 #define DECLARE_ID_3_ARGS(Name, Type, Invalid) \
-    struct Name : TypedIndex<Type, Invalid> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type); }; \
+    struct Name : TypedIndex<Type, Invalid> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type, Invalid); }; \
     DECLARE_TYPED_INDEX_HASHER_2_ARGS(Name, Type)
-#define DECLARE_ID_2_ARGS(Name, Type, ...) \
-    struct Name : TypedIndex<Type> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type); }; \
+#define DECLARE_ID_2_ARGS(Name, Type) \
+    struct Name : TypedIndex<Type> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, Type, -1); }; \
     DECLARE_TYPED_INDEX_HASHER_2_ARGS(Name, Type)
 #define DECLARE_ID_1_ARG(Name) \
-    struct Name : TypedIndex<> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, uint32_t); }; \
+    struct Name : TypedIndex<> { DECLARE_TYPED_INDEX_CONSTRUCTORS(Name, uint32_t, -1); }; \
     DECLARE_TYPED_INDEX_HASHER_1_ARG(Name)
 
 // If the number of arguments passed to DECLARE_ID is N, then the 4th argument of this macro is going to be DECLARE_ID_N_ARGS

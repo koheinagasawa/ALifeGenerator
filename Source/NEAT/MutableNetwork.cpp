@@ -4,6 +4,7 @@
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
+#include <NEAT/Neat.h>
 #include <NEAT/MutableNetwork.h>
 
 SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight, bool enabled)

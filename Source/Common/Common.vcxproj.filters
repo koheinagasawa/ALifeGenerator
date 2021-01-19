@@ -2,5 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="BaseType.h" />
+    <ClInclude Include="PseudoRandom.h" />
+    <ClInclude Include="Common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PseudoRandom.cpp" />
+    <ClCompile Include="Common.cpp" />
   </ItemGroup>
 </Project>

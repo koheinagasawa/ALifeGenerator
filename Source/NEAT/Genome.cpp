@@ -4,9 +4,10 @@
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
-#include <cassert>
-
+#include <NEAT/Neat.h>
 #include <NEAT/Genome.h>
+
+#include <cassert>
 
 namespace NEAT
 {
@@ -18,6 +19,7 @@ namespace NEAT
     }
 
     Genome::Genome(const Cinfo& cinfo)
+        : m_innovIdCounter(cinfo.m_innovIdCounter)
     {
         assert(cinfo.m_numInputNode > 0 && cinfo.m_numOutputNode > 0);
 

@@ -48,6 +48,9 @@ public:
     // Constructor using pre-setup network data.
     MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
 
+    // Copy constructor
+    MutableNetwork(const MutableNetwork& other) = default;
+
     // Add a new node by dividing the edge at edgeId.
     // Ids of newly created node and edge will be set to newNodeIdOut and newEdgeIdOut.
     void addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newEdgeIdOut);
@@ -113,10 +116,11 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId
     // Update outNode of the divided edge
     const Edge& edgeToDivide = this->m_edges.at(edgeId);
     NodeId outNodeId = edgeToDivide.getOutNode();
-    this->m_edges[edgeId] = Edge(edgeToDivide.getInNode(), newNodeIdOut, edgeToDivide.getWeight(), edgeToDivide.isEnabled());
+    const float weight = edgeToDivide.getWeight();
+    this->m_edges[edgeId] = Edge(edgeToDivide.getInNode(), newNodeIdOut, 1.0f, edgeToDivide.isEnabled());
 
     // Create a new edge between the new node and the original out node.
-    Edge newEdge(newNodeIdOut, outNodeId, 1.0f);
+    Edge newEdge(newNodeIdOut, outNodeId, weight);
     {
         m_maxEdgeId = m_maxEdgeId.val() + 1;
         newEdgeIdOut = m_maxEdgeId;

@@ -53,8 +53,11 @@ public:
 
     using NodeDatas = std::unordered_map<NodeId, NodeData>;
 
-    // Constructor
+    // Constructor from network information
     NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
+
+    // Copy constructor
+    NeuralNetwork(const NeuralNetwork& other) = default;
 
     inline auto getNodes() const->NodeIds;
 
@@ -63,7 +66,7 @@ public:
     inline void setNodeValue(NodeId id, float value);
     inline auto getIncomingEdges(NodeId id) const->EdgeIds;
 
-    inline int getNumEdges() const { return m_edges.size(); }
+    inline auto getEdges() const->EdgeIds;
     inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
     inline float getWeight(EdgeId id) const;
     inline void setWeight(EdgeId id, float weight);
@@ -162,7 +165,7 @@ inline auto NeuralNetwork<Node, Edge>::getNodes() const->NodeIds
     NodeIds idsOut;
     idsOut.reserve(m_nodes.size());
 
-    for (auto itr : m_nodes)
+    for (auto& itr : m_nodes)
     {
         idsOut.push_back(itr.first);
     }
@@ -201,6 +204,20 @@ template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->EdgeIds
 {
     return m_nodes.at(id).m_incomingEdges;
+}
+
+template <typename Node, typename Edge>
+inline auto NeuralNetwork<Node, Edge>::getEdges() const->EdgeIds
+{
+    EdgeIds idsOut;
+    idsOut.reserve(m_edges.size());
+
+    for (auto& itr : m_edges)
+    {
+        idsOut.push_back(itr.first);
+    }
+
+    return idsOut;
 }
 
 template <typename Node, typename Edge>

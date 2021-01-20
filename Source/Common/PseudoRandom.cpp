@@ -19,7 +19,7 @@ PseudoRandom::PseudoRandom(int seed)
 {
 }
 
-float PseudoRandom::randamReal01()
+float PseudoRandom::randomReal01()
 {
     return randomReal(0.f, 1.f);
 }

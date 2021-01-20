@@ -27,6 +27,8 @@ namespace NEAT
         // Returns a new innovation id. New id will be returned every time you call this function.
         InnovationId getNewInnovationId();
 
+        void reset();
+
     protected:
         InnovationCounter(const InnovationCounter&) = delete;
         void operator=(const InnovationCounter&) = delete;
@@ -77,10 +79,10 @@ namespace NEAT
         struct Cinfo
         {
             // The number of input nodes.
-            uint16_t m_numInputNode;
+            uint16_t m_numInputNodes;
 
             // The number of output nodes.
-            uint16_t m_numOutputNode;
+            uint16_t m_numOutputNodes;
 
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter& m_innovIdCounter;
@@ -90,11 +92,26 @@ namespace NEAT
         struct MutationParams
         {
             // Probability of weight mutation. It has to be between 0 and 1.
-            float m_weightMutationRate;
+            float m_weightMutationRate = 0.8f;
 
-            // Intensity of weight mutation. It has to be between 0 and 1.
+            // Perturbation of weight mutation. It has to be between 0 and 1.
             // Mutated weight can be from [original * (1 - intensity)] to [original * (1 + intensity)].
-            float m_weightMutationIntensity;
+            float m_weightMutationPerturbation = 0.05f;
+
+            // Probability that an edge gets a new random weight instead of perturbation. It has to be between 0 and 1.
+            float m_weightMutationNewValRate = 0.1f;
+
+            // Minimum value when an edge gets a new random weight by mutation.
+            float m_weightMutationNewValMin = -10.f;
+
+            // Maximum value when an edge gets a new random weight by mutation.
+            float m_weightMutationNewValMax = 10.f;
+
+            // Probability of mutation to add a new node. It has to be between 0 and 1.
+            float m_addNodeMutationRate = 0.03f;
+
+            // Probability of mutation to add a new edge. It has to be between 0 and 1.
+            float m_addEdgeMutationRate = 0.05f;
 
             // Pseudo random generator. It can be null.
             PseudoRandom* m_random = nullptr;
@@ -109,7 +126,10 @@ namespace NEAT
         // all input nodes and output nodes are fully connected.
         Genome(const Cinfo& cinfo);
 
-        // Mutate this genome. There are three ways to mutate.
+        // Copy constructor
+        Genome(const Genome& other) = default;
+
+        // Mutate this genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Add a new node at a random edge.
         // 3. Connect random two nodes by a new edge.
@@ -176,5 +196,7 @@ namespace NEAT
 
         GenerationPtr m_currentGen;
         GenerationPtr m_previousGen;
+
+        InnovationCounter m_innovationCounter;
     };
 }

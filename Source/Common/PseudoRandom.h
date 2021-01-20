@@ -18,7 +18,7 @@ public:
     static PseudoRandom& getInstance();
 
     // Get a random float between 0 and 1.
-    float randamReal01();
+    float randomReal01();
 
     // Get a random float between min and max.
     float randomReal(float min, float max);

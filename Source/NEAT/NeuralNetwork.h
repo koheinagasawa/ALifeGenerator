@@ -52,6 +52,8 @@ public:
     };
 
     using NodeDatas = std::unordered_map<NodeId, NodeData>;
+    using NodeEntry = std::pair<NodeId, NodeData>;
+    using EdgeEntry = std::pair<EdgeId, Edge>;
 
     // Constructor from network information
     NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
@@ -59,14 +61,16 @@ public:
     // Copy constructor
     NeuralNetwork(const NeuralNetwork& other) = default;
 
-    inline auto getNodes() const->NodeIds;
+    inline int getNumNodes() const { return (int)m_nodes.size(); }
+    inline auto getNodes() const->const NodeDatas& { return m_nodes; }
 
     inline bool hasNode(NodeId id) const { return m_nodes.find(id) != m_nodes.end(); }
     inline auto getNode(NodeId id) const->const Node&;
     inline void setNodeValue(NodeId id, float value);
     inline auto getIncomingEdges(NodeId id) const->EdgeIds;
 
-    inline auto getEdges() const->EdgeIds;
+    inline int getNumEdges() const { return (int)m_edges.size(); }
+    inline auto getEdges() const->const Edges& { return m_edges; }
     inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
     inline float getWeight(EdgeId id) const;
     inline void setWeight(EdgeId id, float weight);
@@ -160,20 +164,6 @@ void NeuralNetwork<Node, Edge>::constructNodeData(const Nodes& nodes)
 }
 
 template <typename Node, typename Edge>
-inline auto NeuralNetwork<Node, Edge>::getNodes() const->NodeIds
-{
-    NodeIds idsOut;
-    idsOut.reserve(m_nodes.size());
-
-    for (auto& itr : m_nodes)
-    {
-        idsOut.push_back(itr.first);
-    }
-
-    return idsOut;
-}
-
-template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getNode(NodeId id) const->const Node&
 {
     assert(hasNode(id));
@@ -204,20 +194,6 @@ template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->EdgeIds
 {
     return m_nodes.at(id).m_incomingEdges;
-}
-
-template <typename Node, typename Edge>
-inline auto NeuralNetwork<Node, Edge>::getEdges() const->EdgeIds
-{
-    EdgeIds idsOut;
-    idsOut.reserve(m_edges.size());
-
-    for (auto& itr : m_edges)
-    {
-        idsOut.push_back(itr.first);
-    }
-
-    return idsOut;
 }
 
 template <typename Node, typename Edge>
@@ -446,14 +422,12 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
 template <typename Node, typename Edge>
 NeuralNetwork<Node, Edge>::EvaluationData::EvaluationData(const NeuralNetwork* network)
 {
-    NodeIds nodeIds = network->getNodes();
-    const int numNodes = nodeIds.size();
-
+    const int numNodes = network->getNumNodes();
     m_id2Index.reserve(numNodes);
     int counter = 0;
-    for (NodeId node : nodeIds)
+    for (const NodeEntry& node : network->getNodes())
     {
-        m_id2Index[node] = counter++;
+        m_id2Index[node.first] = counter++;
     }
 
     m_nodeStates.resize(numNodes, NodeState::NONE);

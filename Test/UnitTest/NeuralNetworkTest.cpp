@@ -120,8 +120,8 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_TRUE(nn.hasNode(outNode));
     EXPECT_FALSE(nn.hasNode(NodeId(2)));
 
-    EXPECT_EQ(nn.getNodes().size(), 2);
-    EXPECT_EQ(nn.getEdges().size(), 1);
+    EXPECT_EQ(nn.getNumNodes(), 2);
+    EXPECT_EQ(nn.getNumEdges(), 1);
 
     EXPECT_TRUE(nn.hasEdge(edge));
     EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
@@ -220,8 +220,8 @@ TEST(NeuralNetwork, EvaluateSimpleNetwork)
 
     NN nn(nodes, edges, outputNodes);
 
-    EXPECT_EQ(nn.getNodes().size(), 3);
-    EXPECT_EQ(nn.getEdges().size(), 2);
+    EXPECT_EQ(nn.getNumNodes(), 3);
+    EXPECT_EQ(nn.getNumEdges(), 2);
 
     EXPECT_TRUE(nn.validate());
 

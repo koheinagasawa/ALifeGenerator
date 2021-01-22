@@ -117,6 +117,22 @@ namespace NEAT
             PseudoRandom* m_random = nullptr;
         };
 
+        // Structure to store information about newly added edges by mutate().
+        struct MutationOut
+        {
+            struct NewEdgeInfo
+            {
+                NodeId m_sourceInNode;
+                NodeId m_sourceOutNode;
+                EdgeId m_newEdge;
+            };
+
+            void clear();
+
+            static constexpr int NUM_NEW_EDGES = 2;
+            NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
+        };
+
         // Type declaration
         using Network = MutableNetwork<Node>;
         using NetworkPtr = std::shared_ptr<Network>;
@@ -134,7 +150,7 @@ namespace NEAT
         // 2. Add a new node at a random edge.
         // 3. Connect random two nodes by a new edge.
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
-        void mutate(const MutationParams& params);
+        void mutate(const MutationParams& params, MutationOut& mutationOut);
 
         // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
         inline auto getInnovations() const->const InnovationEntries& { return m_innovations; }

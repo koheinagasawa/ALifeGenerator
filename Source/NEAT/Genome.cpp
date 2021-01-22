@@ -82,7 +82,17 @@ Genome::Genome(const Cinfo& cinfo)
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
 }
 
-void Genome::mutate(const MutationParams& params)
+void Genome::MutationOut::clear()
+{
+    for (int i = 0; i < NUM_NEW_EDGES; i++)
+    {
+        m_newEdges[i].m_sourceInNode = NodeId::invalid();
+        m_newEdges[i].m_sourceOutNode = NodeId::invalid();
+        m_newEdges[i].m_newEdge = EdgeId::invalid();
+    }
+}
+
+void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 {
     PseudoRandom* random = params.m_random ? params.m_random : &PseudoRandom::getInstance();
 
@@ -92,6 +102,8 @@ void Genome::mutate(const MutationParams& params)
     assert(params.m_weightMutationNewValMin <= params.m_weightMutationNewValMax);
     assert(params.m_addNodeMutationRate >= 0 && params.m_addNodeMutationRate <= 1);
     assert(params.m_addEdgeMutationRate >= 0 && params.m_addEdgeMutationRate <= 1);
+
+    int numNewEdges = 0;
 
     // 1. Change weights of edges with a certain probability
     for (const Network::EdgeEntry& edge : m_network->getEdges())
@@ -146,8 +158,17 @@ void Genome::mutate(const MutationParams& params)
             InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
             m_innovations.push_back(ie);
 
-            // todo Output where we added this node.
+            // Store information of newly added edge.
+            MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
+            newEdgeInfo.m_sourceInNode = m_network->getInNode(edgeToAddNode);
+            newEdgeInfo.m_sourceOutNode = m_network->getOutNode(newEdge);
+            newEdgeInfo.m_newEdge = newEdge;
         }
+    }
+
+    // 3. Add an edge between random nodes
+    if (random->randomReal01() < params.m_addEdgeMutationRate)
+    {
 
     }
 }

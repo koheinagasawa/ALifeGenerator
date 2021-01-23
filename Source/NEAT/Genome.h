@@ -64,15 +64,36 @@ namespace NEAT
         struct Node : public NodeBase
         {
         public:
+            // Type of Node
+            enum class Type
+            {
+                INPUT,
+                HIDDEN,
+                OUTPUT,
+                NONE
+            };
+
+            // Default constructor. This is used only by container of Node in Network class and users shouldn't call it.
+            // Use Node(Type type) instead.
+            Node() = default;
+
+            // Constructor with node type.
+            Node(Type type);
+
             virtual float getValue() const override;
             virtual void setValue(float value) override;
+
+            Type getNodeType() const { return m_type; }
 
             void setActivation(const Activation* activation) { m_activation = activation; }
             const std::string& getActivationName() const { return m_activation->m_name; }
 
         protected:
-            float m_value;
-            const Activation* m_activation;
+            float m_value = 0.f;
+            Type m_type = Type::NONE;
+            const Activation* m_activation = nullptr;
+
+            friend class Genome;
         };
 
         // Structure used for constructor.

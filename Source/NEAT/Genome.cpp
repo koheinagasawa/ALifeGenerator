@@ -23,6 +23,10 @@ void InnovationCounter::reset()
     m_innovationCount = 0;
 }
 
+Genome::Node::Node(Type type)
+    : m_type(type)
+{
+}
 
 float Genome::Node::getValue() const
 {
@@ -48,9 +52,13 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create nodes
     nodes.reserve(numNodes);
-    for (int i = 0; i < numNodes; i++)
+    for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
-        nodes[i] = Node();
+        nodes[i] = Node(Node::Type::INPUT);
+    }
+    for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
+    {
+        nodes[i] = Node(Node::Type::OUTPUT);
     }
 
     // Create fully connected edges between input nodes and output nodes.
@@ -154,6 +162,11 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
             EdgeId newEdge;
             m_network->addNodeAt(edgeToAddNode, newNode, newEdge);
 
+            assert(newNode.isValid());
+
+            // Set it as a hidden node
+            m_network->accessNode(newNode).m_type = Node::Type::HIDDEN;
+
             // Store this innovation
             InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
             m_innovations.push_back(ie);
@@ -169,6 +182,6 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     // 3. Add an edge between random nodes
     if (random->randomReal01() < params.m_addEdgeMutationRate)
     {
-
+        // Randomly select two nodes where we can add an edge
     }
 }

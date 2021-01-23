@@ -66,8 +66,10 @@ public:
 
     inline bool hasNode(NodeId id) const { return m_nodes.find(id) != m_nodes.end(); }
     inline auto getNode(NodeId id) const->const Node&;
+    inline auto accessNode(NodeId id)->Node&;
     inline void setNodeValue(NodeId id, float value);
     inline auto getIncomingEdges(NodeId id) const->EdgeIds;
+    inline bool isConnected(NodeId node1, NodeId node2) const;
 
     inline int getNumEdges() const { return (int)m_edges.size(); }
     inline auto getEdges() const->const Edges& { return m_edges; }
@@ -91,8 +93,6 @@ protected:
 
     // Construct m_nodes. This is called from constructor.
     void constructNodeData(const Nodes& nodes);
-
-    inline auto accessNode(NodeId id)->Node&;
 
     // Data used evaluation
     struct EvaluationData
@@ -194,6 +194,30 @@ template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->EdgeIds
 {
     return m_nodes.at(id).m_incomingEdges;
+}
+
+template <typename Node, typename Edge>
+inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) const
+{
+    assert(hasNode(node1) && hasNode(node2) && node1 != node2);
+
+    for (EdgeId e : m_nodes[node1].m_incomingEdges)
+    {
+        if (getInNode(e) == node2)
+        {
+            return true;
+        }
+    }
+
+    for (EdgeId e : m_nodes[node2].m_incomingEdges)
+    {
+        if (getInNode(e) == node1)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 template <typename Node, typename Edge>

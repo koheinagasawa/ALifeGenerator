@@ -134,6 +134,12 @@ namespace NEAT
             // Probability of mutation to add a new edge. It has to be between 0 and 1.
             float m_addEdgeMutationRate = 0.05f;
 
+            // Minimum weight for a new edge.
+            float m_newEdgeMinWeight = -0.5f;
+
+            // Maximum weight for a new edge.
+            float m_newEdgeMaxWeight = 0.5f;
+
             // Pseudo random generator. It can be null.
             PseudoRandom* m_random = nullptr;
         };

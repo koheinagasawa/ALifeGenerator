@@ -201,7 +201,7 @@ inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) c
 {
     assert(hasNode(node1) && hasNode(node2) && node1 != node2);
 
-    for (EdgeId e : m_nodes[node1].m_incomingEdges)
+    for (EdgeId e : m_nodes.at(node1).m_incomingEdges)
     {
         if (getInNode(e) == node2)
         {
@@ -209,7 +209,7 @@ inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) c
         }
     }
 
-    for (EdgeId e : m_nodes[node2].m_incomingEdges)
+    for (EdgeId e : m_nodes.at(node2).m_incomingEdges)
     {
         if (getInNode(e) == node1)
         {

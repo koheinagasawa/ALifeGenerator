@@ -110,6 +110,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     assert(params.m_weightMutationNewValMin <= params.m_weightMutationNewValMax);
     assert(params.m_addNodeMutationRate >= 0 && params.m_addNodeMutationRate <= 1);
     assert(params.m_addEdgeMutationRate >= 0 && params.m_addEdgeMutationRate <= 1);
+    assert(params.m_newEdgeMinWeight <= params.m_newEdgeMaxWeight);
 
     int numNewEdges = 0;
 
@@ -135,12 +136,27 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         }
     }
 
+    // Function to assign innovation id to newly added edge and store its info in mutationOut.
+    auto newEdgeAdded = [&](EdgeId newEdge, NodeId inNode, NodeId outNode)
+    {
+        // Store this innovation
+        InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
+        m_innovations.push_back(ie);
+
+        // Store information of newly added edge.
+        MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
+        newEdgeInfo.m_sourceInNode = inNode;
+        newEdgeInfo.m_sourceOutNode = outNode;
+        newEdgeInfo.m_newEdge = newEdge;
+    };
+
     // 2. Add a node at a random edge
     if (random->randomReal01() < params.m_addNodeMutationRate)
     {
         // Randomly select an edge where we can add a node
         const int numEdges = m_network->getNumEdges();
 
+        // Gather all edges which we can possibly add a new node.
         Network::EdgeIds edgeCandidates;
         edgeCandidates.reserve(numEdges);
         for (const Network::EdgeEntry& edge : m_network->getEdges())
@@ -167,15 +183,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
             // Set it as a hidden node
             m_network->accessNode(newNode).m_type = Node::Type::HIDDEN;
 
-            // Store this innovation
-            InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
-            m_innovations.push_back(ie);
-
-            // Store information of newly added edge.
-            MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
-            newEdgeInfo.m_sourceInNode = m_network->getInNode(edgeToAddNode);
-            newEdgeInfo.m_sourceOutNode = m_network->getOutNode(newEdge);
-            newEdgeInfo.m_newEdge = newEdge;
+            newEdgeAdded(newEdge, m_network->getInNode(edgeToAddNode), m_network->getOutNode(newEdge));
         }
     }
 
@@ -183,5 +191,53 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     if (random->randomReal01() < params.m_addEdgeMutationRate)
     {
         // Randomly select two nodes where we can add an edge
+        const Network::NodeDatas& nodeDatas = m_network->getNodes();
+
+        // Gather all pairs of nodes which we can possibly add a new edge.
+        using NodePair = std::pair<NodeId, NodeId>;
+        std::vector<NodePair> nodeCandidates;
+        nodeCandidates.reserve(nodeDatas.size() / 2);
+        for (auto n1Itr = nodeDatas.cbegin(); n1Itr != nodeDatas.cend(); n1Itr++)
+        {
+            NodeId n1Id = n1Itr->first;
+            const Node& n1 = m_network->getNode(n1Id);
+
+            assert(n1.m_type != Genome::Node::Type::NONE);
+
+            auto n2Itr = n1Itr;
+            n2Itr++;
+            for (; n2Itr != nodeDatas.cend(); n2Itr++)
+            {
+                NodeId n2Id = n2Itr->first;
+                const Node& n2 = m_network->getNode(n2Id);
+
+                assert(n1.m_type != Genome::Node::Type::NONE);
+
+                // Cannot create an edge between two input nodes or two output nodes.
+                if (n1.m_type != Genome::Node::Type::HIDDEN && n1.m_type == n2.m_type)
+                {
+                    continue;
+                }
+
+                // Check if these two nodes are already connected.
+                if (m_network->isConnected(n1Id, n2Id))
+                {
+                    continue;
+                }
+
+                nodeCandidates.push_back({ n1Id, n2Id });
+            }
+        }
+
+        if (!nodeCandidates.empty())
+        {
+            // Select a random node pair.
+            const NodePair& pair = nodeCandidates[random->randomInteger(0, (int)nodeCandidates.size() - 1)];
+
+            // Create a new edge.
+            EdgeId newEdge = m_network->addEdgeAt(pair.first, pair.second, random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight));
+
+            newEdgeAdded(newEdge, pair.first, pair.second);
+        }
     }
 }

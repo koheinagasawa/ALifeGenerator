@@ -90,6 +90,14 @@ Genome::Genome(const Cinfo& cinfo)
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
 }
 
+
+Genome::Genome(InnovationCounter& innovationCounter)
+    : m_network(nullptr)
+    , m_innovIdCounter(innovationCounter)
+{
+
+}
+
 void Genome::MutationOut::clear()
 {
     for (int i = 0; i < NUM_NEW_EDGES; i++)
@@ -240,4 +248,19 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
             newEdgeAdded(newEdge, pair.first, pair.second);
         }
     }
+}
+
+Genome Genome::crossOver(const Genome& genome1, const Genome& genome2)
+{
+    // Make sure that the two genomes share the same innovation id counter.
+    assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter);
+
+    Genome newGenome(genome1.m_innovIdCounter);
+    Network::Nodes nodes;
+    Network::Edges edges;
+    Network::NodeIds outputNodes;
+
+    newGenome.m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+
+    return newGenome;
 }

@@ -106,7 +106,7 @@ namespace NEAT
             uint16_t m_numOutputNodes;
 
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
-            InnovationCounter& m_innovIdCounter;
+            InnovationCounter* m_innovIdCounter = nullptr;
         };
 
         // Structure used for mutate().
@@ -171,6 +171,8 @@ namespace NEAT
 
         // Copy constructor
         Genome(const Genome& other) = default;
+
+        const Network* getNetwork() const { return m_network.get(); }
 
         // Mutate this genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.

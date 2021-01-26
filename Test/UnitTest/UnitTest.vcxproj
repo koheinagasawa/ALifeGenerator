@@ -52,6 +52,7 @@
     <ClInclude Include="UnitTestPch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GenomeTest.cpp" />
     <ClCompile Include="MutableNetworkTest.cpp" />
     <ClCompile Include="NeuralNetworkTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
@@ -62,6 +63,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Source\Common\Common.vcxproj">
+      <Project>{656dd23a-07d7-4488-b9a7-9bb5028a3f8e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Source\NEAT\NEAT.vcxproj">
       <Project>{a8b98bd3-4244-4e79-bb1b-a5bf836f21d4}</Project>
     </ProjectReference>

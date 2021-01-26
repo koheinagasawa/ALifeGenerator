@@ -40,7 +40,7 @@ void Genome::Node::setValue(float value)
 }
 
 Genome::Genome(const Cinfo& cinfo)
-    : m_innovIdCounter(cinfo.m_innovIdCounter)
+    : m_innovIdCounter(*cinfo.m_innovIdCounter)
 {
     assert(cinfo.m_numInputNodes > 0 && cinfo.m_numOutputNodes > 0);
 

@@ -100,10 +100,10 @@ namespace NEAT
         struct Cinfo
         {
             // The number of input nodes.
-            uint16_t m_numInputNodes;
+            uint16_t m_numInputNodes = 1;
 
             // The number of output nodes.
-            uint16_t m_numOutputNodes;
+            uint16_t m_numOutputNodes = 1;
 
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter* m_innovIdCounter = nullptr;

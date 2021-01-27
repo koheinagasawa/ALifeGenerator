@@ -188,7 +188,7 @@ namespace NEAT
         static Genome crossOver(const Genome& genome1, const Genome& genome2);
 
     protected:
-        // Constructor used by mutate() and crossOver().
+        // Constructor used by crossOver().
         Genome(InnovationCounter& innovationCounter);
 
         NetworkPtr m_network;                   // The network.

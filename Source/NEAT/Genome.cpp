@@ -110,7 +110,7 @@ void Genome::MutationOut::clear()
 
 void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 {
-    PseudoRandom* random = params.m_random ? params.m_random : &PseudoRandom::getInstance();
+    RandomGenerator* random = params.m_random ? params.m_random : &PseudoRandom::getInstance();
 
     assert(params.m_weightMutationRate >= 0 && params.m_weightMutationRate <= 1);
     assert(params.m_weightMutationPerturbation >= 0 && params.m_weightMutationPerturbation <= 1);

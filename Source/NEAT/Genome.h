@@ -141,7 +141,7 @@ namespace NEAT
             float m_newEdgeMaxWeight = 0.5f;
 
             // Pseudo random generator. It can be null.
-            PseudoRandom* m_random = nullptr;
+            RandomGenerator* m_random = nullptr;
         };
 
         // Structure to store information about newly added edges by mutate().

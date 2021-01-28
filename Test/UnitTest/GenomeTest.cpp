@@ -26,6 +26,10 @@ TEST(Genome, CreateGenome)
     EXPECT_TRUE(network);
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network->getNumEdges(), 4);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
@@ -95,6 +99,7 @@ TEST(Genome, MutateGenome)
 
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 5);
+    EXPECT_EQ(network->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 5);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_TRUE(out.m_newEdges[0].m_sourceInNode.isValid());
@@ -111,6 +116,7 @@ TEST(Genome, MutateGenome)
 
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 6);
+    EXPECT_EQ(network->getNode(NodeId(5)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 7);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_TRUE(out.m_newEdges[0].m_sourceInNode.isValid());

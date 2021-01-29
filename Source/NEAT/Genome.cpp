@@ -110,10 +110,6 @@ void Genome::MutationOut::clear()
 
 void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 {
-    mutationOut.clear();
-
-    RandomGenerator* random = params.m_random ? params.m_random : &PseudoRandom::getInstance();
-
     assert(params.m_weightMutationRate >= 0 && params.m_weightMutationRate <= 1);
     assert(params.m_weightMutationPerturbation >= 0 && params.m_weightMutationPerturbation <= 1);
     assert(params.m_weightMutationNewValRate >= 0 && params.m_weightMutationNewValRate <= 1);
@@ -121,6 +117,10 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     assert(params.m_addNodeMutationRate >= 0 && params.m_addNodeMutationRate <= 1);
     assert(params.m_addEdgeMutationRate >= 0 && params.m_addEdgeMutationRate <= 1);
     assert(params.m_newEdgeMinWeight <= params.m_newEdgeMaxWeight);
+
+    mutationOut.clear();
+
+    RandomGenerator* random = params.m_random ? params.m_random : &PseudoRandom::getInstance();
 
     int numNewEdges = 0;
 
@@ -147,7 +147,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     }
 
     // Function to assign innovation id to newly added edge and store its info in mutationOut.
-    auto newEdgeAdded = [&](EdgeId newEdge, NodeId inNode, NodeId outNode)
+    auto newEdgeAdded = [&](EdgeId newEdge)
     {
         // Store this innovation
         InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
@@ -155,8 +155,8 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 
         // Store information of newly added edge.
         MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
-        newEdgeInfo.m_sourceInNode = inNode;
-        newEdgeInfo.m_sourceOutNode = outNode;
+        newEdgeInfo.m_sourceInNode = m_network->getInNode(newEdge);
+        newEdgeInfo.m_sourceOutNode = m_network->getOutNode(newEdge);
         newEdgeInfo.m_newEdge = newEdge;
     };
 
@@ -244,15 +244,16 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 
         // Add a new node and a new edge along with it.
         NodeId newNode;
-        EdgeId newEdge;
-        m_network->addNodeAt(edgeToAddNode, newNode, newEdge);
+        EdgeId newIncomingEdge, newOutgoingEdge;
+        m_network->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
 
         assert(newNode.isValid());
 
         // Set it as a hidden node
         m_network->accessNode(newNode).m_type = Node::Type::HIDDEN;
 
-        newEdgeAdded(newEdge, m_network->getInNode(edgeToAddNode), m_network->getOutNode(newEdge));
+        newEdgeAdded(newIncomingEdge);
+        newEdgeAdded(newOutgoingEdge);
     }
 
     // 3. Add an edge between random nodes
@@ -265,19 +266,24 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         EdgeId newEdge = m_network->addEdgeAt(pair.first, pair.second, random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight));
         assert(newEdge.isValid());
 
-        newEdgeAdded(newEdge, pair.first, pair.second);
+        newEdgeAdded(newEdge);
     }
 }
 
-Genome Genome::crossOver(const Genome& genome1, const Genome& genome2)
+Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params)
 {
     // Make sure that the two genomes share the same innovation id counter.
     assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter);
+
+    RandomGenerator& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
 
     Genome newGenome(genome1.m_innovIdCounter);
     Network::Nodes nodes;
     Network::Edges edges;
     Network::NodeIds outputNodes;
+
+    const InnovationEntries& innovations1 = genome1.getInnovations();
+    const InnovationEntries& innovations2 = genome2.getInnovations();
 
     newGenome.m_network = std::make_shared<Network>(nodes, edges, outputNodes);
 

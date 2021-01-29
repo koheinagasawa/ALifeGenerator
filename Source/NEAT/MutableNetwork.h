@@ -22,6 +22,9 @@ struct SwitchableEdge : public EdgeBase
     inline bool isEnabled() const { return m_enabled; }
     inline void setEnabled(bool enable) { m_enabled = enable; }
 
+    // Return weight regardless of whether this edge is enabled.
+    inline float getWeightRaw() const { return m_weight; }
+
 protected:
     NodeId m_inNode, m_outNode;
     float m_weight;
@@ -53,7 +56,7 @@ public:
 
     // Add a new node by dividing the edge at edgeId.
     // Ids of newly created node and edge will be set to newNodeIdOut and newEdgeIdOut.
-    void addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newEdgeIdOut);
+    void addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newIncomingEdgeIdOut, EdgeId& newOutgoingEdgeIdOut);
 
     // Add a new edge between node1 and node2 with weight.
     // Returned value is edge id of the newly created edge.
@@ -61,8 +64,10 @@ public:
 
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
-
     bool isEdgeEnabled(EdgeId edgeId) const;
+
+    // Return weight regardless of whether this edge is enabled.
+    float getWeightRaw(EdgeId edgeId) const;
 
 protected:
     NodeId m_maxNodeId;
@@ -93,51 +98,48 @@ MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, con
 }
 
 template <typename Node>
-void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newEdgeIdOut)
+void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newIncomingEdgeIdOut, EdgeId& newOutgoingEdgeIdOut)
 {
     // Make sure that edgeId exists.
     if (!this->hasEdge(edgeId))
     {
         WARN("Edge id doesn't exist.");
         newNodeIdOut = NodeId::invalid();
-        newEdgeIdOut = EdgeId::invalid();
+        newIncomingEdgeIdOut = EdgeId::invalid();
+        newOutgoingEdgeIdOut = EdgeId::invalid();
         return;
+    }
+
+    // Disable the divided edge
+    const Edge& edgeToDivide = this->m_edges.at(edgeId);
+    const float weight = edgeToDivide.getWeight();
+    this->m_edges[edgeId].setEnabled(false);
+
+    // Set the new node id.
+    m_maxNodeId = m_maxNodeId.val() + 1;
+    newNodeIdOut = m_maxNodeId;
+
+    // Create two new edges.
+    Edge newEdge1(edgeToDivide.getInNode(), newNodeIdOut, 1.0f);
+    {
+        m_maxEdgeId = m_maxEdgeId.val() + 1;
+        newIncomingEdgeIdOut = m_maxEdgeId;
+        this->m_edges[newIncomingEdgeIdOut] = newEdge1;
+    }
+    Edge newEdge2(newNodeIdOut, edgeToDivide.getOutNode(), weight);
+    {
+        m_maxEdgeId = m_maxEdgeId.val() + 1;
+        newOutgoingEdgeIdOut = m_maxEdgeId;
+        this->m_edges[newOutgoingEdgeIdOut] = newEdge2;
     }
 
     // Create a new node.
     NodeData newNode;
-    {
-        m_maxNodeId = m_maxNodeId.val() + 1;
-        newNodeIdOut = m_maxNodeId;
-        newNode.m_incomingEdges.push_back(edgeId);
-        this->m_nodes[newNodeIdOut] = newNode;
-    }
-
-    // Update outNode of the divided edge
-    const Edge& edgeToDivide = this->m_edges.at(edgeId);
-    NodeId outNodeId = edgeToDivide.getOutNode();
-    const float weight = edgeToDivide.getWeight();
-    this->m_edges[edgeId] = Edge(edgeToDivide.getInNode(), newNodeIdOut, 1.0f, edgeToDivide.isEnabled());
-
-    // Create a new edge between the new node and the original out node.
-    Edge newEdge(newNodeIdOut, outNodeId, weight);
-    {
-        m_maxEdgeId = m_maxEdgeId.val() + 1;
-        newEdgeIdOut = m_maxEdgeId;
-        this->m_edges[newEdgeIdOut] = newEdge;
-    }
+    newNode.m_incomingEdges.push_back(newIncomingEdgeIdOut);
+    this->m_nodes[newNodeIdOut] = newNode;
 
     // Update incoming edges of the out node.
-    EdgeIds& edgesToOutNode = this->m_nodes[outNodeId].m_incomingEdges;
-    for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); ++itr)
-    {
-        if (*itr == edgeId)
-        {
-            edgesToOutNode.erase(itr);
-            break;
-        }
-    }
-    edgesToOutNode.push_back(newEdgeIdOut);
+    this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeIdOut);
 }
 
 template <typename Node>
@@ -204,5 +206,11 @@ template <typename Node>
 bool MutableNetwork<Node>::isEdgeEnabled(EdgeId edgeId) const
 {
     return this->m_edges.at(edgeId).isEnabled();
+}
+
+template <typename Node>
+float MutableNetwork<Node>::getWeightRaw(EdgeId edgeId) const
+{
+    return this->m_edges.at(edgeId).getWeightRaw();
 }
 

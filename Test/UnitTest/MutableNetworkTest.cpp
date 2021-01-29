@@ -49,9 +49,13 @@ TEST(MutableNetwork, EnableDisableEdge)
 
     mn.setEdgeEnabled(edge, false);
     EXPECT_FALSE(mn.isEdgeEnabled(edge));
+    EXPECT_EQ(mn.getWeight(edge), 0);
+    EXPECT_EQ(mn.getWeightRaw(edge), 0.5f);
 
     mn.setEdgeEnabled(edge, true);
     EXPECT_TRUE(mn.isEdgeEnabled(edge));
+    EXPECT_EQ(mn.getWeight(edge), 0.5f);
+    EXPECT_EQ(mn.getWeightRaw(edge), 0.5f);
 }
 
 TEST(MutableNetwork, AddNode)
@@ -81,76 +85,91 @@ TEST(MutableNetwork, AddNode)
 
     // Try to add a node at an edge which doesn't exist.
     NodeId newNode;
-    EdgeId newEdge;
-    mn.addNodeAt(EdgeId(1), newNode, newEdge);
+    EdgeId newIncomingEdge;
+    EdgeId newOutgoingEdge;
+    mn.addNodeAt(EdgeId(1), newNode, newIncomingEdge, newOutgoingEdge);
     EXPECT_EQ(mn.getNumNodes(), 2);
     EXPECT_EQ(mn.getNumEdges(), 1);
     EXPECT_FALSE(newNode.isValid());
-    EXPECT_FALSE(newEdge.isValid());
+    EXPECT_FALSE(newIncomingEdge.isValid());
+    EXPECT_FALSE(newOutgoingEdge.isValid());
 
     // Add one node
-    mn.addNodeAt(edge, newNode, newEdge);
+    mn.addNodeAt(edge, newNode, newIncomingEdge, newOutgoingEdge);
 
     EXPECT_TRUE(newNode != inNode);
     EXPECT_TRUE(newNode != outNode);
-    EXPECT_TRUE(newEdge != edge);
+    EXPECT_TRUE(newIncomingEdge != edge);
+    EXPECT_TRUE(newOutgoingEdge != edge);
     EXPECT_TRUE(mn.hasNode(inNode));
     EXPECT_TRUE(mn.hasNode(outNode));
     EXPECT_TRUE(mn.hasNode(newNode));
     EXPECT_TRUE(mn.hasEdge(edge));
-    EXPECT_TRUE(mn.hasEdge(newEdge));
-    EXPECT_TRUE(mn.isEdgeEnabled(edge));
-    EXPECT_TRUE(mn.isEdgeEnabled(newEdge));
-    EXPECT_EQ(mn.getWeight(edge), 1.0f);
-    EXPECT_EQ(mn.getWeight(newEdge), 0.5f);
+    EXPECT_TRUE(mn.hasEdge(newIncomingEdge));
+    EXPECT_TRUE(mn.hasEdge(newOutgoingEdge));
+    EXPECT_FALSE(mn.isEdgeEnabled(edge));
+    EXPECT_TRUE(mn.isEdgeEnabled(newIncomingEdge));
+    EXPECT_TRUE(mn.isEdgeEnabled(newOutgoingEdge));
+    EXPECT_EQ(mn.getWeight(newIncomingEdge), 1.0f);
+    EXPECT_EQ(mn.getWeight(newOutgoingEdge), 0.5f);
     EXPECT_EQ(mn.getNumNodes(), 3);
-    EXPECT_EQ(mn.getNumEdges(), 2);
+    EXPECT_EQ(mn.getNumEdges(), 3);
     EXPECT_EQ(mn.getInNode(edge), inNode);
-    EXPECT_EQ(mn.getOutNode(edge), newNode);
-    EXPECT_EQ(mn.getInNode(newEdge), newNode);
-    EXPECT_EQ(mn.getOutNode(newEdge), outNode);
+    EXPECT_EQ(mn.getOutNode(edge), outNode);
+    EXPECT_EQ(mn.getInNode(newIncomingEdge), inNode);
+    EXPECT_EQ(mn.getOutNode(newIncomingEdge), newNode);
+    EXPECT_EQ(mn.getInNode(newOutgoingEdge), newNode);
+    EXPECT_EQ(mn.getOutNode(newOutgoingEdge), outNode);
     EXPECT_EQ(mn.getIncomingEdges(inNode).size(), 0);
     EXPECT_EQ(mn.getIncomingEdges(newNode).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(newNode)[0], edge);
-    EXPECT_EQ(mn.getIncomingEdges(outNode).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(outNode)[0], newEdge);
+    EXPECT_EQ(mn.getIncomingEdges(newNode)[0], newIncomingEdge);
+    EXPECT_EQ(mn.getIncomingEdges(outNode).size(), 2);
+    EXPECT_EQ(mn.getIncomingEdges(outNode)[0], edge);
+    EXPECT_EQ(mn.getIncomingEdges(outNode)[1], newOutgoingEdge);
 
     // Add one more node
     NodeId newNode2;
-    EdgeId newEdge2;
-    mn.addNodeAt(newEdge, newNode2, newEdge2);
+    EdgeId newIncomingEdge2, newOutgoingEdge2;
+    mn.addNodeAt(newOutgoingEdge, newNode2, newIncomingEdge2, newOutgoingEdge2);
 
     EXPECT_TRUE(newNode != inNode);
     EXPECT_TRUE(newNode != outNode);
-    EXPECT_TRUE(newEdge != edge);
+    EXPECT_TRUE(newOutgoingEdge != edge);
     EXPECT_TRUE(mn.hasNode(inNode));
     EXPECT_TRUE(mn.hasNode(outNode));
     EXPECT_TRUE(mn.hasNode(newNode));
     EXPECT_TRUE(mn.hasNode(newNode2));
     EXPECT_TRUE(mn.hasEdge(edge));
-    EXPECT_TRUE(mn.hasEdge(newEdge));
-    EXPECT_TRUE(mn.hasEdge(newEdge2));
-    EXPECT_TRUE(mn.isEdgeEnabled(edge));
-    EXPECT_TRUE(mn.isEdgeEnabled(newEdge));
-    EXPECT_TRUE(mn.isEdgeEnabled(newEdge2));
-    EXPECT_EQ(mn.getWeight(edge), 1.f);
-    EXPECT_EQ(mn.getWeight(newEdge), 1.f);
-    EXPECT_EQ(mn.getWeight(newEdge2), 0.5f);
+    EXPECT_TRUE(mn.hasEdge(newOutgoingEdge));
+    EXPECT_TRUE(mn.hasEdge(newIncomingEdge2));
+    EXPECT_TRUE(mn.hasEdge(newOutgoingEdge2));
+    EXPECT_FALSE(mn.isEdgeEnabled(edge));
+    EXPECT_TRUE(mn.isEdgeEnabled(newIncomingEdge));
+    EXPECT_FALSE(mn.isEdgeEnabled(newOutgoingEdge));
+    EXPECT_TRUE(mn.isEdgeEnabled(newIncomingEdge2));
+    EXPECT_TRUE(mn.isEdgeEnabled(newOutgoingEdge2));
+    EXPECT_EQ(mn.getWeight(newIncomingEdge), 1.f);
+    EXPECT_EQ(mn.getWeight(newIncomingEdge2), 1.f);
+    EXPECT_EQ(mn.getWeight(newOutgoingEdge2), 0.5f);
     EXPECT_EQ(mn.getNumNodes(), 4);
-    EXPECT_EQ(mn.getNumEdges(), 3);
+    EXPECT_EQ(mn.getNumEdges(), 5);
     EXPECT_EQ(mn.getInNode(edge), inNode);
-    EXPECT_EQ(mn.getOutNode(edge), newNode);
-    EXPECT_EQ(mn.getInNode(newEdge), newNode);
-    EXPECT_EQ(mn.getOutNode(newEdge), newNode2);
-    EXPECT_EQ(mn.getInNode(newEdge2), newNode2);
-    EXPECT_EQ(mn.getOutNode(newEdge2), outNode);
+    EXPECT_EQ(mn.getOutNode(edge), outNode);
+    EXPECT_EQ(mn.getInNode(newOutgoingEdge), newNode);
+    EXPECT_EQ(mn.getOutNode(newOutgoingEdge), outNode);
+    EXPECT_EQ(mn.getInNode(newIncomingEdge2), newNode);
+    EXPECT_EQ(mn.getOutNode(newIncomingEdge2), newNode2);
+    EXPECT_EQ(mn.getInNode(newOutgoingEdge2), newNode2);
+    EXPECT_EQ(mn.getOutNode(newOutgoingEdge2), outNode);
     EXPECT_EQ(mn.getIncomingEdges(inNode).size(), 0);
     EXPECT_EQ(mn.getIncomingEdges(newNode).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(newNode)[0], edge);
+    EXPECT_EQ(mn.getIncomingEdges(newNode)[0], newIncomingEdge);
     EXPECT_EQ(mn.getIncomingEdges(newNode2).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(newNode2)[0], newEdge);
-    EXPECT_EQ(mn.getIncomingEdges(outNode).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(outNode)[0], newEdge2);
+    EXPECT_EQ(mn.getIncomingEdges(newNode2)[0], newIncomingEdge2);
+    EXPECT_EQ(mn.getIncomingEdges(outNode).size(), 3);
+    EXPECT_EQ(mn.getIncomingEdges(outNode)[0], edge);
+    EXPECT_EQ(mn.getIncomingEdges(outNode)[1], newOutgoingEdge);
+    EXPECT_EQ(mn.getIncomingEdges(outNode)[2], newOutgoingEdge2);
 }
 
 TEST(MutableNetwork, AddEdge)

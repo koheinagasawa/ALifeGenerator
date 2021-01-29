@@ -156,8 +156,18 @@ namespace NEAT
 
             void clear();
 
-            static constexpr int NUM_NEW_EDGES = 2;
+            static constexpr int NUM_NEW_EDGES = 3;
             NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
+        };
+
+        // Parameters used for crossOver().
+        struct CrossOverParams
+        {
+            // Probability of disabling inherited edge when either parent's edge is disabled.
+            float m_disablingEdgeRate = 0.75f;
+
+            // Pseudo random generator. It can be null.
+            RandomGenerator* m_random = nullptr;
         };
 
         // Type declaration
@@ -185,7 +195,9 @@ namespace NEAT
         inline auto getInnovations() const->const InnovationEntries& { return m_innovations; }
 
         // Cross over two genomes and generate a new one.
-        static Genome crossOver(const Genome& genome1, const Genome& genome2);
+        // genome1 has to have higher fitting score.
+        // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
+        static Genome crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params);
 
     protected:
         // Constructor used by crossOver().

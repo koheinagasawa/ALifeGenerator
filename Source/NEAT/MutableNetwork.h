@@ -100,6 +100,8 @@ MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, con
 template <typename Node>
 void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newIncomingEdgeIdOut, EdgeId& newOutgoingEdgeIdOut)
 {
+    assert(this->validate());
+
     // Make sure that edgeId exists.
     if (!this->hasEdge(edgeId))
     {
@@ -140,11 +142,15 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId
 
     // Update incoming edges of the out node.
     this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeIdOut);
+
+    assert(this->validate());
 }
 
 template <typename Node>
 auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /* = 1.0f */)->EdgeId
 {
+    assert(this->validate());
+
     // Make sure that node1 and node2 exist.
     if(!this->hasNode(node1) || !this->hasNode(node2))
     {
@@ -193,13 +199,26 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
     }
 
     m_maxEdgeId = m_maxEdgeId.val() + 1;
+
+    assert(this->validate());
+
     return newEdgeId;
 }
 
 template <typename Node>
 void MutableNetwork<Node>::setEdgeEnabled(EdgeId edgeId, bool enable)
 {
+    assert(this->validate());
+
     this->m_edges[edgeId].setEnabled(enable);
+
+    if (enable && this->hasCircularEdges())
+    {
+        WARN("Cannot enabling edge %d because it would make this network circular.", edgeId.val());
+        this->m_edges[edgeId].setEnabled(false);
+    }
+
+    assert(this->validate());
 }
 
 template <typename Node>

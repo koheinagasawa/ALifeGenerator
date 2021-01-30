@@ -117,6 +117,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     assert(params.m_addNodeMutationRate >= 0 && params.m_addNodeMutationRate <= 1);
     assert(params.m_addEdgeMutationRate >= 0 && params.m_addEdgeMutationRate <= 1);
     assert(params.m_newEdgeMinWeight <= params.m_newEdgeMaxWeight);
+    assert(m_network->validate());
 
     mutationOut.clear();
 
@@ -263,29 +264,168 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         const NodePair& pair = nodeCandidates[random->randomInteger(0, (int)nodeCandidates.size() - 1)];
 
         // Create a new edge.
-        EdgeId newEdge = m_network->addEdgeAt(pair.first, pair.second, random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight));
-        assert(newEdge.isValid());
+        const float weight = random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight);
+        EdgeId newEdge = m_network->addEdgeAt(pair.first, pair.second, weight);
+        if (!newEdge.isValid())
+        {
+            // Invalid edge id was returned. This means adding this edge makes the network circular.
+            // We should be able to add an edge of the opposite direction.
+            newEdge = m_network->addEdgeAt(pair.second, pair.first, weight);
+        }
 
         newEdgeAdded(newEdge);
     }
+
+    assert(m_network->validate());
 }
 
 Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params)
 {
-    // Make sure that the two genomes share the same innovation id counter.
-    assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter);
+    assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter); // Make sure that the two genomes share the same innovation id counter.
+    assert(genome1.getNetwork() && genome2.getNetwork());
+    assert(genome1.getNetwork()->getNumOutputNodes() == genome2.getNetwork()->getNumOutputNodes()); // Make sure that the numbers of output nodes are the same.
 
     RandomGenerator& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
-
-    Genome newGenome(genome1.m_innovIdCounter);
-    Network::Nodes nodes;
-    Network::Edges edges;
-    Network::NodeIds outputNodes;
+    const Network* network1 = genome1.getNetwork();
+    const Network* network2 = genome2.getNetwork();
+    assert(network1->validate());
+    assert(network2->validate());
 
     const InnovationEntries& innovations1 = genome1.getInnovations();
     const InnovationEntries& innovations2 = genome2.getInnovations();
+    assert(innovations1.size() > 0);
+    assert(innovations2.size() > 0);
 
-    newGenome.m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+#ifdef _DEBUG
+    // Make sure that innovation entires are already sorted by innovation ids.
+    {
+        auto checkSorted = [](const InnovationEntries& entries)
+        {
+            InnovationId prevId = entries[0].m_id;
+            for (size_t i = 1; i < entries.size(); i++)
+            {
+                const InnovationEntry& entry = entries[i];
+                assert(prevId < entry.m_id);
+                prevId = entry.m_id;
+            }
+        };
+
+        checkSorted(innovations1);
+        checkSorted(innovations2);
+    }
+#endif
+
+    // Create a new genome and arrays to store nodes and edges for it.
+    Genome newGenome(genome1.m_innovIdCounter);
+    Network::Nodes nodes;
+    Network::Edges edges;
+
+    // Edges which are disabled in genome1 but enabled in the newGenome.
+    // We need to keep track of them because they might make the network circular and might need to be disabled again.
+    Network::EdgeIds enabledEdges;
+
+    // Inherit edges
+    {
+        // Helper function to add an inherit edge.
+        auto addEdge = [&](const InnovationEntry* entry1, const InnovationEntry* entry2 = nullptr, bool selectGenome1 = true)
+        {
+            // Copy the edge
+            const Network::Edge& edge1 = network1->getEdges().at(entry1->m_edgeId);
+            Network::Edge edge = edge1;
+            edge.setEnabled(true);
+
+            if (!selectGenome1)
+            {
+                edge.setWeight(network2->getWeight(entry2->m_edgeId));
+            }
+
+            // Disable the edge at a certain probability if either parent's edge is already disable
+            bool disabled = !edge1.isEnabled() || (network2 && !network2->isEdgeEnabled(entry2->m_edgeId));
+            if (disabled && random.randomReal01() < params.m_disablingEdgeRate)
+            {
+                edge.setEnabled(false);
+            }
+            else if (!edge1.isEnabled())
+            {
+                enabledEdges.push_back(entry1->m_edgeId);
+            }
+
+            edges[entry1->m_edgeId] = edge;
+            newGenome.m_innovations.push_back(*entry1);
+        };
+
+        // Iterate over all edges in both genomes including disabled edges.
+        size_t curIdx1 = 0;
+        size_t curIdx2 = 0;
+        while (curIdx1 < innovations1.size() && curIdx2 < innovations2.size())
+        {
+            const InnovationEntry& cur1 = innovations1[curIdx1];
+            const InnovationEntry& cur2 = innovations2[curIdx2];
+
+            if (cur1.m_id == cur2.m_id)
+            {
+                // Randomly select an edge from either genome1 or genome2 for matching edges.
+                addEdge(&cur1, &cur2, random.randomReal01() < params.m_matchingEdgeSelectionRate);
+                curIdx1++;
+                curIdx2++;
+            }
+            else if (cur1.m_id < cur2.m_id)
+            {
+                // Always take disjoint edges from more fit genome.
+                addEdge(&cur1);
+                curIdx1++;
+            }
+            else
+            {
+                // Don't take disjoint edges from less fit genome.
+                curIdx2++;
+            }
+        }
+
+        // Add all remaining excess edges from genome1
+        while(curIdx1 < innovations1.size())
+        {
+            addEdge(&innovations1[curIdx1++]);
+        }
+    }
+
+    // Add all nodes which are connected edges we've added above.
+    // [todo] We always inherit genome1's activation functions for all the nodes. Is there any way to select it based on fitness?
+    {
+        std::unordered_set<NodeId> addedNodes;
+        for (auto& itr : edges)
+        {
+            const Network::Edge& edge = itr.second;
+            NodeId inNode = edge.getInNode();
+            NodeId outNode = edge.getOutNode();
+
+            if (addedNodes.find(inNode) == addedNodes.end())
+            {
+                nodes[inNode] = network1->getNode(inNode);
+                addedNodes.insert(inNode);
+            }
+
+            if (addedNodes.find(outNode) == addedNodes.end())
+            {
+                nodes[outNode] = network1->getNode(outNode);
+                addedNodes.insert(outNode);
+            }
+        }
+    }
+
+    // Create a new network.
+    newGenome.m_network = std::make_shared<Network>(nodes, edges, genome1.getNetwork()->getOutputNodes());
+
+    while (!newGenome.m_network->validate())
+    {
+        // The new network is not valid. This is likely that the network became circular because some edges were enabled.
+        // Disable those edges one by one until we have a valid network.
+        assert(enabledEdges.size() > 0);
+        EdgeId edge = enabledEdges.back();
+        enabledEdges.pop_back();
+        assert(newGenome.m_network->isEdgeEnabled(edge));
+        newGenome.m_network->setEdgeEnabled(edge, false);
+    }
 
     return newGenome;
 }

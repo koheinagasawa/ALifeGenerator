@@ -80,6 +80,9 @@ namespace NEAT
             // Constructor with node type.
             Node(Type type);
 
+            // Copy constructor
+            Node(const Node& other) = default;
+
             virtual float getValue() const override;
             virtual void setValue(float value) override;
 
@@ -165,6 +168,9 @@ namespace NEAT
         {
             // Probability of disabling inherited edge when either parent's edge is disabled.
             float m_disablingEdgeRate = 0.75f;
+
+            // Probability of selecting inherit edge from genome1 for matching edges.
+            float m_matchingEdgeSelectionRate = 0.5f;
 
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;

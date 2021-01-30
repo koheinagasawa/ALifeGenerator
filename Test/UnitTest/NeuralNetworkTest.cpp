@@ -128,8 +128,7 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_EQ(nn.getInNode(edge), inNode);
     EXPECT_EQ(nn.getOutNode(edge), outNode);
 
-    NN::NodeIds ons = nn.getOutputNodes();
-    EXPECT_EQ(ons.size(), 1);
+    EXPECT_EQ(nn.getNumOutputNodes(), 1);
 }
 
 TEST(NeuralNetwork, GetSetNodeValues)

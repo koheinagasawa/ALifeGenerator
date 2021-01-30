@@ -79,6 +79,7 @@ public:
     inline auto getInNode(EdgeId id) const->NodeId;
     inline auto getOutNode(EdgeId id) const->NodeId;
 
+    inline int getNumOutputNodes() const { return m_outputNodes.size(); }
     auto getOutputNodes() const->NodeIds;
 
     // Evaluates this network and calculate new values for each node.

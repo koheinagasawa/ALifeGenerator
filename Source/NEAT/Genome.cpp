@@ -324,6 +324,12 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     // We need to keep track of them because they might make the network circular and might need to be disabled again.
     Network::EdgeIds enabledEdges;
 
+    // List of disjoint edges in genome2.
+    // If fitnesses of the two genomes are the same, we are going to inherit structures from genome2 as well.
+    // However, adding nodes/edges from genome2 could make a circular network. Then we remember such disjoint edges first
+    // and try to add them after we created a new genome by checking if adding such region won't invalidate the network.
+    Network::EdgeIds disjointEdgesInGenome2;
+
     // Inherit edges
     {
         // Helper function to add an inherit edge.
@@ -377,8 +383,14 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
             }
             else
             {
-                // Don't take disjoint edges from less fit genome.
+                // Don't take disjoint edges from less fit genome unless the two genomes have the same fitness.
+                if (sameFittingScore)
+                {
+                    disjointEdgesInGenome2.push_back(cur2.m_edgeId);
+                }
+
                 curIdx2++;
+                continue;
             }
         }
 
@@ -386,6 +398,14 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         while(curIdx1 < innovations1.size())
         {
             addEdge(&innovations1[curIdx1++]);
+        }
+
+        if (sameFittingScore)
+        {
+            while (curIdx2 < innovations2.size())
+            {
+                disjointEdgesInGenome2.push_back(innovations2[curIdx2++].m_edgeId);
+            }
         }
     }
 
@@ -425,6 +445,12 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         enabledEdges.pop_back();
         assert(newGenome.m_network->isEdgeEnabled(edge));
         newGenome.m_network->setEdgeEnabled(edge, false);
+    }
+
+    if (sameFittingScore)
+    {
+        // Try to add disjoint edges from genome2
+        // todo
     }
 
     return newGenome;

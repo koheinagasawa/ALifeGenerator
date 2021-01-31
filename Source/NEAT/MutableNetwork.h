@@ -14,6 +14,12 @@ struct SwitchableEdge : public EdgeBase
     SwitchableEdge(NodeId inNode, NodeId outNode, float weight = 1.f, bool enabled = true);
     SwitchableEdge();
 
+    // Copy and move constructor and operator
+    SwitchableEdge(const SwitchableEdge& other) = default;
+    SwitchableEdge(SwitchableEdge&& other) = default;
+    void operator=(const SwitchableEdge& other);
+    void operator=(SwitchableEdge&& other);
+
     virtual NodeId getInNode() const override;
     virtual NodeId getOutNode() const override;
     virtual float getWeight() const override;
@@ -26,7 +32,7 @@ struct SwitchableEdge : public EdgeBase
     inline float getWeightRaw() const { return m_weight; }
 
 protected:
-    NodeId m_inNode, m_outNode;
+    const NodeId m_inNode, m_outNode;
     float m_weight;
     bool m_enabled;
 };
@@ -212,11 +218,13 @@ void MutableNetwork<Node>::setEdgeEnabled(EdgeId edgeId, bool enable)
 
     this->m_edges[edgeId].setEnabled(enable);
 
+#ifdef _DEBUG
     if (enable && this->hasCircularEdges())
     {
         WARN("Cannot enabling edge %d because it would make this network circular.", edgeId.val());
         this->m_edges[edgeId].setEnabled(false);
     }
+#endif
 
     assert(this->validate());
 }

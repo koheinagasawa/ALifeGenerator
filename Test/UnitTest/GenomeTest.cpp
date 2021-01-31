@@ -212,3 +212,24 @@ TEST(Genome, MutateGenome)
         }
     }
 }
+
+TEST(Genom, CrossOver)
+{
+    using namespace NEAT;
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    // Create  genome2.
+    Genome genome1(cinfo);
+    Genome genome2(cinfo);
+
+    Genome::CrossOverParams params;
+
+    //Genome newGenome = Genome::crossOver(genome1, genome2, false, params);
+
+    //EXPECT_TRUE(newGenome.getNetwork()->validate());
+}

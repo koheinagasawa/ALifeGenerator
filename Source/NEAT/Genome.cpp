@@ -416,10 +416,10 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     // Create a new network.
     newGenome.m_network = std::make_shared<Network>(nodes, edges, genome1.getNetwork()->getOutputNodes());
 
+    // If the new network is not valid, it is likely that the network became circular because some edges were enabled.
+    // Disable those edges one by one until we have a valid network.
     while (!newGenome.m_network->validate())
     {
-        // The new network is not valid. This is likely that the network became circular because some edges were enabled.
-        // Disable those edges one by one until we have a valid network.
         assert(enabledEdges.size() > 0);
         EdgeId edge = enabledEdges.back();
         enabledEdges.pop_back();

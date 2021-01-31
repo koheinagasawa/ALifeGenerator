@@ -20,10 +20,12 @@ struct TypedIndex
     TypedIndex() : m_val(INVALID) {}
     TypedIndex(TYPE val) : m_val(val) {}
     TypedIndex(const TypedIndex& other) : m_val(other.m_val) {}
+    TypedIndex(TypedIndex&& other) : m_val(other.m_val) { other.m_val = INVALID; }
 
     // Operators
     inline void operator=(TYPE val) { m_val = val; }
     inline void operator=(const TypedIndex& other) { m_val = other.m_val; }
+    inline void operator=(TypedIndex&& other) { m_val = other.m_val; other.m_val = INVALID; }
     inline bool operator==(TYPE val) const { return m_val == val; }
     inline bool operator==(const TypedIndex& other) const { return m_val == other.m_val; }
     inline bool operator!=(TYPE val) const { return !(*this == val); }

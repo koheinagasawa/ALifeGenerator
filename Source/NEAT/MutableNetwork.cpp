@@ -20,6 +20,22 @@ SwitchableEdge::SwitchableEdge()
 {
 }
 
+void SwitchableEdge::operator=(const SwitchableEdge& other)
+{
+    *(const_cast<NodeId*>(&m_inNode)) = other.m_inNode;
+    *(const_cast<NodeId*>(&m_outNode)) = other.m_outNode;
+    m_weight = other.m_weight;
+    m_enabled = other.m_enabled;
+}
+
+void SwitchableEdge::operator=(SwitchableEdge&& other)
+{
+    *(const_cast<NodeId*>(&m_inNode)) = std::move(other.m_inNode);
+    *(const_cast<NodeId*>(&m_outNode)) = std::move(other.m_outNode);
+    m_weight = other.m_weight;
+    m_enabled = other.m_enabled;
+}
+
 NodeId SwitchableEdge::getInNode() const
 {
     return m_inNode;

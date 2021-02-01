@@ -234,9 +234,8 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         const NodeId newNode = m_innovIdCounter.getNewNodeId();
         const EdgeId newIncomingEdge = m_innovIdCounter.getNewInnovationId();
         const EdgeId newOutgoingEdge = m_innovIdCounter.getNewInnovationId();
-        m_network->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
-
-        assert(newNode.isValid());
+        bool result = m_network->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
+        assert(result);
 
         // Set it as a hidden node
         m_network->accessNode(newNode).m_type = Node::Type::HIDDEN;
@@ -250,6 +249,8 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     {
         // Select a random node pair.
         const NodePair& pair = nodeCandidates[random->randomInteger(0, (int)nodeCandidates.size() - 1)];
+
+        assert(!m_network->isConnected(pair.first, pair.second));
 
         // Create a new edge.
         const float weight = random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight);

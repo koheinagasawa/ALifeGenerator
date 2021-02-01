@@ -61,7 +61,7 @@ public:
     MutableNetwork(const MutableNetwork& other) = default;
 
     // Add a new node by dividing the edge at edgeId.
-    void addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId);
+    bool addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId);
 
     // Add a new edge between node1 and node2 with weight.
     bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
@@ -81,7 +81,7 @@ MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, con
 }
 
 template <typename Node>
-void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId)
+bool MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId)
 {
     assert(this->validate());
     assert(!this->hasNode(newNodeId) && !this->hasEdge(newIncomingEdgeId) && !this->hasEdge(newOutgoingEdgeId));
@@ -90,7 +90,7 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId new
     if (!this->hasEdge(edgeId))
     {
         WARN("Edge id doesn't exist.");
-        return;
+        return false;
     }
 
     // Disable the divided edge
@@ -117,6 +117,8 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId new
     this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeId);
 
     assert(this->validate());
+
+    return true;
 }
 
 template <typename Node>

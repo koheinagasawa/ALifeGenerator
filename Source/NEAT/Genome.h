@@ -11,44 +11,36 @@
 
 #include <NEAT/MutableNetwork.h>
 #include <Common/PseudoRandom.h>
+#include <Common/UniqueIdCounter.h>
 
-DECLARE_ID(InnovationId, uint64_t);
 DECLARE_ID(GenomeId);
 DECLARE_ID(GenerationId);
 
 namespace NEAT
 {
-    // Helper class to increment innovation id.
+    // Helper class to manager unique node id and innovation id (edge id).
     class InnovationCounter
     {
     public:
         InnovationCounter() = default;
 
-        // Returns a new innovation id. New id will be returned every time you call this function.
-        InnovationId getNewInnovationId();
+        NodeId getNewNodeId() { return m_nodeIdCounter.getNewId(); }
+        EdgeId getNewInnovationId() { return m_innovationIdCounter.getNewId(); }
 
-        void reset();
+        void reset() { m_nodeIdCounter.reset(); m_innovationIdCounter.reset(); }
 
     protected:
         InnovationCounter(const InnovationCounter&) = delete;
         void operator=(const InnovationCounter&) = delete;
 
-        InnovationId m_innovationCount = 0;
+        UniqueIdCounter<NodeId> m_nodeIdCounter;
+        UniqueIdCounter<EdgeId> m_innovationIdCounter;
     };
 
     // Genome for NEAT
     class Genome
     {
     public:
-        // Data structure which associates each edge in this genome and its innovation id.
-        struct InnovationEntry
-        {
-            bool operator<(const InnovationEntry& ie) { return m_id < ie.m_id; }
-
-            InnovationId m_id;
-            EdgeId m_edgeId;
-        };
-
         // Wrapper struct for activation function.
         struct Activation
         {
@@ -179,7 +171,6 @@ namespace NEAT
         // Type declaration
         using Network = MutableNetwork<Node>;
         using NetworkPtr = std::shared_ptr<Network>;
-        using InnovationEntries = std::vector<InnovationEntry>;
 
         // Constructor with cinfo. It will construct the minimum dimensional network where there is no hidden node and
         // all input nodes and output nodes are fully connected.
@@ -198,7 +189,7 @@ namespace NEAT
         void mutate(const MutationParams& params, MutationOut& mutationOut);
 
         // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
-        inline auto getInnovations() const->const InnovationEntries& { return m_innovations; }
+        inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
 
         // Cross over two genomes and generate a new one.
         // genome1 has to have higher fitting score.
@@ -210,7 +201,7 @@ namespace NEAT
         Genome(InnovationCounter& innovationCounter);
 
         NetworkPtr m_network;                   // The network.
-        InnovationEntries m_innovations;        // A list of innovations sorted by innovation id.
+        Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.
         InnovationCounter& m_innovIdCounter;    // The innovation counter shared by all the genomes.
     };
 

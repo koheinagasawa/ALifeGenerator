@@ -61,12 +61,10 @@ public:
     MutableNetwork(const MutableNetwork& other) = default;
 
     // Add a new node by dividing the edge at edgeId.
-    // Ids of newly created node and edge will be set to newNodeIdOut and newEdgeIdOut.
-    void addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newIncomingEdgeIdOut, EdgeId& newOutgoingEdgeIdOut);
+    void addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId);
 
     // Add a new edge between node1 and node2 with weight.
-    // Returned value is edge id of the newly created edge.
-    EdgeId addEdgeAt(NodeId node1, NodeId node2, float weight = 1.0f);
+    bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
 
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
@@ -74,47 +72,24 @@ public:
 
     // Return weight regardless of whether this edge is enabled.
     float getWeightRaw(EdgeId edgeId) const;
-
-protected:
-    NodeId m_maxNodeId;
-    EdgeId m_maxEdgeId;
 };
 
 template <typename Node>
 MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes)
     : Base(nodes, edges, outputNodes)
-    , m_maxNodeId(0)
-    , m_maxEdgeId(0)
 {
-    for (const auto& itr : this->m_nodes)
-    {
-        if (m_maxNodeId < itr.first)
-        {
-            m_maxNodeId = itr.first;
-        }
-    }
-
-    for (const auto& itr : this->m_edges)
-    {
-        if (m_maxEdgeId < itr.first)
-        {
-            m_maxEdgeId = itr.first;
-        }
-    }
 }
 
 template <typename Node>
-void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId& newIncomingEdgeIdOut, EdgeId& newOutgoingEdgeIdOut)
+void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId newIncomingEdgeId, EdgeId newOutgoingEdgeId)
 {
     assert(this->validate());
+    assert(!this->hasNode(newNodeId) && !this->hasEdge(newIncomingEdgeId) && !this->hasEdge(newOutgoingEdgeId));
 
     // Make sure that edgeId exists.
     if (!this->hasEdge(edgeId))
     {
         WARN("Edge id doesn't exist.");
-        newNodeIdOut = NodeId::invalid();
-        newIncomingEdgeIdOut = EdgeId::invalid();
-        newOutgoingEdgeIdOut = EdgeId::invalid();
         return;
     }
 
@@ -123,45 +98,38 @@ void MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId& newNodeIdOut, EdgeId
     const float weight = edgeToDivide.getWeight();
     this->m_edges[edgeId].setEnabled(false);
 
-    // Set the new node id.
-    m_maxNodeId = m_maxNodeId.val() + 1;
-    newNodeIdOut = m_maxNodeId;
-
     // Create two new edges.
-    Edge newEdge1(edgeToDivide.getInNode(), newNodeIdOut, 1.0f);
+    Edge newEdge1(edgeToDivide.getInNode(), newNodeId, 1.0f);
     {
-        m_maxEdgeId = m_maxEdgeId.val() + 1;
-        newIncomingEdgeIdOut = m_maxEdgeId;
-        this->m_edges[newIncomingEdgeIdOut] = newEdge1;
+        this->m_edges[newIncomingEdgeId] = newEdge1;
     }
-    Edge newEdge2(newNodeIdOut, edgeToDivide.getOutNode(), weight);
+    Edge newEdge2(newNodeId, edgeToDivide.getOutNode(), weight);
     {
-        m_maxEdgeId = m_maxEdgeId.val() + 1;
-        newOutgoingEdgeIdOut = m_maxEdgeId;
-        this->m_edges[newOutgoingEdgeIdOut] = newEdge2;
+        this->m_edges[newOutgoingEdgeId] = newEdge2;
     }
 
     // Create a new node.
     NodeData newNode;
-    newNode.m_incomingEdges.push_back(newIncomingEdgeIdOut);
-    this->m_nodes[newNodeIdOut] = newNode;
+    newNode.m_incomingEdges.push_back(newIncomingEdgeId);
+    this->m_nodes[newNodeId] = newNode;
 
     // Update incoming edges of the out node.
-    this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeIdOut);
+    this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeId);
 
     assert(this->validate());
 }
 
 template <typename Node>
-auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /* = 1.0f */)->EdgeId
+bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight /* = 1.0f */)
 {
     assert(this->validate());
+    assert(!this->hasEdge(newEdgeId));
 
     // Make sure that node1 and node2 exist.
     if(!this->hasNode(node1) || !this->hasNode(node2))
     {
         WARN("At least one of the give node ids doesn't exist.");
-        return EdgeId::invalid();
+        return false;
     }
 
     NodeData& outNodeData = this->m_nodes[node2];
@@ -173,7 +141,7 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
         if (this->getInNode(eid) == node1)
         {
             WARN("There is already an edge between the given two nodes.");
-            return EdgeId::invalid();
+            return false;
         }
     }
 
@@ -183,13 +151,12 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
         if (id == node1)
         {
             WARN("Output node cannot have an outgoing edge. Abort adding a new edge.");
-            return EdgeId::invalid();
+            return false;
         }
     }
 
     // Create a new edge
     Edge newEdge(node1, node2, weight);
-    EdgeId newEdgeId = m_maxEdgeId.val() + 1;
     this->m_edges[newEdgeId] = newEdge;
 
     edgesToOutNode.push_back(newEdgeId);
@@ -201,14 +168,12 @@ auto MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, float weight /*
         this->m_edges.erase(newEdgeId);
         edgesToOutNode.pop_back();
         WARN("Cannot add an edge because it would cause a circular network.");
-        return EdgeId::invalid();
+        return false;
     }
-
-    m_maxEdgeId = m_maxEdgeId.val() + 1;
 
     assert(this->validate());
 
-    return newEdgeId;
+    return true;
 }
 
 template <typename Node>

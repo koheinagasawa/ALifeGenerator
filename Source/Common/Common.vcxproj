@@ -22,6 +22,7 @@
     <ClInclude Include="BaseType.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="PseudoRandom.h" />
+    <ClInclude Include="UniqueIdCounter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common.cpp" />

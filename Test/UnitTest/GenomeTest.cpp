@@ -49,10 +49,9 @@ TEST(Genome, CreateGenome)
     // Check if innovation ids are the same
     for (int i = 0; i < (int)genome.getInnovations().size(); i++)
     {
-        const Genome::InnovationEntry& entry1 = genome.getInnovations()[i];
-        const Genome::InnovationEntry& entry2 = genome2.getInnovations()[i];
-        EXPECT_EQ(entry1.m_id, entry2.m_id);
-        EXPECT_EQ(entry1.m_edgeId, entry2.m_edgeId);
+        const EdgeId e1 = genome.getInnovations()[i];
+        const EdgeId e2 = genome2.getInnovations()[i];
+        EXPECT_EQ(e1, e2);
     }
 }
 

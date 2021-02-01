@@ -11,18 +11,6 @@
 
 using namespace NEAT;
 
-InnovationId InnovationCounter::getNewInnovationId()
-{
-    InnovationId idOut = m_innovationCount;
-    m_innovationCount = m_innovationCount.val() + 1;
-    return idOut;
-}
-
-void InnovationCounter::reset()
-{
-    m_innovationCount = 0;
-}
-
 Genome::Node::Node(Type type)
     : m_type(type)
 {
@@ -55,10 +43,12 @@ Genome::Genome(const Cinfo& cinfo)
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
         nodes[i] = Node(Node::Type::INPUT);
+        m_innovIdCounter.getNewNodeId();
     }
     for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
     {
         nodes[i] = Node(Node::Type::OUTPUT);
+        m_innovIdCounter.getNewNodeId();
     }
 
     // Create fully connected edges between input nodes and output nodes.
@@ -67,14 +57,13 @@ Genome::Genome(const Cinfo& cinfo)
     edges.reserve(numEdges);
     m_innovations.reserve(numEdges);
     {
-        EdgeId eid(0);
         for (int i = 0; i < cinfo.m_numInputNodes; i++)
         {
             for (int j = 0; j < cinfo.m_numOutputNodes; j++)
             {
+                EdgeId eid = m_innovIdCounter.getNewInnovationId();
                 edges[eid] = Network::Edge(NodeId(i), NodeId(cinfo.m_numInputNodes + j));
-                m_innovations.push_back({ m_innovIdCounter.getNewInnovationId(), eid });
-                eid = eid.val() + 1;
+                m_innovations.push_back(eid);
             }
         }
     }
@@ -146,21 +135,6 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
             }
         }
     }
-
-    // Function to assign innovation id to newly added edge and store its info in mutationOut.
-    auto newEdgeAdded = [&](EdgeId newEdge)
-    {
-        // Store this innovation
-        InnovationEntry ie{ m_innovIdCounter.getNewInnovationId(), newEdge };
-        m_innovations.push_back(ie);
-
-        // Store information of newly added edge.
-        MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
-        newEdgeInfo.m_sourceInNode = m_network->getInNode(newEdge);
-        newEdgeInfo.m_sourceOutNode = m_network->getOutNode(newEdge);
-        newEdgeInfo.m_newEdge = newEdge;
-    };
-
 
     // 2. 3. Add a new node and edge
 
@@ -237,6 +211,19 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         }
     }
 
+    // Function to assign innovation id to newly added edge and store its info in mutationOut.
+    auto newEdgeAdded = [&](EdgeId newEdge)
+    {
+        // Store this innovation
+        m_innovations.push_back(newEdge);
+
+        // Store information of newly added edge.
+        MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
+        newEdgeInfo.m_sourceInNode = m_network->getInNode(newEdge);
+        newEdgeInfo.m_sourceOutNode = m_network->getOutNode(newEdge);
+        newEdgeInfo.m_newEdge = newEdge;
+    };
+
     // 2. Add a node at a random edge
     if (!edgeCandidates.empty())
     {
@@ -244,8 +231,9 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         const EdgeId edgeToAddNode = edgeCandidates[random->randomInteger(0, (int)edgeCandidates.size() - 1)];
 
         // Add a new node and a new edge along with it.
-        NodeId newNode;
-        EdgeId newIncomingEdge, newOutgoingEdge;
+        const NodeId newNode = m_innovIdCounter.getNewNodeId();
+        const EdgeId newIncomingEdge = m_innovIdCounter.getNewInnovationId();
+        const EdgeId newOutgoingEdge = m_innovIdCounter.getNewInnovationId();
         m_network->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
 
         assert(newNode.isValid());
@@ -265,12 +253,14 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 
         // Create a new edge.
         const float weight = random->randomReal(params.m_newEdgeMinWeight, params.m_newEdgeMaxWeight);
-        EdgeId newEdge = m_network->addEdgeAt(pair.first, pair.second, weight);
-        if (!newEdge.isValid())
+        const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
+        bool result = m_network->addEdgeAt(pair.first, pair.second, newEdge, weight);
+        if (!result)
         {
             // Invalid edge id was returned. This means adding this edge makes the network circular.
             // We should be able to add an edge of the opposite direction.
-            newEdge = m_network->addEdgeAt(pair.second, pair.first, weight);
+            result = m_network->addEdgeAt(pair.second, pair.first, newEdge, weight);
+            assert(result);
         }
 
         newEdgeAdded(newEdge);
@@ -291,22 +281,22 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     assert(network1->validate());
     assert(network2->validate());
 
-    const InnovationEntries& innovations1 = genome1.getInnovations();
-    const InnovationEntries& innovations2 = genome2.getInnovations();
+    const Network::EdgeIds& innovations1 = genome1.getInnovations();
+    const Network::EdgeIds& innovations2 = genome2.getInnovations();
     assert(innovations1.size() > 0);
     assert(innovations2.size() > 0);
 
 #ifdef _DEBUG
     // Make sure that innovation entires are already sorted by innovation ids.
     {
-        auto checkSorted = [](const InnovationEntries& entries)
+        auto checkSorted = [](const Network::EdgeIds& innovations)
         {
-            InnovationId prevId = entries[0].m_id;
-            for (size_t i = 1; i < entries.size(); i++)
+            EdgeId prev = innovations[0];
+            for (size_t i = 1; i < innovations.size(); i++)
             {
-                const InnovationEntry& entry = entries[i];
-                assert(prevId < entry.m_id);
-                prevId = entry.m_id;
+                const EdgeId& cur = innovations[i];
+                assert(prev < cur);
+                prev = cur;
             }
         };
 
@@ -333,31 +323,32 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     // Inherit edges
     {
         // Helper function to add an inherit edge.
-        auto addEdge = [&](const InnovationEntry* entry1, const InnovationEntry* entry2 = nullptr, bool selectGenome1 = true)
+        auto addEdge = [&](const EdgeId edgeId1, const EdgeId edgeId2 = EdgeId::invalid(), bool selectGenome1 = true)
         {
             // Copy the edge
-            const Network::Edge& edge1 = network1->getEdges().at(entry1->m_edgeId);
+            const Network::Edge& edge1 = network1->getEdges().at(edgeId1);
             Network::Edge edge = edge1;
             edge.setEnabled(true);
 
             if (!selectGenome1)
             {
-                edge.setWeight(network2->getWeight(entry2->m_edgeId));
+                assert(edgeId2.isValid());
+                edge.setWeight(network2->getWeight(edgeId2));
             }
 
             // Disable the edge at a certain probability if either parent's edge is already disable
-            bool disabled = !edge1.isEnabled() || (network2 && !network2->isEdgeEnabled(entry2->m_edgeId));
+            bool disabled = !edge1.isEnabled() || (network2 && edgeId2.isValid() && !network2->isEdgeEnabled(edgeId2));
             if (disabled && random.randomReal01() < params.m_disablingEdgeRate)
             {
                 edge.setEnabled(false);
             }
             else if (!edge1.isEnabled())
             {
-                enabledEdges.push_back(entry1->m_edgeId);
+                enabledEdges.push_back(edgeId1);
             }
 
-            edges[entry1->m_edgeId] = edge;
-            newGenome.m_innovations.push_back(*entry1);
+            edges[edgeId1] = edge;
+            newGenome.m_innovations.push_back(edgeId1);
         };
 
         // Iterate over all edges in both genomes including disabled edges.
@@ -365,20 +356,20 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         size_t curIdx2 = 0;
         while (curIdx1 < innovations1.size() && curIdx2 < innovations2.size())
         {
-            const InnovationEntry& cur1 = innovations1[curIdx1];
-            const InnovationEntry& cur2 = innovations2[curIdx2];
+            const EdgeId cur1 = innovations1[curIdx1];
+            const EdgeId cur2 = innovations2[curIdx2];
 
-            if (cur1.m_id == cur2.m_id)
+            if (cur1 == cur2)
             {
                 // Randomly select an edge from either genome1 or genome2 for matching edges.
-                addEdge(&cur1, &cur2, random.randomReal01() < params.m_matchingEdgeSelectionRate);
+                addEdge(cur1, cur2, random.randomReal01() < params.m_matchingEdgeSelectionRate);
                 curIdx1++;
                 curIdx2++;
             }
-            else if (cur1.m_id < cur2.m_id)
+            else if (cur1 < cur2)
             {
                 // Always take disjoint edges from more fit genome.
-                addEdge(&cur1);
+                addEdge(cur1);
                 curIdx1++;
             }
             else
@@ -386,7 +377,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
                 // Don't take disjoint edges from less fit genome unless the two genomes have the same fitness.
                 if (sameFittingScore)
                 {
-                    disjointEdgesInGenome2.push_back(cur2.m_edgeId);
+                    disjointEdgesInGenome2.push_back(cur2);
                 }
 
                 curIdx2++;
@@ -397,14 +388,14 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         // Add all remaining excess edges from genome1
         while(curIdx1 < innovations1.size())
         {
-            addEdge(&innovations1[curIdx1++]);
+            addEdge(innovations1[curIdx1++]);
         }
 
         if (sameFittingScore)
         {
             while (curIdx2 < innovations2.size())
             {
-                disjointEdgesInGenome2.push_back(innovations2[curIdx2++].m_edgeId);
+                disjointEdgesInGenome2.push_back(innovations2[curIdx2++]);
             }
         }
     }

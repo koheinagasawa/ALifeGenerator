@@ -288,8 +288,8 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
 
     // Create a new genome and arrays to store nodes and edges for it.
     Genome newGenome(genome1.m_innovIdCounter);
-    Network::Nodes nodes;
-    Network::Edges edges;
+    Network::Nodes newGnomeNodes;
+    Network::Edges newGenomeEdges;
 
     // Edges which are disabled in genome1 but enabled in the newGenome.
     // We need to keep track of them because they might make the network circular and might need to be disabled again.
@@ -330,7 +330,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
                 disjointEnableEdges.push_back(edgeId);
             }
 
-            edges[edgeId] = edge;
+            newGenomeEdges[edgeId] = edge;
             assert(newGenome.m_innovations.empty() || edgeId > newGenome.m_innovations.back());
             newGenome.m_innovations.push_back(edgeId);
         };
@@ -408,7 +408,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     // [todo] We always inherit genome1's activation functions for all the nodes. Is there any way to select it based on fitness?
     {
         std::unordered_set<NodeId> addedNodes;
-        for (auto& itr : edges)
+        for (auto& itr : newGenomeEdges)
         {
             const Network::Edge& edge = itr.second;
             const NodeId inNode = edge.getInNode();
@@ -416,20 +416,20 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
 
             if (addedNodes.find(inNode) == addedNodes.end())
             {
-                nodes[inNode] = network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode);
+                newGnomeNodes[inNode] = network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode);
                 addedNodes.insert(inNode);
             }
 
             if (addedNodes.find(outNode) == addedNodes.end())
             {
-                nodes[outNode] = network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode);
+                newGnomeNodes[outNode] = network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode);
                 addedNodes.insert(outNode);
             }
         }
     }
 
     // Create a new network.
-    newGenome.m_network = std::make_shared<Network>(nodes, edges, genome1.getNetwork()->getOutputNodes());
+    newGenome.m_network = std::make_shared<Network>(newGnomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.

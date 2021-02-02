@@ -95,6 +95,9 @@ void Genome::MutationOut::clear()
         m_newEdges[i].m_sourceOutNode = NodeId::invalid();
         m_newEdges[i].m_newEdge = EdgeId::invalid();
     }
+
+    m_numNodesAdded = 0;
+    m_numEdgesAdded = 0;
 }
 
 void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
@@ -242,6 +245,9 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 
         newEdgeAdded(newIncomingEdge);
         newEdgeAdded(newOutgoingEdge);
+
+        mutationOut.m_numNodesAdded++;
+        mutationOut.m_numEdgesAdded += 2;
     }
 
     // 3. Add an edge between random nodes
@@ -265,6 +271,8 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         }
 
         newEdgeAdded(newEdge);
+
+        mutationOut.m_numEdgesAdded++;
     }
 
     assert(m_network->validate());

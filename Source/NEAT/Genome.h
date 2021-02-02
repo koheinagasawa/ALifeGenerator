@@ -153,6 +153,8 @@ namespace NEAT
 
             static constexpr int NUM_NEW_EDGES = 3;
             NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
+            int m_numNodesAdded;
+            int m_numEdgesAdded;
         };
 
         // Parameters used for crossOver().
@@ -180,6 +182,9 @@ namespace NEAT
         Genome(const Genome& other) = default;
 
         const Network* getNetwork() const { return m_network.get(); }
+
+        // Set weight of edge.
+        void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
 
         // Mutate this genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.

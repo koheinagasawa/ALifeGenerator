@@ -23,6 +23,7 @@ TEST(Genome, CreateGenome)
 
     const Genome::Network* network = genome.getNetwork();
 
+    EXPECT_TRUE(genome.validate());
     EXPECT_TRUE(network);
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -39,6 +40,7 @@ TEST(Genome, CreateGenome)
 
     const Genome::Network* network2 = genome.getNetwork();
 
+    EXPECT_TRUE(genome2.validate());
     EXPECT_TRUE(network2);
     EXPECT_TRUE(network2->validate());
     EXPECT_EQ(network2->getNumNodes(), 4);
@@ -70,6 +72,7 @@ TEST(Genome, MutateGenome)
 
     const Genome::Network* network = genome.getNetwork();
 
+    EXPECT_TRUE(genome.validate());
     EXPECT_TRUE(network);
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -98,6 +101,7 @@ TEST(Genome, MutateGenome)
     // A new node should be added and as a result the number of edge should be increased by 2 too.
     genome.mutate(params, out);
 
+    EXPECT_TRUE(genome.validate());
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::HIDDEN);
@@ -118,6 +122,7 @@ TEST(Genome, MutateGenome)
     // So the number of nodes is +1 and the number of edges is +3
     genome.mutate(params, out);
 
+    EXPECT_TRUE(genome.validate());
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(NodeId(5)).getNodeType(), Genome::Node::Type::HIDDEN);
@@ -139,6 +144,7 @@ TEST(Genome, MutateGenome)
 
     genome.mutate(params, out);
 
+    EXPECT_TRUE(genome.validate());
     EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNumEdges(), 9);
@@ -170,6 +176,8 @@ TEST(Genome, MutateGenome)
 
         genome.mutate(params, out);
 
+        EXPECT_TRUE(genome.validate());
+
         for (auto& itr : edges)
         {
             if (network->isEdgeEnabled(itr.first))
@@ -200,6 +208,8 @@ TEST(Genome, MutateGenome)
         params.m_random = &random;
 
         genome.mutate(params, out);
+
+        EXPECT_TRUE(genome.validate());
 
         const Genome::Network::Edges& edges = network->getEdges();
         for (auto& itr : edges)

@@ -24,8 +24,6 @@ TEST(Genome, CreateGenome)
     const Genome::Network* network = genome.getNetwork();
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_TRUE(network);
-    EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
@@ -41,8 +39,6 @@ TEST(Genome, CreateGenome)
     const Genome::Network* network2 = genome.getNetwork();
 
     EXPECT_TRUE(genome2.validate());
-    EXPECT_TRUE(network2);
-    EXPECT_TRUE(network2->validate());
     EXPECT_EQ(network2->getNumNodes(), 4);
     EXPECT_EQ(network2->getNumEdges(), 4);
     EXPECT_EQ(network2->getOutputNodes().size(), 2);
@@ -73,8 +69,6 @@ TEST(Genome, MutateGenome)
     const Genome::Network* network = genome.getNetwork();
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_TRUE(network);
-    EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNumEdges(), 4);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -102,7 +96,6 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 6);
@@ -123,7 +116,6 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(NodeId(5)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 9);
@@ -145,7 +137,6 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_TRUE(network->validate());
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNumEdges(), 9);
     EXPECT_EQ(network->getOutputNodes().size(), 2);

@@ -272,39 +272,19 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
 
 Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params)
 {
+    assert(genome1.validate());
+    assert(genome2.validate());
     assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter); // Make sure that the two genomes share the same innovation id counter.
     assert(genome1.getNetwork() && genome2.getNetwork());
     assert(genome1.getNetwork()->getNumOutputNodes() == genome2.getNetwork()->getNumOutputNodes()); // Make sure that the numbers of output nodes are the same.
-
+    
     RandomGenerator& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
+
     const Network* network1 = genome1.getNetwork();
     const Network* network2 = genome2.getNetwork();
-    assert(network1->validate());
-    assert(network2->validate());
 
     const Network::EdgeIds& innovations1 = genome1.getInnovations();
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
-    assert(innovations1.size() > 0);
-    assert(innovations2.size() > 0);
-
-#ifdef _DEBUG
-    // Make sure that innovation entires are already sorted by innovation ids.
-    {
-        auto checkSorted = [](const Network::EdgeIds& innovations)
-        {
-            EdgeId prev = innovations[0];
-            for (size_t i = 1; i < innovations.size(); i++)
-            {
-                const EdgeId& cur = innovations[i];
-                assert(prev < cur);
-                prev = cur;
-            }
-        };
-
-        checkSorted(innovations1);
-        checkSorted(innovations2);
-    }
-#endif
 
     // Create a new genome and arrays to store nodes and edges for it.
     Genome newGenome(genome1.m_innovIdCounter);
@@ -477,3 +457,28 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
 
     return newGenome;
 }
+
+bool Genome::validate() const
+{
+    if (!m_network.get()) return false;
+    if (!m_network->validate()) return false;
+
+    if (m_innovations.empty()) return false;
+    if (m_innovations.size() != m_network->getNumEdges()) return false;
+
+    EdgeId prev = m_innovations[0];
+    if (!m_network->hasEdge(m_innovations[0])) return false;
+
+    for (size_t i = 1; i < m_innovations.size(); i++)
+    {
+        const EdgeId& cur = m_innovations[i];
+
+        if (!m_network->hasEdge(cur)) return false;
+        if (prev >= cur) return false;
+
+        prev = cur;
+    }
+
+    return true;
+}
+

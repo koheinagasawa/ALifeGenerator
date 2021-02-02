@@ -188,13 +188,15 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         void mutate(const MutationParams& params, MutationOut& mutationOut);
 
-        // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
-        inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
-
         // Cross over two genomes and generate a new one.
         // genome1 has to have higher fitting score.
         // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
         static Genome crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params);
+
+        // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
+        inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
+
+        bool validate() const;
 
     protected:
         // Constructor used by crossOver().

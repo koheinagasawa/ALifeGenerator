@@ -228,7 +228,7 @@ TEST(Genom, CrossOver)
 
     Genome::CrossOverParams params;
 
-    //Genome newGenome = Genome::crossOver(genome1, genome2, false, params);
+    Genome newGenome = Genome::crossOver(genome1, genome2, false, params);
 
-    //EXPECT_TRUE(newGenome.getNetwork()->validate());
+    EXPECT_TRUE(newGenome.getNetwork()->validate());
 }

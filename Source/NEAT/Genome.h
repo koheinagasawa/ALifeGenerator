@@ -201,6 +201,8 @@ namespace NEAT
         // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
         inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
 
+        static float calcDistance(const Genome& genome1, const Genome& genome2, float disjointFactor, float weightFactor, int numEdgesThreshold = 20);
+
         bool validate() const;
 
     protected:

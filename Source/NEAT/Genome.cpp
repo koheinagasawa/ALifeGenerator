@@ -466,6 +466,53 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     return newGenome;
 }
 
+float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float disjointFactor, float weightFactor, int numEdgesThreshold)
+{
+    assert(genome1.validate());
+    assert(genome2.validate());
+
+    const Network* network1 = genome1.getNetwork();
+    const Network* network2 = genome2.getNetwork();
+    const int numEdges1 = network1->getNumEdges();
+    const int numEdges2 = network2->getNumEdges();
+    const int numEdges = numEdges1 > numEdges2 ? numEdges1 : numEdges2;
+    disjointFactor = numEdges >= numEdgesThreshold ? disjointFactor / (float)numEdges : disjointFactor;
+
+    int numDisjointEdges = 0;
+    float sumWeightDiffs = 0.f;
+
+    // Iterate over all edges in both genomes including disabled edges.
+    const Network::EdgeIds& innovations1 = genome1.getInnovations();
+    const Network::EdgeIds& innovations2 = genome2.getInnovations();
+    size_t curIdx1 = 0;
+    size_t curIdx2 = 0;
+    while (curIdx1 < innovations1.size() && curIdx2 < innovations2.size())
+    {
+        const EdgeId cur1 = innovations1[curIdx1];
+        const EdgeId cur2 = innovations2[curIdx2];
+        if (cur1 == cur2)
+        {
+            sumWeightDiffs += abs(network1->getWeightRaw(cur1) - network2->getWeightRaw(cur2));
+            curIdx1++;
+            curIdx2++;
+        }
+        else
+        {
+            if (cur1 < cur2)
+            {
+                curIdx1++;
+            }
+            else
+            {
+                curIdx2++;
+            }
+            numDisjointEdges++;
+        }
+    }
+
+    return disjointFactor * numDisjointEdges + weightFactor * sumWeightDiffs;
+}
+
 bool Genome::validate() const
 {
     if (!m_network.get()) return false;

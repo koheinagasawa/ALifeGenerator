@@ -324,4 +324,8 @@ TEST(Genom, CrossOver)
         EXPECT_EQ(newGenome3.getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
     }
     EXPECT_TRUE(newGenome3.getNetwork()->isEdgeEnabled(disabledEdge));
+
+    Genome::calcDistance(genome1, genome2, 1.0f, 1.0f);
+    Genome::calcDistance(newGenome1, newGenome2, 1.0f, 1.0f);
+    Genome::calcDistance(genome1, newGenome3, 1.0f, 1.0f);
 }

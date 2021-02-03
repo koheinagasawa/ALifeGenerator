@@ -473,10 +473,14 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float d
 
     const Network* network1 = genome1.getNetwork();
     const Network* network2 = genome2.getNetwork();
-    const int numEdges1 = network1->getNumEdges();
-    const int numEdges2 = network2->getNumEdges();
-    const int numEdges = numEdges1 > numEdges2 ? numEdges1 : numEdges2;
-    disjointFactor = numEdges >= numEdgesThreshold ? disjointFactor / (float)numEdges : disjointFactor;
+
+    // Normalize disjoint factor
+    {
+        const int numEdges1 = network1->getNumEdges();
+        const int numEdges2 = network2->getNumEdges();
+        const int numEdges = numEdges1 > numEdges2 ? numEdges1 : numEdges2;
+        disjointFactor = numEdges >= numEdgesThreshold ? disjointFactor / (float)numEdges : disjointFactor;
+    }
 
     int numDisjointEdges = 0;
     float sumWeightDiffs = 0.f;
@@ -508,6 +512,15 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float d
             }
             numDisjointEdges++;
         }
+    }
+
+    while (curIdx1++ < innovations1.size())
+    {
+        numDisjointEdges++;
+    }
+    while (curIdx2++ < innovations2.size())
+    {
+        numDisjointEdges++;
     }
 
     return disjointFactor * numDisjointEdges + weightFactor * sumWeightDiffs;

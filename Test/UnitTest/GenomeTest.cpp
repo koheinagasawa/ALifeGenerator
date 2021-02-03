@@ -324,8 +324,64 @@ TEST(Genom, CrossOver)
         EXPECT_EQ(newGenome3.getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
     }
     EXPECT_TRUE(newGenome3.getNetwork()->isEdgeEnabled(disabledEdge));
+}
 
-    Genome::calcDistance(genome1, genome2, 1.0f, 1.0f);
-    Genome::calcDistance(newGenome1, newGenome2, 1.0f, 1.0f);
-    Genome::calcDistance(genome1, newGenome3, 1.0f, 1.0f);
+TEST(Genome, CalcGenomesDistance)
+{
+    using namespace NEAT;
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    // Create two genomes.
+    Genome genome1(cinfo);
+    // We reset the counter once here so that genome1 and genome2 have the same initial innovations.
+    innovCounter.reset();
+    Genome genome2(cinfo);
+
+    {
+        int count = 0;
+        for (auto& itr : genome1.getNetwork()->getEdges())
+        {
+            float weight1 = (float)count;
+            genome1.setEdgeWeight(itr.first, weight1);
+            float weight2 = (float)(count + 4);
+            genome2.setEdgeWeight(itr.first, weight2);
+            count++;
+        }
+    }
+
+    Genome::MutationParams mutParams;
+    mutParams.m_weightMutationRate = 0.0f;
+    mutParams.m_addEdgeMutationRate = 0.0f;
+    mutParams.m_addNodeMutationRate = 1.0f;
+
+    Genome::MutationOut mutOut;
+
+    genome1.mutate(mutParams, mutOut);
+    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+    EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
+    mutParams.m_addEdgeMutationRate = 1.0f;
+    genome1.mutate(mutParams, mutOut);
+    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+    EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
+
+    EXPECT_TRUE(genome1.validate());
+    EXPECT_EQ(genome1.getNetwork()->getNumNodes(), 6);
+    EXPECT_EQ(genome1.getNetwork()->getNumEdges(), 9);
+
+    mutParams.m_addEdgeMutationRate = 0.0f;
+    genome2.mutate(mutParams, mutOut);
+    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+    EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
+
+    EXPECT_TRUE(genome2.validate());
+    EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
+    EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
+
+    EXPECT_EQ(Genome::calcDistance(genome1, genome1, 0.5f, 0.25f), 0.f);
+    EXPECT_EQ(Genome::calcDistance(genome1, genome2, 0.5f, 0.25f), 7.5f); // 7 * 0.5 + 16 * 0.25
 }

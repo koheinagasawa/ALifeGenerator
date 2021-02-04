@@ -165,11 +165,13 @@
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="Neat.h" />
     <ClInclude Include="NeuralNetwork.h" />
+    <ClInclude Include="Species.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Genome.cpp" />
     <ClCompile Include="MutableNetwork.cpp" />
     <ClCompile Include="Neat.cpp" />
+    <ClCompile Include="Species.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

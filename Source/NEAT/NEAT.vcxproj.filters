@@ -4,11 +4,13 @@
     <ClCompile Include="MutableNetwork.cpp" />
     <ClCompile Include="Genome.cpp" />
     <ClCompile Include="Neat.cpp" />
+    <ClCompile Include="Species.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="Genome.h" />
     <ClInclude Include="Neat.h" />
+    <ClInclude Include="Species.h" />
   </ItemGroup>
 </Project>

@@ -170,6 +170,19 @@ namespace NEAT
             RandomGenerator* m_random = nullptr;
         };
 
+        // Parameters used for distance calculation
+        struct CalcDistParams
+        {
+            // Factor for the number of disjoint edges.
+            float m_disjointFactor;
+
+            // Factor for weight differences.
+            float m_weightFactor;
+
+            // The minimum number of edges to apply normalization for the disjoint edge distance.
+            int m_edgeNormalizationThreshold = 20;
+        };
+
         // Type declaration
         using Network = MutableNetwork<Node>;
         using NetworkPtr = std::shared_ptr<Network>;
@@ -178,10 +191,11 @@ namespace NEAT
         // all input nodes and output nodes are fully connected.
         Genome(const Cinfo& cinfo);
 
-        // Copy constructor
-        Genome(const Genome& other) = default;
+        // Copy constructor and operator
+        Genome(const Genome& other);
+        void operator= (const Genome& other);
 
-        const Network* getNetwork() const { return m_network.get(); }
+        auto getNetwork() const->const Network* { return m_network.get(); }
 
         // Set weight of edge.
         void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
@@ -201,8 +215,10 @@ namespace NEAT
         // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
         inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
 
-        static float calcDistance(const Genome& genome1, const Genome& genome2, float disjointFactor, float weightFactor, int numEdgesThreshold = 20);
+        // Calculate and return distance between two genomes
+        static float calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params);
 
+        // Return false if this genome contains any invalid data.
         bool validate() const;
 
     protected:

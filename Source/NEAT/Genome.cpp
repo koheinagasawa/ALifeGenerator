@@ -79,6 +79,19 @@ Genome::Genome(const Cinfo& cinfo)
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
 }
 
+Genome::Genome(const Genome& other)
+    : m_innovations(other.m_innovations)
+    , m_innovIdCounter(other.m_innovIdCounter)
+{
+    m_network = std::make_shared<Network>(*other.m_network.get());
+}
+
+void Genome::operator= (const Genome& other)
+{
+    assert(&m_innovIdCounter == &other.m_innovIdCounter);
+    m_innovations = other.m_innovations;
+    m_network = std::make_shared<Network>(*other.m_network.get());
+}
 
 Genome::Genome(InnovationCounter& innovationCounter)
     : m_network(nullptr)
@@ -466,7 +479,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     return newGenome;
 }
 
-float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float disjointFactor, float weightFactor, int numEdgesThreshold)
+float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params)
 {
     assert(genome1.validate());
     assert(genome2.validate());
@@ -474,18 +487,23 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float d
     const Network* network1 = genome1.getNetwork();
     const Network* network2 = genome2.getNetwork();
 
+    float disjointFactor = params.m_disjointFactor;
     // Normalize disjoint factor
     {
         const int numEdges1 = network1->getNumEdges();
         const int numEdges2 = network2->getNumEdges();
         const int numEdges = numEdges1 > numEdges2 ? numEdges1 : numEdges2;
-        disjointFactor = numEdges >= numEdgesThreshold ? disjointFactor / (float)numEdges : disjointFactor;
+        if (numEdges >= params.m_edgeNormalizationThreshold)
+        {
+            disjointFactor /= (float)numEdges;
+        }
     }
 
     int numDisjointEdges = 0;
     float sumWeightDiffs = 0.f;
 
-    // Iterate over all edges in both genomes including disabled edges.
+    // Iterate over all edges in both genomes including disabled edges then
+    // count the number of disjoint edges and calculate sum of weight differences.
     const Network::EdgeIds& innovations1 = genome1.getInnovations();
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
     size_t curIdx1 = 0;
@@ -523,20 +541,23 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, float d
         numDisjointEdges++;
     }
 
-    return disjointFactor * numDisjointEdges + weightFactor * sumWeightDiffs;
+    // Calculate the final distance
+    return disjointFactor * numDisjointEdges + params.m_weightFactor * sumWeightDiffs;
 }
 
 bool Genome::validate() const
 {
+    // Make sure that the network is valid.
     if (!m_network.get()) return false;
     if (!m_network->validate()) return false;
 
+    // Make sure that the number of innovations is correct.
     if (m_innovations.empty()) return false;
     if (m_innovations.size() != m_network->getNumEdges()) return false;
 
+    // Make sure that the innovations are sorted
     EdgeId prev = m_innovations[0];
     if (!m_network->hasEdge(m_innovations[0])) return false;
-
     for (size_t i = 1; i < m_innovations.size(); i++)
     {
         const EdgeId& cur = m_innovations[i];

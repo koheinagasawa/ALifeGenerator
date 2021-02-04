@@ -382,6 +382,10 @@ TEST(Genome, CalcGenomesDistance)
     EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
     EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
 
-    EXPECT_EQ(Genome::calcDistance(genome1, genome1, 0.5f, 0.25f), 0.f);
-    EXPECT_EQ(Genome::calcDistance(genome1, genome2, 0.5f, 0.25f), 7.5f); // 7 * 0.5 + 16 * 0.25
+    Genome::CalcDistParams params;
+    params.m_disjointFactor = 0.5f;
+    params.m_weightFactor = 0.25f;
+
+    EXPECT_EQ(Genome::calcDistance(genome1, genome1, params), 0.f);
+    EXPECT_EQ(Genome::calcDistance(genome1, genome2, params), 7.5f); // 7 * 0.5 + 16 * 0.25
 }

@@ -55,6 +55,7 @@
     <ClCompile Include="GenomeTest.cpp" />
     <ClCompile Include="MutableNetworkTest.cpp" />
     <ClCompile Include="NeuralNetworkTest.cpp" />
+    <ClCompile Include="SpeciesTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

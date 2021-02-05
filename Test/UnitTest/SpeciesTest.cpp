@@ -21,12 +21,14 @@ TEST(Species, AddGenomeToSpecies)
     // Create a genome.
     Genome initGenome(cinfo);
 
+    // Create a species
     Species species(initGenome);
 
     EXPECT_FALSE(species.hasMember());
 
     using GenomePtr = std::shared_ptr<Genome>;
 
+    // Create a genome to add the species
     GenomePtr genome1 = std::make_shared<Genome>(initGenome);
 
     Genome::MutationParams mutParams;
@@ -34,6 +36,7 @@ TEST(Species, AddGenomeToSpecies)
     mutParams.m_addEdgeMutationRate = 0.0f;
     mutParams.m_addNodeMutationRate = 1.0f;
 
+    // Mutate the genome
     Genome::MutationOut mutOut;
     genome1->mutate(mutParams, mutOut);
 
@@ -41,11 +44,13 @@ TEST(Species, AddGenomeToSpecies)
     calcDistParams.m_disjointFactor = 1.0f;
     calcDistParams.m_weightFactor = 1.0f;
 
+    // Try to add the genome to the species
     EXPECT_FALSE(species.tryAddGenome(genome1, 0.0001f, calcDistParams));
     EXPECT_FALSE(species.hasMember());
     EXPECT_TRUE(species.tryAddGenome(genome1, 5.f, calcDistParams));
     EXPECT_TRUE(species.hasMember());
 
+    // Clear members of the current generation.
     species.preNewGeneration();
 
     EXPECT_FALSE(species.hasMember());

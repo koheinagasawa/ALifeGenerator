@@ -40,10 +40,11 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create nodes
     nodes.reserve(numNodes);
+    m_inputNodes.resize(cinfo.m_numInputNodes);
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
         nodes[i] = Node(Node::Type::INPUT);
-        m_innovIdCounter.getNewNodeId();
+        m_inputNodes[i] = m_innovIdCounter.getNewNodeId();
     }
     for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
     {
@@ -80,7 +81,8 @@ Genome::Genome(const Cinfo& cinfo)
 }
 
 Genome::Genome(const Genome& other)
-    : m_innovations(other.m_innovations)
+    : m_inputNodes(other.m_inputNodes)
+    , m_innovations(other.m_innovations)
     , m_innovIdCounter(other.m_innovIdCounter)
 {
     m_network = std::make_shared<Network>(*other.m_network.get());
@@ -89,12 +91,14 @@ Genome::Genome(const Genome& other)
 void Genome::operator= (const Genome& other)
 {
     assert(&m_innovIdCounter == &other.m_innovIdCounter);
+    m_inputNodes = other.m_inputNodes;
     m_innovations = other.m_innovations;
     m_network = std::make_shared<Network>(*other.m_network.get());
 }
 
-Genome::Genome(InnovationCounter& innovationCounter)
+Genome::Genome(const Network::NodeIds& inputNodes, InnovationCounter& innovationCounter)
     : m_network(nullptr)
+    , m_inputNodes(inputNodes)
     , m_innovIdCounter(innovationCounter)
 {
 
@@ -297,7 +301,10 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     assert(genome2.validate());
     assert(&genome1.m_innovIdCounter == &genome2.m_innovIdCounter); // Make sure that the two genomes share the same innovation id counter.
     assert(genome1.getNetwork() && genome2.getNetwork());
-    assert(genome1.getNetwork()->getNumOutputNodes() == genome2.getNetwork()->getNumOutputNodes()); // Make sure that the numbers of output nodes are the same.
+    // Make sure that the numbers of input/output nodes are the same.
+    // NOTE: Not only the number of nodes but also all node ids have to be identical too. Maybe we should check that here on debug.
+    assert(genome1.m_inputNodes.size() == genome2.m_inputNodes.size());
+    assert(genome1.getNetwork()->getNumOutputNodes() == genome2.getNetwork()->getNumOutputNodes());
     
     RandomGenerator& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
 
@@ -308,7 +315,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
 
     // Create a new genome and arrays to store nodes and edges for it.
-    Genome newGenome(genome1.m_innovIdCounter);
+    Genome newGenome(genome1.m_inputNodes, genome1.m_innovIdCounter);
     Network::Nodes newGnomeNodes;
     Network::Edges newGenomeEdges;
 

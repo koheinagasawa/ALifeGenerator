@@ -196,6 +196,8 @@ namespace NEAT
 
         auto getNetwork() const->const Network* { return m_network.get(); }
 
+        auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
+
         // Set weight of edge.
         void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
 
@@ -222,9 +224,10 @@ namespace NEAT
 
     protected:
         // Constructor used by crossOver().
-        Genome(InnovationCounter& innovationCounter);
+        Genome(const Network::NodeIds& inputNodes, InnovationCounter& innovationCounter);
 
         NetworkPtr m_network;                   // The network.
+        Network::NodeIds m_inputNodes;          // A list of input nodes.
         Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.
         InnovationCounter& m_innovIdCounter;    // The innovation counter shared by all the genomes.
     };

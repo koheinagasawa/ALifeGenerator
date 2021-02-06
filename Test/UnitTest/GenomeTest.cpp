@@ -24,6 +24,7 @@ TEST(Genome, CreateGenome)
     const Genome::Network* network = genome.getNetwork();
 
     EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
@@ -39,6 +40,7 @@ TEST(Genome, CreateGenome)
     const Genome::Network* network2 = genome.getNetwork();
 
     EXPECT_TRUE(genome2.validate());
+    EXPECT_EQ(genome2.getInputNodes().size(), 2);
     EXPECT_EQ(network2->getNumNodes(), 4);
     EXPECT_EQ(network2->getNumEdges(), 4);
     EXPECT_EQ(network2->getOutputNodes().size(), 2);
@@ -69,6 +71,7 @@ TEST(Genome, MutateGenome)
     const Genome::Network* network = genome.getNetwork();
 
     EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNumEdges(), 4);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -96,6 +99,7 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 6);
@@ -118,6 +122,7 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(NodeId(5)).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 9);
@@ -141,6 +146,7 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNumEdges(), 9);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -293,6 +299,7 @@ TEST(Genom, CrossOver)
     Genome newGenome1 = Genome::crossOver(genome1, genome2, false, coParams);
 
     EXPECT_TRUE(newGenome1.validate());
+    EXPECT_EQ(newGenome1.getInputNodes().size(), 2);
     EXPECT_EQ(newGenome1.getNetwork()->getNumNodes(), genome1.getNetwork()->getNumNodes());
     EXPECT_EQ(newGenome1.getNetwork()->getNumEdges(), genome1.getNetwork()->getNumEdges());
     for (int i = 0; i < 4; i ++)
@@ -304,6 +311,7 @@ TEST(Genom, CrossOver)
     Genome newGenome2 = Genome::crossOver(genome2, genome1, false, coParams);
 
     EXPECT_TRUE(newGenome2.validate());
+    EXPECT_EQ(newGenome2.getInputNodes().size(), 2);
     EXPECT_EQ(newGenome2.getNetwork()->getNumNodes(), genome2.getNetwork()->getNumNodes());
     EXPECT_EQ(newGenome2.getNetwork()->getNumEdges(), genome2.getNetwork()->getNumEdges());
     for (int i = 0; i < 4; i++)
@@ -317,6 +325,7 @@ TEST(Genom, CrossOver)
     Genome newGenome3 = Genome::crossOver(genome1, genome2, true, coParams);
 
     EXPECT_TRUE(newGenome3.validate());
+    EXPECT_EQ(newGenome3.getInputNodes().size(), 2);
     EXPECT_EQ(newGenome3.getNetwork()->getNumNodes(), 8);
     EXPECT_EQ(newGenome3.getNetwork()->getNumEdges(), 13);
     for (int i = 0; i < 4; i++)

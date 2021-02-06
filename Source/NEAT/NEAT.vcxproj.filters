@@ -12,5 +12,7 @@
     <ClInclude Include="Genome.h" />
     <ClInclude Include="Neat.h" />
     <ClInclude Include="Species.h" />
+    <ClInclude Include="Generation.h" />
+    <ClInclude Include="NeatBase.h" />
   </ItemGroup>
 </Project>

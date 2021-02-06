@@ -161,9 +161,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Generation.h" />
     <ClInclude Include="Genome.h" />
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="Neat.h" />
+    <ClInclude Include="NeatBase.h" />
     <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="Species.h" />
   </ItemGroup>

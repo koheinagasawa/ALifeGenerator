@@ -14,7 +14,6 @@
 #include <Common/UniqueIdCounter.h>
 
 DECLARE_ID(GenomeId);
-DECLARE_ID(GenerationId);
 
 namespace NEAT
 {
@@ -228,54 +227,5 @@ namespace NEAT
         NetworkPtr m_network;                   // The network.
         Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.
         InnovationCounter& m_innovIdCounter;    // The innovation counter shared by all the genomes.
-    };
-
-    class Generation
-    {
-    public:
-        using GenomePtr = std::shared_ptr<const Genome>;
-
-        struct GenomeData
-        {
-        public:
-            void setFitness(float fitness) const { m_fitness = fitness; }
-
-        protected:
-            GenomePtr m_genome;
-            GenomeId m_id;
-            mutable float m_fitness;
-        };
-
-        using Genomes = std::shared_ptr<GenomeData>;
-        using GenerationPtr = std::shared_ptr<Generation>;
-
-        GenerationPtr createNewGeneration() const;
-
-        const Genomes& getGenomes();
-
-    protected:
-        Genomes m_genomes;
-        GenerationId m_id;
-    };
-
-    class NEAT
-    {
-    public:
-        using GenerationPtr = Generation::GenerationPtr;
-
-        void createNewGeneration();
-
-        const Generation& getCurrentGeneration() const;
-
-        void calcFitnessOfCurrentGen();
-        float getMaxFitnessInCurrentGen() const;
-
-    protected:
-        virtual float calcFitness(const Genome& genome) const = 0;
-
-        GenerationPtr m_currentGen;
-        GenerationPtr m_previousGen;
-
-        InnovationCounter m_innovationCounter;
     };
 }

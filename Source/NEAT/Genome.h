@@ -106,7 +106,7 @@ namespace NEAT
 
             // Default activation functions used during evaluation at each node.
             // If it's nullptr, input values are merely passed as an output of the node.
-            const Genome::Activation* m_defaultActivation = nullptr;
+            const Activation* m_defaultActivation = nullptr;
         };
 
         // Structure used for mutate().
@@ -158,6 +158,7 @@ namespace NEAT
 
             static constexpr int NUM_NEW_EDGES = 3;
             NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
+            NodeId m_newNode = NodeId::invalid();
             int m_numNodesAdded;
             int m_numEdgesAdded;
         };
@@ -249,5 +250,6 @@ namespace NEAT
         Network::NodeIds m_inputNodes;          // A list of input nodes.
         Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.
         InnovationCounter& m_innovIdCounter;    // The innovation counter shared by all the genomes.
+        const Activation* m_defaultActivation;
     };
 }

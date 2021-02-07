@@ -64,6 +64,8 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
+    Genome::Activation activation = [](float value) { return value * 2.f; };
+    cinfo.m_defaultActivation = &activation;
 
     // Create a genome.
     Genome genome(cinfo);
@@ -78,7 +80,7 @@ TEST(Genome, EvaluateGenome)
 
     for (NodeId nodeId : outputNodes)
     {
-        EXPECT_EQ(genome.getNetwork()->getNode(nodeId).getValue(), 3.f);
+        EXPECT_EQ(genome.getNetwork()->getNode(nodeId).getValue(), 6.f);
     }
 
     // Change an edge weight
@@ -104,6 +106,9 @@ TEST(Genome, MutateGenome)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
+    Genome::Activation activation = [](float value) { return value * 2.f; };
+    activation.m_name = "MyActivation";
+    cinfo.m_defaultActivation = &activation;
 
     // Create a genome.
     Genome genome(cinfo);
@@ -115,7 +120,7 @@ TEST(Genome, MutateGenome)
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNumEdges(), 4);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
-    
+
     // All the weight should be 1.0
     {
         const Genome::Network::Edges& edges = network->getEdges();
@@ -139,12 +144,8 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 5);
-    EXPECT_EQ(network->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::HIDDEN);
-    EXPECT_EQ(network->getNumEdges(), 6);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(out.m_numNodesAdded, 1);
+    EXPECT_TRUE(out.m_newNode.isValid());
     EXPECT_EQ(out.m_numEdgesAdded, 2);
     EXPECT_TRUE(out.m_newEdges[0].m_sourceInNode.isValid());
     EXPECT_TRUE(out.m_newEdges[0].m_sourceOutNode.isValid());
@@ -155,6 +156,11 @@ TEST(Genome, MutateGenome)
     EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getNumNodes(), 5);
+    EXPECT_EQ(network->getNode(out.m_newNode).getNodeType(), Genome::Node::Type::HIDDEN);
+    EXPECT_EQ(network->getNumEdges(), 6);
+    EXPECT_EQ(network->getOutputNodes().size(), 2);
 
     // Mutate the genome again.
     // Now we should be able to add both new node and edge.
@@ -162,12 +168,8 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 6);
-    EXPECT_EQ(network->getNode(NodeId(5)).getNodeType(), Genome::Node::Type::HIDDEN);
-    EXPECT_EQ(network->getNumEdges(), 9);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(out.m_numNodesAdded, 1);
+    EXPECT_TRUE(out.m_newNode.isValid());
     EXPECT_EQ(out.m_numEdgesAdded, 3);
     EXPECT_TRUE(out.m_newEdges[0].m_sourceInNode.isValid());
     EXPECT_TRUE(out.m_newEdges[0].m_sourceOutNode.isValid());
@@ -178,6 +180,12 @@ TEST(Genome, MutateGenome)
     EXPECT_TRUE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_TRUE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_TRUE(out.m_newEdges[2].m_newEdge.isValid());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getNumNodes(), 6);
+    EXPECT_EQ(network->getNode(out.m_newNode).getNodeType(), Genome::Node::Type::HIDDEN);
+    EXPECT_EQ(network->getNode(out.m_newNode).getActivationName(), "MyActivation");
+    EXPECT_EQ(network->getNumEdges(), 9);
+    EXPECT_EQ(network->getOutputNodes().size(), 2);
 
     // Reset parameter so that no mutation should happen
     params.m_addEdgeMutationRate = 0.0f;
@@ -186,11 +194,8 @@ TEST(Genome, MutateGenome)
     genome.mutate(params, out);
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 6);
-    EXPECT_EQ(network->getNumEdges(), 9);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(out.m_numNodesAdded, 0);
+    EXPECT_FALSE(out.m_newNode.isValid());
     EXPECT_EQ(out.m_numEdgesAdded, 0);
     EXPECT_FALSE(out.m_newEdges[0].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[0].m_sourceOutNode.isValid());
@@ -201,6 +206,10 @@ TEST(Genome, MutateGenome)
     EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getNumNodes(), 6);
+    EXPECT_EQ(network->getNumEdges(), 9);
+    EXPECT_EQ(network->getOutputNodes().size(), 2);
 
     // Mutate only edge weights
     {
@@ -342,7 +351,7 @@ TEST(Genom, CrossOver)
     EXPECT_EQ(newGenome1.getInputNodes().size(), 2);
     EXPECT_EQ(newGenome1.getNetwork()->getNumNodes(), genome1.getNetwork()->getNumNodes());
     EXPECT_EQ(newGenome1.getNetwork()->getNumEdges(), genome1.getNetwork()->getNumEdges());
-    for (int i = 0; i < 4; i ++)
+    for (int i = 0; i < 4; i++)
     {
         EXPECT_EQ(newGenome1.getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome1[i]);
     }

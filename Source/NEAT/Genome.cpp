@@ -28,6 +28,7 @@ void Genome::Node::setValue(float value)
 
 Genome::Genome(const Cinfo& cinfo)
     : m_innovIdCounter(*cinfo.m_innovIdCounter)
+    , m_defaultActivation(cinfo.m_defaultActivation)
 {
     assert(cinfo.m_numInputNodes > 0 && cinfo.m_numOutputNodes > 0);
 
@@ -77,6 +78,15 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create the network
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+
+    // Set activation of output nodes
+    if (m_defaultActivation)
+    {
+        for (NodeId nodeId : m_network->getOutputNodes())
+        {
+            m_network->accessNode(nodeId).setActivation(m_defaultActivation);
+        }
+    }
 }
 
 Genome::Genome(const Genome& other)
@@ -114,6 +124,8 @@ void Genome::MutationOut::clear()
 
     m_numNodesAdded = 0;
     m_numEdgesAdded = 0;
+
+    m_newNode = NodeId::invalid();
 }
 
 void Genome::setActivationAll(const Activation* activation)
@@ -272,13 +284,19 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
         bool result = m_network->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
         assert(result);
 
-        // Set it as a hidden node
-        m_network->accessNode(newNode).m_type = Node::Type::HIDDEN;
+        // Set activation and mark it as a hidden node
+        {
+            Node& nn = m_network->accessNode(newNode);
+            nn.m_type = Node::Type::HIDDEN;
+            nn.setActivation(m_defaultActivation);
+        }
+
 
         newEdgeAdded(newIncomingEdge);
         newEdgeAdded(newOutgoingEdge);
 
         mutationOut.m_numNodesAdded++;
+        mutationOut.m_newNode = newNode;
         mutationOut.m_numEdgesAdded += 2;
     }
 

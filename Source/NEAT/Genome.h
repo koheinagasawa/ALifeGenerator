@@ -89,8 +89,6 @@ namespace NEAT
             Type m_type = Type::NONE;
             const Activation* m_activation = nullptr;
 
-            static const Activation s_inputNodeActivation;
-
             friend class Genome;
         };
 
@@ -105,6 +103,10 @@ namespace NEAT
 
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter* m_innovIdCounter = nullptr;
+
+            // Default activation functions used during evaluation at each node.
+            // If it's nullptr, input values are merely passed as an output of the node.
+            const Genome::Activation* m_defaultActivation = nullptr;
         };
 
         // Structure used for mutate().
@@ -242,9 +244,6 @@ namespace NEAT
     protected:
         // Constructor used by crossOver().
         Genome(const Network::NodeIds& inputNodes, InnovationCounter& innovationCounter);
-
-        // Set activation of all input nodes.
-        void setActivationToInputNodes();
 
         NetworkPtr m_network;                   // The network.
         Network::NodeIds m_inputNodes;          // A list of input nodes.

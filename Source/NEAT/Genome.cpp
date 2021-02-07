@@ -11,8 +11,6 @@
 
 using namespace NEAT;
 
-const Genome::Activation Genome::Node::s_inputNodeActivation = Genome::Activation([](float value) { return value; });
-
 Genome::Node::Node(Type type)
     : m_type(type)
 {
@@ -25,8 +23,7 @@ float Genome::Node::getValue() const
 
 void Genome::Node::setValue(float value)
 {
-    assert(m_activation);
-    m_value = m_activation->activate(value);
+    m_value = m_activation ? m_activation->activate(value) : value;
 }
 
 Genome::Genome(const Cinfo& cinfo)
@@ -80,8 +77,6 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create the network
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
-
-    setActivationToInputNodes();
 }
 
 Genome::Genome(const Genome& other)
@@ -503,8 +498,6 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         newGenome.m_network->setEdgeEnabled(edge, false);
     }
 
-    newGenome.setActivationToInputNodes();
-
     return newGenome;
 }
 
@@ -616,12 +609,4 @@ bool Genome::validate() const
     }
 
     return true;
-}
-
-void Genome::setActivationToInputNodes()
-{
-    for (NodeId nodeId : m_inputNodes)
-    {
-        m_network->accessNode(nodeId).setActivation(&Node::s_inputNodeActivation);
-    }
 }

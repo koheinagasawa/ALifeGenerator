@@ -70,10 +70,6 @@ TEST(Genome, EvaluateGenome)
 
     const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
 
-    // Set activation func
-    Genome::Activation activation([](float value) { return value; });
-    genome.setActivationAll(&activation);
-
     // Evaluate the network
     std::vector<float> inputs;
     inputs.push_back(1.f);

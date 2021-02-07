@@ -45,10 +45,12 @@ namespace NEAT
         {
             using Func = std::function<float(float)>;
 
+            Activation(const Func& func) : m_func(func) {}
+
             float activate(float value) const { return m_func(value); }
 
             std::string m_name;
-            Func m_func;
+            const Func m_func;
         };
 
         // Node structure of the genome.
@@ -86,6 +88,8 @@ namespace NEAT
             float m_value = 0.f;
             Type m_type = Type::NONE;
             const Activation* m_activation = nullptr;
+
+            static const Activation s_inputNodeActivation;
 
             friend class Genome;
         };
@@ -194,12 +198,18 @@ namespace NEAT
         Genome(const Genome& other);
         void operator= (const Genome& other);
 
-        auto getNetwork() const->const Network* { return m_network.get(); }
+        inline auto getNetwork() const->const Network* { return m_network.get(); }
 
-        auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
+        inline auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
+
+        // Set activation of node.
+        inline void setActivation(NodeId nodeId, const Activation* activation) { m_network->accessNode(nodeId).m_activation = activation; }
+
+        // Set activation of all nodes except input nodes.
+        void setActivationAll(const Activation* activation);
 
         // Set weight of edge.
-        void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
+        inline void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
 
         // Mutate this genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
@@ -223,12 +233,18 @@ namespace NEAT
         // inputNodeValues has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
         void evaluate(const std::vector<float>& inputNodeValues) const;
 
+        // Evaluate this genome using the current values of input nodes.
+        void evaluate() const;
+
         // Return false if this genome contains any invalid data.
         bool validate() const;
 
     protected:
         // Constructor used by crossOver().
         Genome(const Network::NodeIds& inputNodes, InnovationCounter& innovationCounter);
+
+        // Set activation of all input nodes.
+        void setActivationToInputNodes();
 
         NetworkPtr m_network;                   // The network.
         Network::NodeIds m_inputNodes;          // A list of input nodes.

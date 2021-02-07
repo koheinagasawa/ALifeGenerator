@@ -11,6 +11,8 @@
 
 using namespace NEAT;
 
+const Genome::Activation Genome::Node::s_inputNodeActivation = Genome::Activation([](float value) { return value; });
+
 Genome::Node::Node(Type type)
     : m_type(type)
 {
@@ -78,6 +80,8 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create the network
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+
+    setActivationToInputNodes();
 }
 
 Genome::Genome(const Genome& other)
@@ -115,6 +119,22 @@ void Genome::MutationOut::clear()
 
     m_numNodesAdded = 0;
     m_numEdgesAdded = 0;
+}
+
+void Genome::setActivationAll(const Activation* activation)
+{
+    assert(m_network.get());
+
+    // Set activation for all hidden and output nodes.
+    for (auto itr : m_network->getNodes())
+    {
+        Node& node = m_network->accessNode(itr.first);
+        const Node::Type nodeType = node.getNodeType();
+        if (nodeType == Node::Type::HIDDEN || nodeType == Node::Type::OUTPUT)
+        {
+            node.setActivation(activation);
+        }
+    }
 }
 
 void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
@@ -483,6 +503,8 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
         newGenome.m_network->setEdgeEnabled(edge, false);
     }
 
+    newGenome.setActivationToInputNodes();
+
     return newGenome;
 }
 
@@ -555,13 +577,18 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
 void Genome::evaluate(const std::vector<float>& inputNodeValues) const
 {
     assert(inputNodeValues.size() == m_inputNodes.size());
-    assert(m_network.get());
 
     for (int i = 0; i < (int)inputNodeValues.size(); i++)
     {
         m_network->setNodeValue(m_inputNodes[i], inputNodeValues[i]);
     }
 
+    evaluate();
+}
+
+void Genome::evaluate() const
+{
+    assert(m_network.get());
     m_network->evaluate();
 }
 
@@ -591,3 +618,10 @@ bool Genome::validate() const
     return true;
 }
 
+void Genome::setActivationToInputNodes()
+{
+    for (NodeId nodeId : m_inputNodes)
+    {
+        m_network->accessNode(nodeId).setActivation(&Node::s_inputNodeActivation);
+    }
+}

@@ -55,6 +55,50 @@ TEST(Genome, CreateGenome)
     }
 }
 
+TEST(Genome, EvaluateGenome)
+{
+    using namespace NEAT;
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    // Create a genome.
+    Genome genome(cinfo);
+
+    const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
+
+    // Set activation func
+    Genome::Activation activation([](float value) { return value; });
+    genome.setActivationAll(&activation);
+
+    // Evaluate the network
+    std::vector<float> inputs;
+    inputs.push_back(1.f);
+    inputs.push_back(2.f);
+    genome.evaluate(inputs);
+
+    for (NodeId nodeId : outputNodes)
+    {
+        EXPECT_EQ(genome.getNetwork()->getNode(nodeId).getValue(), 3.f);
+    }
+
+    // Change an edge weight
+    genome.setEdgeWeight(EdgeId(0), 0.5f);
+
+    // Change activation
+    Genome::Activation activation2([](float value) { return value >= 3.f ? 1.f : 0.f; });
+    genome.setActivationAll(&activation2);
+
+    // Evaluate the network again.
+    genome.evaluate();
+
+    EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[0]).getValue(), 0.f);
+    EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[1]).getValue(), 1.f);
+}
+
 TEST(Genome, MutateGenome)
 {
     using namespace NEAT;

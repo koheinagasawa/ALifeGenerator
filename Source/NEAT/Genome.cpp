@@ -552,6 +552,19 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
     return disjointFactor * numDisjointEdges + params.m_weightFactor * sumWeightDiffs;
 }
 
+void Genome::evaluate(const std::vector<float>& inputNodeValues) const
+{
+    assert(inputNodeValues.size() == m_inputNodes.size());
+    assert(m_network.get());
+
+    for (int i = 0; i < (int)inputNodeValues.size(); i++)
+    {
+        m_network->setNodeValue(m_inputNodes[i], inputNodeValues[i]);
+    }
+
+    m_network->evaluate();
+}
+
 bool Genome::validate() const
 {
     // Make sure that the network is valid.

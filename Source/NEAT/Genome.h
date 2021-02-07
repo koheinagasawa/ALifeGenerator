@@ -219,6 +219,10 @@ namespace NEAT
         // Calculate and return distance between two genomes
         static float calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params);
 
+        // Evaluate this genome using the given input nodes.
+        // inputNodeValues has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
+        void evaluate(const std::vector<float>& inputNodeValues) const;
+
         // Return false if this genome contains any invalid data.
         bool validate() const;
 

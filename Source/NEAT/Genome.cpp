@@ -261,6 +261,8 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     // Function to assign innovation id to newly added edge and store its info in mutationOut.
     auto newEdgeAdded = [&](EdgeId newEdge)
     {
+        assert(numNewEdges < MutationOut::NUM_NEW_EDGES);
+
         // Store this innovation
         m_innovations.push_back(newEdge);
 
@@ -624,6 +626,26 @@ bool Genome::validate() const
         if (prev >= cur) return false;
 
         prev = cur;
+    }
+
+    // Make sure that input nodes are inconsistent
+    {
+        int numInputNodes = 0;
+        for (auto itr : m_network->getNodes())
+        {
+            if (m_network->getNode(itr.first).getNodeType() == Node::Type::INPUT)
+            {
+                numInputNodes++;
+            }
+        }
+
+        if (numInputNodes != (int)m_inputNodes.size()) return false;
+
+        for (NodeId nodeId : m_inputNodes)
+        {
+            if (!m_network->hasNode(nodeId)) return false;
+            if (m_network->getNode(nodeId).getNodeType() != Node::Type::INPUT) return false;
+        }
     }
 
     return true;

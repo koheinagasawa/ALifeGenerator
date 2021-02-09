@@ -5,6 +5,7 @@
     <ClCompile Include="Genome.cpp" />
     <ClCompile Include="Neat.cpp" />
     <ClCompile Include="Species.cpp" />
+    <ClCompile Include="Generation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />

@@ -13,8 +13,6 @@
 #include <Common/PseudoRandom.h>
 #include <Common/UniqueIdCounter.h>
 
-DECLARE_ID(GenomeId);
-
 namespace NEAT
 {
     // Helper class to manager unique node id and innovation id (edge id).

@@ -10,6 +10,7 @@
 #include <NEAT/Species.h>
 
 DECLARE_ID(GenerationId);
+DECLARE_ID(GenomeId);
 
 namespace NEAT
 {
@@ -17,7 +18,7 @@ namespace NEAT
     class Generation
     {
     public:
-        using GenomePtr = std::shared_ptr<const Genome>;
+        using GenomePtr = std::shared_ptr<Genome>;
         using GenerationPtr = std::shared_ptr<Generation>;
 
         struct GenomeData
@@ -30,9 +31,12 @@ namespace NEAT
             GenomePtr m_genome;
             GenomeId m_id;
             float m_fitness;
+
+            friend class Generation;
         };
 
-        using Genomes = std::shared_ptr<GenomeData>;
+        using Genomes = std::vector<GenomeData>;
+        using GenomesPtr = std::shared_ptr<Genomes>;
 
         struct Cinfo
         {
@@ -56,7 +60,7 @@ namespace NEAT
         Generation(const Cinfo& cinfo);
 
         // Constructor by a collection of Genomes.
-        Generation(const std::vector<GenomePtr>& genomes);
+        Generation(const GenomesPtr& genomes);
 
         // Parameters used in createNewGeneration()
         struct CreateNewGenParams
@@ -77,7 +81,7 @@ namespace NEAT
         // Create a new generation.
         GenerationPtr createNewGeneration(const CreateNewGenParams& params) const;
 
-        inline auto getGenomes() const->const Genomes& { return m_genomes; }
+        inline auto getGenomes() const->const GenomesPtr& { return m_genomes; }
 
         inline auto getId() const->GenerationId { return m_id; }
 
@@ -85,7 +89,7 @@ namespace NEAT
         // Constructor used in createNewGeneration().
         Generation(GenerationId id);
 
-        Genomes m_genomes;
+        GenomesPtr m_genomes;
         GenerationId m_id;
     };
 }

@@ -44,15 +44,31 @@ TEST(Species, AddGenomeToSpecies)
     calcDistParams.m_disjointFactor = 1.0f;
     calcDistParams.m_weightFactor = 1.0f;
 
+    EXPECT_EQ(species.getStagnantGenerationCount(), 0);
+
+    species.preNewGeneration();
+
     // Try to add the genome to the species
-    EXPECT_FALSE(species.tryAddGenome(genome1, 0.0001f, calcDistParams));
+    EXPECT_FALSE(species.tryAddGenome(genome1, 1.f, 0.0001f, calcDistParams));
     EXPECT_FALSE(species.hasMember());
-    EXPECT_TRUE(species.tryAddGenome(genome1, 5.f, calcDistParams));
+    EXPECT_TRUE(species.tryAddGenome(genome1, 1.f, 5.f, calcDistParams));
     EXPECT_TRUE(species.hasMember());
+
+    species.postNewGeneration();
+    EXPECT_EQ(species.getStagnantGenerationCount(), 0);
 
     // Clear members of the current generation.
     species.preNewGeneration();
-
     EXPECT_FALSE(species.hasMember());
+    species.postNewGeneration();
+
+    EXPECT_EQ(species.getStagnantGenerationCount(), 1);
+
+    species.preNewGeneration();
+    EXPECT_TRUE(species.tryAddGenome(genome1, 2.f, 5.f, calcDistParams));
+    EXPECT_TRUE(species.hasMember());
+    species.postNewGeneration();
+
+    EXPECT_EQ(species.getStagnantGenerationCount(), 1);
 }
 

@@ -27,9 +27,26 @@ void Species::preNewGeneration(PseudoRandom* randomIn)
     }
 
     m_members.clear();
+    m_bestFitness = 0.f;
+    m_bestGenome = nullptr;
 }
 
-bool Species::tryAddGenome(GenomePtr genome, float distanceThreshold, const Genome::CalcDistParams& params)
+void Species::postNewGeneration()
+{
+    if (m_bestFitness <= m_previousBestFitness)
+    {
+        // No improvement. Increment stagnant count.
+        m_stagnantCount++;
+    }
+    else
+    {
+        // There is improvement. Reset stagnant count.
+        m_previousBestFitness = m_bestFitness;
+        m_stagnantCount = 0;
+    }
+}
+
+bool Species::tryAddGenome(GenomePtr genome, float fitness, float distanceThreshold, const Genome::CalcDistParams& params)
 {
     // Calculate distance between the representative.
     const float distance = Genome::calcDistance(*genome.get(), m_representative, params);
@@ -37,6 +54,14 @@ bool Species::tryAddGenome(GenomePtr genome, float distanceThreshold, const Geno
     if (distance <= distanceThreshold)
     {
         m_members.push_back(genome);
+
+        // Update best fitness and genome.
+        if (fitness > m_bestFitness)
+        {
+            m_bestFitness = fitness;
+            m_bestGenome = genome;
+        }
+
         return true;
     }
 

@@ -14,29 +14,36 @@ DECLARE_ID(GenomeId);
 
 namespace NEAT
 {
+    class FitnessCalculator
+    {
+    public:
+        virtual float calcFitness(const Genome& genome) const = 0;
+    };
+
     // Generation for NEAT.
     class Generation
     {
     public:
         using GenomePtr = std::shared_ptr<Genome>;
-        using GenerationPtr = std::shared_ptr<Generation>;
+        using Genomes = std::vector<GenomePtr>;
+        using SpeciesList = std::vector<Species>;
 
         struct GenomeData
         {
         public:
-            inline void setFitness(float fitness) { m_fitness = fitness; }
             inline float getFitness() const { return m_fitness; }
 
         protected:
             GenomePtr m_genome;
             GenomeId m_id;
-            float m_fitness;
+            float m_fitness = 0.f;
+            bool m_canReproduce;
 
             friend class Generation;
         };
 
-        using Genomes = std::vector<GenomeData>;
-        using GenomesPtr = std::shared_ptr<Genomes>;
+        using GenomeDatas = std::vector<GenomeData>;
+        using GenomeDatasPtr = std::shared_ptr<GenomeDatas>;
 
         struct Cinfo
         {
@@ -52,6 +59,8 @@ namespace NEAT
             // Maximum weight for initial set of genomes.
             float m_maxWeight;
 
+            FitnessCalculator* m_fitnessCalculator;
+
             // Random generator.
             PseudoRandom* m_random = nullptr;
         };
@@ -60,7 +69,7 @@ namespace NEAT
         Generation(const Cinfo& cinfo);
 
         // Constructor by a collection of Genomes.
-        Generation(const GenomesPtr& genomes);
+        Generation(const Genomes& genomes, FitnessCalculator* fitnessCalculator);
 
         // Parameters used in createNewGeneration()
         struct CreateNewGenParams
@@ -79,17 +88,26 @@ namespace NEAT
         };
 
         // Create a new generation.
-        GenerationPtr createNewGeneration(const CreateNewGenParams& params) const;
+        auto createNewGeneration(const CreateNewGenParams& params) const->Generation;
 
-        inline auto getGenomes() const->const GenomesPtr& { return m_genomes; }
+        // Set values of input nodes.
+        // inputNodeValues has to be the same size as the number of input nodes and has to be sorted in the same order as them.
+        void setInputNodeValues(const std::vector<float>& values);
+
+        inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
+        inline int getNumGenomes() const { return m_genomes->size(); }
+
+        inline auto getFitnessCalculator() const->const FitnessCalculator& { return *m_fitnessCalculator; }
 
         inline auto getId() const->GenerationId { return m_id; }
 
     protected:
         // Constructor used in createNewGeneration().
-        Generation(GenerationId id);
+        Generation(GenerationId id, FitnessCalculator* fitnessCalculator);
 
-        GenomesPtr m_genomes;
+        GenomeDatasPtr m_genomes;
+        SpeciesList m_species;
+        FitnessCalculator* m_fitnessCalculator;
         GenerationId m_id;
     };
 }

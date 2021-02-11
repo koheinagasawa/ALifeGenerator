@@ -31,7 +31,13 @@ namespace NEAT
         struct GenomeData
         {
         public:
+            GenomeData() = default;
+            GenomeData(GenomePtr genome, GenomeId id);
+
+            void init(GenomePtr genome, GenomeId id);
+
             inline float getFitness() const { return m_fitness; }
+            inline bool canReproduce() const { return m_canReproduce; }
 
         protected:
             GenomePtr m_genome;
@@ -59,6 +65,7 @@ namespace NEAT
             // Maximum weight for initial set of genomes.
             float m_maxWeight;
 
+            // Fitness calculator.
             FitnessCalculator* m_fitnessCalculator;
 
             // Random generator.
@@ -83,31 +90,50 @@ namespace NEAT
             // Parameters used for distance calculation of two genomes.
             Genome::CalcDistParams m_calcDistParams;
 
+            // Minimum numbers of species members to copy its champion without modifying it.
+            uint16_t m_minMembersInSpeciesToCopyChampion = 5;
+
+            // Maximum count of generations which one species can stay in stagnant.
+            // Species who is stagnant more than this count is not allowed to reproduce.
+            uint16_t m_maxStagnantCount = 5;
+
+            // Rate of the number of genomes to generate by cross over.
+            float m_crossOverRate = 0.75f;
+
+            // Rate of interspecies crossover.
+            float m_interSpeciesCrossOverRate = 0.001f;
+
             // Distance threshold used for speciation.
             float m_speciationDistanceThreshold;
+
+            // Random generator.
+            PseudoRandom* m_random = nullptr;
         };
 
         // Create a new generation.
-        auto createNewGeneration(const CreateNewGenParams& params) const->Generation;
+        void createNewGeneration(const CreateNewGenParams& params);
 
         // Set values of input nodes.
         // inputNodeValues has to be the same size as the number of input nodes and has to be sorted in the same order as them.
         void setInputNodeValues(const std::vector<float>& values);
 
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
-        inline int getNumGenomes() const { return m_genomes->size(); }
+        inline int getNumGenomes() const { return m_numGenomes; }
+
+        inline auto getSpecies() const->const SpeciesList& { return m_species; }
 
         inline auto getFitnessCalculator() const->const FitnessCalculator& { return *m_fitnessCalculator; }
 
         inline auto getId() const->GenerationId { return m_id; }
 
     protected:
-        // Constructor used in createNewGeneration().
-        Generation(GenerationId id, FitnessCalculator* fitnessCalculator);
+        void addGenome(GenomePtr genome);
 
         GenomeDatasPtr m_genomes;
+        GenomeDatasPtr m_prevGenGenomes;
         SpeciesList m_species;
         FitnessCalculator* m_fitnessCalculator;
         GenerationId m_id;
+        int m_numGenomes;
     };
 }

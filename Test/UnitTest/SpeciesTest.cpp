@@ -24,7 +24,7 @@ TEST(Species, AddGenomeToSpecies)
     // Create a species
     Species species(initGenome);
 
-    EXPECT_FALSE(species.hasMember());
+    EXPECT_EQ(species.getNumMembers(), 0);
 
     using GenomePtr = std::shared_ptr<Genome>;
 
@@ -50,23 +50,23 @@ TEST(Species, AddGenomeToSpecies)
 
     // Try to add the genome to the species
     EXPECT_FALSE(species.tryAddGenome(genome1, 1.f, 0.0001f, calcDistParams));
-    EXPECT_FALSE(species.hasMember());
+    EXPECT_EQ(species.getNumMembers(), 1);
     EXPECT_TRUE(species.tryAddGenome(genome1, 1.f, 5.f, calcDistParams));
-    EXPECT_TRUE(species.hasMember());
+    EXPECT_EQ(species.getNumMembers(), 2);
 
     species.postNewGeneration();
     EXPECT_EQ(species.getStagnantGenerationCount(), 0);
 
     // Clear members of the current generation.
     species.preNewGeneration();
-    EXPECT_FALSE(species.hasMember());
+    EXPECT_EQ(species.getNumMembers(), 0);
     species.postNewGeneration();
 
     EXPECT_EQ(species.getStagnantGenerationCount(), 1);
 
     species.preNewGeneration();
     EXPECT_TRUE(species.tryAddGenome(genome1, 2.f, 5.f, calcDistParams));
-    EXPECT_TRUE(species.hasMember());
+    EXPECT_EQ(species.getNumMembers(), 1);
     species.postNewGeneration();
 
     EXPECT_EQ(species.getStagnantGenerationCount(), 1);

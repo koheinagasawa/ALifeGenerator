@@ -16,7 +16,7 @@ Species::Species(const Genome& initialRepresentative)
 
 void Species::preNewGeneration(PseudoRandom* randomIn)
 {
-    assert(hasMember());
+    assert(getNumMembers() > 0);
 
     // Select a new representative
     {

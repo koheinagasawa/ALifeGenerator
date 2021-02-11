@@ -31,7 +31,9 @@ namespace NEAT
         // Return true if the genome is added to this species and otherwise return false.
         bool tryAddGenome(GenomePtr genome, float fitness, float distanceThreshold, const Genome::CalcDistParams& params);
 
-        inline bool hasMember() const { return m_members.size() > 0; }
+        inline auto getBestGenome() const->GenomePtr { return m_bestGenome; }
+
+        inline int getNumMembers() const { return m_members.size(); }
 
         inline int getStagnantGenerationCount() const { return m_stagnantCount; }
 

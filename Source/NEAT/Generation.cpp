@@ -264,26 +264,13 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         m_genomes->resize(numGenomes);
     }
 
-    // Remove stagnant species first
-    {
-        auto itr = m_species.begin();
-        while (itr != m_species.end())
-        {
-            if (itr->getStagnantGenerationCount() >= params.m_maxStagnantCount)
-            {
-                itr = m_species.erase(itr);
-            }
-            else
-            {
-                itr++;
-            }
-        }
-    }
-
     // Select genomes which are copied to the next generation unchanged
     for (const Species& species : m_species)
     {
-        assert(species.getStagnantGenerationCount() < params.m_maxStagnantCount);
+        if (species.getStagnantGenerationCount() >= params.m_maxStagnantCount)
+        {
+            continue;
+        }
 
         if (species.getNumMembers() >= params.m_minMembersInSpeciesToCopyChampion)
         {
@@ -374,6 +361,22 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 
     // Speciation
     {
+        // Remove stagnant species and empty species first
+        {
+            auto itr = m_species.begin();
+            while (itr != m_species.end())
+            {
+                if (itr->getNumMembers() == 0 ||  itr->getStagnantGenerationCount() >= params.m_maxStagnantCount)
+                {
+                    itr = m_species.erase(itr);
+                }
+                else
+                {
+                    itr++;
+                }
+            }
+        }
+
         for (Species& s : m_species)
         {
             s.preNewGeneration(&random);

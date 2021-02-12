@@ -25,7 +25,7 @@ namespace
         }
 
         // Set genomes to select and initialize internal data.
-        bool setGenomes(const Generation::GenomeDatas& genomesIn)
+        bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species)
         {
             assert(genomesIn.size() > 0);
 
@@ -35,6 +35,7 @@ namespace
             m_sumFitness.push_back(0);
 
             int currentSpecies = genomesIn[0].getSpeciesIndex();
+            float invCurrentSpeciesNumMembers = 1.f / (float)species[currentSpecies].getNumMembers();
             int currentSpeciesStartIndex = 0;
 
 #ifdef _DEBUG
@@ -47,19 +48,22 @@ namespace
                 if (g.canReproduce())
                 {
                     m_genomes.push_back(&g);
-                    sumFitness += g.getFitness();
-                    m_sumFitness.push_back(sumFitness);
 
                     if (currentSpecies != g.getSpeciesIndex())
                     {
                         m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
 
                         currentSpecies = g.getSpeciesIndex();
+                        invCurrentSpeciesNumMembers = 1.f / (float)species[currentSpecies].getNumMembers();
                         currentSpeciesStartIndex = (int)m_genomes.size();
 #ifdef _DEBUG
                         assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
 #endif
                     }
+
+                    const float adjustedFitness = g.getFitness() * invCurrentSpeciesNumMembers;
+                    sumFitness += adjustedFitness;
+                    m_sumFitness.push_back(sumFitness);
                 }
             }
 
@@ -239,7 +243,9 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 {
     PseudoRandom& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
 
-    const int numGenomes = getNumGenomes();;
+    const int numGenomes = getNumGenomes();
+    assert(numGenomes > 1);
+
     int numGenomesToAdd = numGenomes;
     std::swap(m_genomes, m_prevGenGenomes);
 
@@ -286,7 +292,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     }
 
     GenomeSelector selector(random);
-    selector.setGenomes(*m_prevGenGenomes);
+    selector.setGenomes(*m_prevGenGenomes, m_species);
 
     // Select and mutate genomes
     {
@@ -313,9 +319,8 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 
     // Select and generate new genomes by crossover
     {
-        const int numGenomesToCrossOver = std::min(numGenomesToAdd, int(numGenomes * params.m_crossOverRate));
-        int numGenomesToInterSpeciesCO = (int)(numGenomesToCrossOver * params.m_interSpeciesCrossOverRate);
-        int numGenomesToIntraSpeciesCO = (int)(numGenomesToCrossOver - numGenomesToInterSpeciesCO);
+        int numGenomesToInterSpeciesCO = (int)(numGenomesToAdd * params.m_interSpeciesCrossOverRate);
+        int numGenomesToIntraSpeciesCO = (int)(numGenomesToAdd - numGenomesToInterSpeciesCO);
 
         auto crossOver = [&addGenomeToNewGen, &params](const GenomeData* g1, const GenomeData* g2)
         {
@@ -338,7 +343,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
                 // we have no species which has more than one genome in it.
                 // Just fall back to doing inter species cross over for all the genomes.
                 assert(i == 0);
-                numGenomesToInterSpeciesCO = numGenomesToCrossOver;
+                numGenomesToInterSpeciesCO = numGenomesToAdd;
                 break;
             }
 
@@ -358,11 +363,55 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         }
     }
 
-    // Speciation
+    // We should have added all the genomes at this point.
+    assert(m_genomes->size() == m_prevGenGenomes->size());
 
     // Evaluate all genomes
+    for (GenomeData& gd : *m_genomes)
+    {
+        gd.m_fitness = m_fitnessCalculator->calcFitness(*gd.m_genome);
+    }
+
+    // Speciation
+    {
+        for (Species& s : m_species)
+        {
+            s.preNewGeneration(&random);
+        }
+
+        for (GenomeData& gd : *m_genomes)
+        {
+            // Try to find a species
+            int i = 0;
+            for (; i < (int)m_species.size(); i++)
+            {
+                if (m_species[i].tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams))
+                {
+                    gd.m_speciesIndex = i;
+                    break;
+                }
+            }
+
+            if (i == (int)m_species.size())
+            {
+                // No species found. Create a new one for this genome.
+                gd.m_speciesIndex = i;
+                m_species.push_back(Species(*gd.m_genome));
+                m_species.back().tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams);
+            }
+        }
+
+        for (Species& s : m_species)
+        {
+            s.postNewGeneration();
+        }
+    }
 
     // Mark genomes which shouldn't reproduce anymore
+    for(GenomeData& gd : *m_genomes)
+    {
+        gd.m_canReproduce = m_species[gd.getSpeciesIndex()].getStagnantGenerationCount() < params.m_maxStagnantCount;
+    }
 
     // Update the generation id.
     m_id = GenerationId(m_id.val() + 1);

@@ -31,19 +31,24 @@ namespace NEAT
         struct GenomeData
         {
         public:
+            // Default constructor
             GenomeData() = default;
+            // Constructor with a pointer to the genome and its id.
             GenomeData(GenomePtr genome, GenomeId id);
 
+            // Initialize by a pointer to the genome and its id.
             void init(GenomePtr genome, GenomeId id);
 
             inline float getFitness() const { return m_fitness; }
+            inline int getSpeciesIndex() const { return m_speciesIndex; }
             inline bool canReproduce() const { return m_canReproduce; }
 
         protected:
             GenomePtr m_genome;
             GenomeId m_id;
             float m_fitness = 0.f;
-            bool m_canReproduce;
+            int m_speciesIndex = -1;
+            bool m_canReproduce = true;
 
             friend class Generation;
         };
@@ -71,12 +76,6 @@ namespace NEAT
             // Random generator.
             PseudoRandom* m_random = nullptr;
         };
-
-        // Constructor by Cinfo.
-        Generation(const Cinfo& cinfo);
-
-        // Constructor by a collection of Genomes.
-        Generation(const Genomes& genomes, FitnessCalculator* fitnessCalculator);
 
         // Parameters used in createNewGeneration()
         struct CreateNewGenParams
@@ -109,6 +108,12 @@ namespace NEAT
             // Random generator.
             PseudoRandom* m_random = nullptr;
         };
+
+        // Constructor by Cinfo.
+        Generation(const Cinfo& cinfo);
+
+        // Constructor by a collection of Genomes.
+        Generation(const Genomes& genomes, FitnessCalculator* fitnessCalculator);
 
         // Create a new generation.
         void createNewGeneration(const CreateNewGenParams& params);

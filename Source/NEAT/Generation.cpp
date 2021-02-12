@@ -7,7 +7,154 @@
 #include <NEAT/Neat.h>
 #include <NEAT/Generation.h>
 
+#include <limits>
+
 using namespace NEAT;
+
+namespace
+{
+    // Helper class to select a random genome by taking fitness into account.
+    class GenomeSelector
+    {
+    public:
+
+        // Constructor
+        GenomeSelector(PseudoRandom& random)
+            : m_random(m_random)
+        {
+        }
+
+        // Set genomes to select and initialize internal data.
+        bool setGenomes(const Generation::GenomeDatas& genomesIn)
+        {
+            assert(genomesIn.size() > 0);
+
+            m_genomes.reserve(genomesIn.size());
+            m_sumFitness.reserve(genomesIn.size()+1);
+            float sumFitness = 0;
+            m_sumFitness.push_back(0);
+
+            int currentSpecies = genomesIn[0].getSpeciesIndex();
+            int currentSpeciesStartIndex = 0;
+
+#ifdef _DEBUG
+            std::unordered_set<int> speciesIndices;
+            speciesIndices.insert(currentSpecies);
+#endif
+
+            for (const Generation::GenomeData& g : genomesIn)
+            {
+                if (g.canReproduce())
+                {
+                    m_genomes.push_back(&g);
+                    sumFitness += g.getFitness();
+                    m_sumFitness.push_back(sumFitness);
+
+                    if (currentSpecies != g.getSpeciesIndex())
+                    {
+                        m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
+
+                        currentSpecies = g.getSpeciesIndex();
+                        currentSpeciesStartIndex = (int)m_genomes.size();
+#ifdef _DEBUG
+                        assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
+#endif
+                    }
+                }
+            }
+
+            if (m_genomes.size() == 0 || sumFitness == 0)
+            {
+                return false;
+            }
+
+            m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
+
+            assert(m_genomes.size() + 1 == m_sumFitness.size());
+
+            return true;
+        }
+
+        // Select a random genome.
+        auto selectRandomGenome()->const Generation::GenomeData*
+        {
+            return selectRandomGenome(0, m_genomes.size());
+        }
+
+        // Select two random genomes in the same species.
+        void selectTwoRandomGenomesInSameSpecies(const Generation::GenomeData*& g1, const Generation::GenomeData*& g2)
+        {
+            assert(m_spciecesStartEndIndices.size() > 0);
+
+            g1 = nullptr;
+            g2 = nullptr;
+
+            if (m_genomes.size() <= 1 || (m_genomes.size() - m_spciecesStartEndIndices.size()) <= 1)
+            {
+                // None of species has more than one genomes.
+                return;
+            }
+
+            while (1)
+            {
+                // Select a random genome.
+                g1 = selectRandomGenome(0, m_genomes.size());
+                assert(g1);
+
+                // Get start and end indices of the species of g1.
+                const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesIndex());
+
+                if (startEnd.m_end - startEnd.m_start < 2)
+                {
+                    // There are only one genome in this species. Try to select different species.
+                    continue;
+                }
+
+                // Select g2 among the species.
+                g2 = g1;
+                while (g1 == g2)
+                {
+                    g2 = selectRandomGenome(startEnd.m_start, startEnd.m_end);
+                }
+
+                break;
+            }
+
+            assert(g1->getSpeciesIndex() == g2->getSpeciesIndex());
+        }
+
+    private:
+        // Select a random genome between start and end (not including end) in m_genomes array.
+        const Generation::GenomeData* selectRandomGenome(int start, int end)
+        {
+            assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
+            assert(start >= 0 &&  end < (int)m_sumFitness.size() && start < end);
+
+            const float v = m_random.randomReal(m_sumFitness[start], m_sumFitness[end] - std::numeric_limits<float>::epsilon());
+            for (int i = start; i < end; i++)
+            {
+                if (v < m_sumFitness[i+1])
+                {
+                    return m_genomes[i];
+                }
+            }
+
+            assert(0);
+            return nullptr;
+        }
+
+        struct IndexSet
+        {
+            int m_start;
+            int m_end;
+        };
+
+        std::vector<const Generation::GenomeData*> m_genomes;
+        std::vector<float> m_sumFitness;
+        std::unordered_map<int, IndexSet> m_spciecesStartEndIndices;
+        PseudoRandom& m_random;
+    };
+}
 
 Generation::GenomeData::GenomeData(GenomePtr genome, GenomeId id)
     : m_genome(genome)
@@ -138,6 +285,9 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         }
     }
 
+    GenomeSelector selector(random);
+    selector.setGenomes(*m_prevGenGenomes);
+
     // Select and mutate genomes
     {
         const int numGenomesToSelect = std::min(numGenomesToAdd, int(numGenomes * (1.f - params.m_crossOverRate)));
@@ -146,13 +296,12 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         while (i < numGenomesToSelect)
         {
             // Select a random genome.
-            // TODO Take fitness into account.
-            const GenomeData& gd = (*m_prevGenGenomes)[random.randomInteger(0, numGenomes - 1)];
+            const GenomeData* gd = selector.selectRandomGenome();
 
-            if (!gd.canReproduce()) continue;
+            assert(gd->canReproduce());
 
             // Copy genome in this generation first.
-            GenomePtr copy = std::make_shared<Genome>(*gd.m_genome);
+            GenomePtr copy = std::make_shared<Genome>(*gd->m_genome);
 
             // Mutate the genome.
             copy->mutate(params.m_mutationParams, mout);
@@ -165,9 +314,47 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     // Select and generate new genomes by crossover
     {
         const int numGenomesToCrossOver = std::min(numGenomesToAdd, int(numGenomes * params.m_crossOverRate));
-        for (int i = 0; i < numGenomesToCrossOver; i++)
-        {
+        int numGenomesToInterSpeciesCO = (int)(numGenomesToCrossOver * params.m_interSpeciesCrossOverRate);
+        int numGenomesToIntraSpeciesCO = (int)(numGenomesToCrossOver - numGenomesToInterSpeciesCO);
 
+        auto crossOver = [&addGenomeToNewGen, &params](const GenomeData* g1, const GenomeData* g2)
+        {
+            assert(g1 && g2 && g1->canReproduce() && g2->canReproduce());
+            bool isSameFitness = g1->getFitness() == g2->getFitness();
+            GenomePtr newGenome = std::make_shared<Genome>(Genome::crossOver(*g1->m_genome, *g2->m_genome, isSameFitness, params.m_crossOverParams));
+            addGenomeToNewGen(newGenome);
+        };
+
+        for (int i = 0; i < numGenomesToIntraSpeciesCO; i++)
+        {
+            const GenomeData* g1 = nullptr;
+            const GenomeData* g2 = nullptr;
+
+            selector.selectTwoRandomGenomesInSameSpecies(g1, g2);
+
+            if (g1 == nullptr)
+            {
+                // Failed to select two genomes in the same species, which means
+                // we have no species which has more than one genome in it.
+                // Just fall back to doing inter species cross over for all the genomes.
+                assert(i == 0);
+                numGenomesToInterSpeciesCO = numGenomesToCrossOver;
+                break;
+            }
+
+            crossOver(g1, g2);
+        }
+
+        for (int i = 0; i < numGenomesToInterSpeciesCO; i++)
+        {
+            const GenomeData* g1 = selector.selectRandomGenome();
+            const GenomeData* g2 = g1;
+            while (g1 == g2)
+            {
+                g2 = selector.selectRandomGenome();
+            }
+
+            crossOver(g1, g2);
         }
     }
 

@@ -14,7 +14,7 @@ DECLARE_ID(GenomeId);
 
 namespace NEAT
 {
-    class FitnessCalculator
+    class FitnessCalculatorBase
     {
     public:
         virtual float calcFitness(const Genome& genome) const = 0;
@@ -33,17 +33,19 @@ namespace NEAT
         public:
             // Default constructor
             GenomeData() = default;
+
+            inline auto getGenome() const->const Genome* { return m_genome.get(); }
+            inline float getFitness() const { return m_fitness; }
+            inline int getSpeciesIndex() const { return m_speciesIndex; }
+            inline bool canReproduce() const { return m_canReproduce; }
+
+        protected:
             // Constructor with a pointer to the genome and its id.
             GenomeData(GenomePtr genome, GenomeId id);
 
             // Initialize by a pointer to the genome and its id.
             void init(GenomePtr genome, GenomeId id);
 
-            inline float getFitness() const { return m_fitness; }
-            inline int getSpeciesIndex() const { return m_speciesIndex; }
-            inline bool canReproduce() const { return m_canReproduce; }
-
-        protected:
             GenomePtr m_genome;
             GenomeId m_id;
             float m_fitness = 0.f;
@@ -71,7 +73,7 @@ namespace NEAT
             float m_maxWeight;
 
             // Fitness calculator.
-            FitnessCalculator* m_fitnessCalculator;
+            FitnessCalculatorBase* m_fitnessCalculator;
 
             // Random generator.
             PseudoRandom* m_random = nullptr;
@@ -103,7 +105,7 @@ namespace NEAT
             float m_interSpeciesCrossOverRate = 0.001f;
 
             // Distance threshold used for speciation.
-            float m_speciationDistanceThreshold;
+            float m_speciationDistanceThreshold = 3.f;
 
             // Random generator.
             PseudoRandom* m_random = nullptr;
@@ -113,7 +115,7 @@ namespace NEAT
         Generation(const Cinfo& cinfo);
 
         // Constructor by a collection of Genomes.
-        Generation(const Genomes& genomes, FitnessCalculator* fitnessCalculator);
+        Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCalculator);
 
         // Create a new generation.
         void createNewGeneration(const CreateNewGenParams& params);
@@ -127,7 +129,7 @@ namespace NEAT
 
         inline auto getSpecies() const->const SpeciesList& { return m_species; }
 
-        inline auto getFitnessCalculator() const->const FitnessCalculator& { return *m_fitnessCalculator; }
+        inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
 
         inline auto getId() const->GenerationId { return m_id; }
 
@@ -137,7 +139,7 @@ namespace NEAT
         GenomeDatasPtr m_genomes;
         GenomeDatasPtr m_prevGenGenomes;
         SpeciesList m_species;
-        FitnessCalculator* m_fitnessCalculator;
+        FitnessCalculatorBase* m_fitnessCalculator;
         GenerationId m_id;
         int m_numGenomes;
     };

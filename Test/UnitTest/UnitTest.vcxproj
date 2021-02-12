@@ -52,6 +52,7 @@
     <ClInclude Include="UnitTestPch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GenerationTest.cpp" />
     <ClCompile Include="GenomeTest.cpp" />
     <ClCompile Include="MutableNetworkTest.cpp" />
     <ClCompile Include="NeuralNetworkTest.cpp" />

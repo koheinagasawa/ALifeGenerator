@@ -210,7 +210,7 @@ Generation::Generation(const Cinfo& cinfo)
 
 }
 
-Generation::Generation(const Genomes& genomes, FitnessCalculator* fitnessCalculator)
+Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCalculator)
     : m_id(GenerationId(0))
     , m_fitnessCalculator(fitnessCalculator)
 {

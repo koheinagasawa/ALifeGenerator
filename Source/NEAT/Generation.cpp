@@ -79,7 +79,7 @@ namespace
 
                 m_genomes.push_back(&g);
 
-                assert(g.getFitness() >= 0);
+                assert(g.getFitness() > 0);
 
                 const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
                 sumFitness += adjustedFitness;
@@ -142,6 +142,13 @@ namespace
                     // There are only one genome in this species. Try to select different species.
                     continue;
                 }
+                else if (startEnd.m_end - startEnd.m_start == 2)
+                {
+                    // There are only two genomes in this species.
+                    g1 = m_genomes[startEnd.m_start];
+                    g2 = m_genomes[startEnd.m_end-1];
+                    break;
+                }
 
                 // Select g2 among the species.
                 g2 = g1;
@@ -165,13 +172,13 @@ namespace
 
             if (m_sumFitness[start] < m_sumFitness[end])
             {
-                const float v = m_random.randomReal(m_sumFitness[start], m_sumFitness[end]);
+                // std::uniform_real_distribution should return [min, max), but if we call randomReal(m_sumFitness[start], m_sumFitness[end])
+                // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
+                // calculation later.
+                const float v = m_random.randomReal(m_sumFitness[start], std::nexttoward(m_sumFitness[end], -std::numeric_limits<float>::max()));
                 for (int i = start; i < end; i++)
                 {
-                    // Here we should check v < m_sumFitness[i + 1] instead of <= in fact.
-                    // However, m_random.randomReal above can return the max value (m_sumFitness[end]) although it should be exclusive about the upper bound.
-                    // We use <= for now but it would add a slight bias on genome selection.
-                    if (v <= m_sumFitness[i + 1])
+                    if (v < m_sumFitness[i + 1])
                     {
                         return m_genomes[i];
                     }

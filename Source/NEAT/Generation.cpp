@@ -153,9 +153,9 @@ namespace
             return nullptr;
         }
 
-        inline float calcFitnessSharingFactor(SpeciesId speciesIndex, const Generation::SpeciesList& species) const
+        inline float calcFitnessSharingFactor(SpeciesId speciesId, const Generation::SpeciesList& species) const
         {
-            return speciesIndex >= 0 ? 1.f / (float)species.at(speciesIndex)->getNumMembers() : 1.0f;
+            return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
         }
 
         struct IndexSet

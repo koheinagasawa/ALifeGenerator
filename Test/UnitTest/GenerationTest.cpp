@@ -72,7 +72,6 @@ TEST(Generation, IncrementGeneration)
     EXPECT_EQ(generation.getNumGenomes(), 100);
     const Generation::GenomeData& gd = generation.getGenomes()[0];
     EXPECT_TRUE(gd.getGenome());
-    EXPECT_EQ(gd.getFitness(), 1.f);
     EXPECT_NE(gd.getSpeciesId(), -1);
     EXPECT_EQ(generation.getId().val(), 1);
 }

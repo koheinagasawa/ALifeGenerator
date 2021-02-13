@@ -63,8 +63,12 @@ TEST(Generation, IncrementGeneration)
     cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
     cinfo.m_genomeCinfo.m_numInputNodes = 3;
     cinfo.m_genomeCinfo.m_numOutputNodes = 3;
+    cinfo.m_maxWeight = 10.f;
+    cinfo.m_minWeight = -10.f;
     cinfo.m_fitnessCalculator = &calclator;
     Generation generation(cinfo);
+
+    generation.setInputNodeValues({ 1.f, 1.f, 1.f });
 
     Generation::CreateNewGenParams params;
     generation.createNewGeneration(params);
@@ -74,4 +78,8 @@ TEST(Generation, IncrementGeneration)
     EXPECT_TRUE(gd.getGenome());
     EXPECT_NE(gd.getSpeciesId(), -1);
     EXPECT_EQ(generation.getId().val(), 1);
+
+    generation.createNewGeneration(params);
+    EXPECT_EQ(generation.getNumGenomes(), 100);
+    EXPECT_EQ(generation.getId().val(), 2);
 }

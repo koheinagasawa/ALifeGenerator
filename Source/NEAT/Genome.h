@@ -121,10 +121,10 @@ namespace NEAT
             float m_weightMutationNewValRate = 0.1f;
 
             // Minimum value when an edge gets a new random weight by mutation.
-            float m_weightMutationNewValMin = -10.f;
+            float m_weightMutationValMin = -10.f;
 
             // Maximum value when an edge gets a new random weight by mutation.
-            float m_weightMutationNewValMax = 10.f;
+            float m_weightMutationValMax = 10.f;
 
             // Probability of mutation to add a new node. It has to be between 0 and 1.
             float m_addNodeMutationRate = 0.03f;

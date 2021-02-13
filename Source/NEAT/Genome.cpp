@@ -149,7 +149,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
     assert(params.m_weightMutationRate >= 0 && params.m_weightMutationRate <= 1);
     assert(params.m_weightMutationPerturbation >= 0 && params.m_weightMutationPerturbation <= 1);
     assert(params.m_weightMutationNewValRate >= 0 && params.m_weightMutationNewValRate <= 1);
-    assert(params.m_weightMutationNewValMin <= params.m_weightMutationNewValMax);
+    assert(params.m_weightMutationValMin <= params.m_weightMutationValMax);
     assert(params.m_addNodeMutationRate >= 0 && params.m_addNodeMutationRate <= 1);
     assert(params.m_addEdgeMutationRate >= 0 && params.m_addEdgeMutationRate <= 1);
     assert(params.m_newEdgeMinWeight <= params.m_newEdgeMaxWeight);
@@ -170,7 +170,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
             if (random->randomReal01() <= params.m_weightMutationNewValRate)
             {
                 // Assign a completely new random weight.
-                m_network->setWeight(edgeId, random->randomReal(params.m_weightMutationNewValMin, params.m_weightMutationNewValMax));
+                m_network->setWeight(edgeId, random->randomReal(params.m_weightMutationValMin, params.m_weightMutationValMax));
             }
             else
             {
@@ -178,6 +178,7 @@ void Genome::mutate(const MutationParams& params, MutationOut& mutationOut)
                 float weight = m_network->getWeight(edgeId);
                 const float perturbation = random->randomReal(-params.m_weightMutationPerturbation, params.m_weightMutationPerturbation);
                 weight = weight * (1.0f + perturbation);
+                weight = std::max(params.m_weightMutationValMin, std::min(params.m_weightMutationValMax, weight));
                 m_network->setWeight(edgeId, weight);
             }
         }

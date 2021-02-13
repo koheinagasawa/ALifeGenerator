@@ -294,7 +294,11 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 
         if (species->getNumMembers() >= params.m_minMembersInSpeciesToCopyChampion)
         {
-            addGenomeToNewGen(species->getBestGenome());
+            GenomePtr best = species->getBestGenome();
+            if (best)
+            {
+                addGenomeToNewGen(best);
+            }
         }
     }
 
@@ -336,6 +340,8 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             addGenomeToNewGen(copy);
             i++;
         }
+
+        //TODO check the same structural mutation is assigned the same innovation id.
     }
 
     // Select and generate new genomes by crossover.
@@ -398,7 +404,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             while (itr != m_species.end())
             {
                 const SpeciesPtr& s = itr->second;
-                if (s->getNumMembers() == 0 ||  s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
+                if (s->getNumMembers() == 0 || s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
                 {
                     itr = m_species.erase(itr);
                 }
@@ -421,7 +427,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         {
             // Try to find a species.
             auto itr = m_species.begin();
-            for(; itr != m_species.end(); itr++)
+            for (; itr != m_species.end(); itr++)
             {
                 SpeciesPtr& s = itr->second;
                 if (s->tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams))
@@ -447,6 +453,12 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             SpeciesPtr& s = itr.second;
             s->postNewGeneration();
         }
+
+        // Sort genomes by species id
+        std::sort(m_genomes->begin(), m_genomes->end(), [](const GenomeData& g1, const GenomeData& g2)
+            {
+                return g1.getSpeciesId() != g2.getSpeciesId() ? g1.getSpeciesId() > g2.getSpeciesId() : g1.getFitness() > g2.getFitness();
+            });
     }
 
     // Mark genomes which shouldn't reproduce anymore.
@@ -474,6 +486,7 @@ void Generation::calcFitness()
 {
     for (GenomeData& gd : *m_genomes)
     {
+        gd.m_genome->evaluate();
         gd.m_fitness = m_fitnessCalculator->calcFitness(*gd.m_genome);
     }
 }

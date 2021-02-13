@@ -124,6 +124,9 @@ namespace NEAT
         // inputNodeValues has to be the same size as the number of input nodes and has to be sorted in the same order as them.
         void setInputNodeValues(const std::vector<float>& values);
 
+        // Calculate fitness of all the genomes.
+        void calcFitness();
+
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
         inline int getNumGenomes() const { return m_numGenomes; }
 

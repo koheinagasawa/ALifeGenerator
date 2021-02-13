@@ -385,10 +385,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     assert(m_genomes->size() == m_prevGenGenomes->size());
 
     // Evaluate all genomes
-    for (GenomeData& gd : *m_genomes)
-    {
-        gd.m_fitness = m_fitnessCalculator->calcFitness(*gd.m_genome);
-    }
+    calcFitness();
 
     // Speciation
     {
@@ -459,6 +456,14 @@ void Generation::setInputNodeValues(const std::vector<float>& values)
     {
         GenomePtr& genome = (*m_genomes)[i].m_genome;
         genome->setInputNodeValues(values);
+    }
+}
+
+void Generation::calcFitness()
+{
+    for (GenomeData& gd : *m_genomes)
+    {
+        gd.m_fitness = m_fitnessCalculator->calcFitness(*gd.m_genome);
     }
 }
 

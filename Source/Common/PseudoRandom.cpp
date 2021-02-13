@@ -7,6 +7,8 @@
 #include <Common/Common.h>
 #include <Common/PseudoRandom.h>
 
+#include <cassert>
+
 PseudoRandom PseudoRandom::s_instance(0);
 
 PseudoRandom& PseudoRandom::getInstance()
@@ -21,7 +23,11 @@ PseudoRandom::PseudoRandom(int seed)
 
 float PseudoRandom::randomReal01()
 {
-    return randomReal(0.f, std::nexttoward(1.f, std::numeric_limits<float>::max()));
+    float v = randomReal(0.f, std::nexttoward(1.f, std::numeric_limits<float>::max()));
+    // Make sure that v is [0, 1] range. std::uniform_real_distribution should return a value in
+    // [min, max) range but it seems it does include max value.
+    assert(v <= 1.0f);
+    return v;
 }
 
 float PseudoRandom::randomReal(float min, float max)

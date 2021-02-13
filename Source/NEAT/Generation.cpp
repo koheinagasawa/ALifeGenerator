@@ -17,12 +17,8 @@ namespace
     class GenomeSelector
     {
     public:
-
         // Constructor
-        GenomeSelector(PseudoRandom& random)
-            : m_random(m_random)
-        {
-        }
+        GenomeSelector(PseudoRandom& random) : m_random(random) {}
 
         // Set genomes to select and initialize internal data.
         bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species)
@@ -35,7 +31,7 @@ namespace
             m_sumFitness.push_back(0);
 
             int currentSpecies = genomesIn[0].getSpeciesIndex();
-            float invCurrentSpeciesNumMembers = 1.f / (float)species[currentSpecies].getNumMembers();
+            float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
             int currentSpeciesStartIndex = 0;
 
 #ifdef _DEBUG
@@ -54,22 +50,32 @@ namespace
                         m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
 
                         currentSpecies = g.getSpeciesIndex();
-                        invCurrentSpeciesNumMembers = 1.f / (float)species[currentSpecies].getNumMembers();
+                        fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
                         currentSpeciesStartIndex = (int)m_genomes.size();
 #ifdef _DEBUG
                         assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
 #endif
                     }
 
-                    const float adjustedFitness = g.getFitness() * invCurrentSpeciesNumMembers;
+                    const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
                     sumFitness += adjustedFitness;
                     m_sumFitness.push_back(sumFitness);
                 }
             }
 
-            if (m_genomes.size() == 0 || sumFitness == 0)
+            if (m_genomes.size() == 0)
             {
                 return false;
+            }
+
+            if (sumFitness == 0.f)
+            {
+                // All genomes have 0 fitness.
+                // Set up homogeneous distribution.
+                for (int i = 0; i <= (int)m_genomes.size(); i++)
+                {
+                    m_sumFitness[i] = (float)i;
+                }
             }
 
             m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
@@ -147,6 +153,11 @@ namespace
             return nullptr;
         }
 
+        inline float calcFitnessSharingFactor(int speciesIndex, const Generation::SpeciesList& species) const
+        {
+            return speciesIndex >= 0 ? 1.f / (float)species[speciesIndex].getNumMembers() : 1.0f;
+        }
+
         struct IndexSet
         {
             int m_start;
@@ -187,9 +198,11 @@ Generation::Generation(const Cinfo& cinfo)
     // Create genomes of the first generation.
     m_genomes = std::make_shared<GenomeDatas>();
     m_genomes->reserve(cinfo.m_numGenomes);
+    const Genome archetypeGenome(cinfo.m_genomeCinfo);
+
     for (int i = 0; i < cinfo.m_numGenomes; i++)
     {
-        GenomePtr genome = std::make_shared<Genome>(cinfo.m_genomeCinfo);
+        GenomePtr genome = std::make_shared<Genome>(archetypeGenome);
 
         // Randomize edge weights
         const Genome::Network* network = genome->getNetwork();
@@ -259,6 +272,10 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     };
 
     // Allocate buffer of GenomeData if it's not there yet.
+    if (!m_genomes)
+    {
+        m_genomes = std::make_shared<GenomeDatas>();
+    }
     if (m_genomes->size() != numGenomes)
     {
         m_genomes->resize(numGenomes);
@@ -279,7 +296,21 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     }
 
     GenomeSelector selector(random);
-    selector.setGenomes(*m_prevGenGenomes, m_species);
+    bool res = selector.setGenomes(*m_prevGenGenomes, m_species);
+
+    if (!res)
+    {
+        // Failed to create GenomeSelector. This means that no genome is reproducible.
+        // Mark all genomes reproducible and try again.
+        for (GenomeData& gd : *m_prevGenGenomes)
+        {
+            gd.m_canReproduce = true;
+        }
+
+        res = selector.setGenomes(*m_prevGenGenomes, m_species);
+
+        assert(res);
+    }
 
     // Select and mutate genomes
     {

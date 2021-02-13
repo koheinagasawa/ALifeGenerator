@@ -53,10 +53,10 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
     NodeId inNode(0);
     NodeId outNode(1);
 
-    nodes[inNode] = Node();
-    nodes[outNode] = Node();
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
 
-    edges[EdgeId(0)] = Edge(inNode, outNode);
+    edges.insert({ EdgeId(0), Edge(inNode, outNode) });
 
     // No output node
     {
@@ -69,7 +69,7 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
     // Invalid edge
     {
         NN::Edges edges2 = edges;
-        edges2[EdgeId(1)] = Edge(NodeId(2), NodeId(3));
+        edges2.insert({ EdgeId(1), Edge(NodeId(2), NodeId(3)) });
 
         NN nn(nodes, edges2, outputNodes);
         EXPECT_FALSE(nn.validate());
@@ -80,15 +80,15 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
         NodeId node1(2);
         NodeId node2(3);
         NodeId node3(4);
-        nodes[node1] = Node();
-        nodes[node2] = Node();
-        nodes[node3] = Node();
+        nodes.insert({ node1, Node() });
+        nodes.insert({ node2, Node() });
+        nodes.insert({ node3, Node() });
 
-        edges[EdgeId(1)] = Edge(inNode, node1);
-        edges[EdgeId(2)] = Edge(node1, node2);
-        edges[EdgeId(3)] = Edge(node2, node3);
-        edges[EdgeId(4)] = Edge(node3, node1);
-        edges[EdgeId(5)] = Edge(node3, outNode);
+        edges.insert({ EdgeId(1), Edge(inNode, node1) });
+        edges.insert({ EdgeId(2), Edge(node1, node2) });
+        edges.insert({ EdgeId(3), Edge(node2, node3) });
+        edges.insert({ EdgeId(4), Edge(node3, node1) });
+        edges.insert({ EdgeId(5), Edge(node3, outNode) });
 
         NN nn(nodes, edges, outputNodes);
         EXPECT_FALSE(nn.validate());
@@ -101,13 +101,13 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     NodeId outNode(1);
 
     NN::Nodes nodes;
-    nodes[inNode] = Node();
-    nodes[outNode] = Node();
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
 
     EdgeId edge(0);
 
     NN::Edges edges;
-    edges[edge] = Edge(inNode, outNode);
+    edges.insert({ edge, Edge(inNode, outNode) });
 
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
@@ -137,13 +137,13 @@ TEST(NeuralNetwork, GetSetNodeValues)
     NodeId outNode(1);
 
     NN::Nodes nodes;
-    nodes[inNode] = Node(5.f);
-    nodes[outNode] = Node(7.f);
+    nodes.insert({ inNode, Node(5.f) });
+    nodes.insert({ outNode, Node(7.f) });
 
     EdgeId edge(0);
 
     NN::Edges edges;
-    edges[edge] = Edge(inNode, outNode);
+    edges.insert({ edge, Edge(inNode, outNode) });
 
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
@@ -164,15 +164,15 @@ TEST(NeuralNetwork, GetSetEdgeWeights)
     NodeId outNode(1);
 
     NN::Nodes nodes;
-    nodes[inNode] = Node();
-    nodes[outNode] = Node();
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
 
     EdgeId edgeId(0);
 
     NN::Edges edges;
     Edge edge(inNode, outNode);
     edge.m_weight = 10.f;
-    edges[edgeId] = edge;
+    edges.insert({ edgeId, edge });
 
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
@@ -195,9 +195,9 @@ TEST(NeuralNetwork, EvaluateSimpleNetwork)
 
     NN::Nodes nodes;
     {
-        nodes[inNode1] = Node(nodeVal1);
-        nodes[inNode2] = Node(nodeVal2);
-        nodes[outNode] = Node();
+        nodes.insert({ inNode1, Node(nodeVal1) });
+        nodes.insert({ inNode2, Node(nodeVal2) });
+        nodes.insert({ outNode, Node() });
     }
 
     EdgeId edgeId1(0);
@@ -208,10 +208,10 @@ TEST(NeuralNetwork, EvaluateSimpleNetwork)
     {
         Edge edge1(inNode1, outNode);
         edge1.m_weight = weight1;
-        edges[edgeId1] = edge1;
+        edges.insert({ edgeId1, edge1 });
         Edge edge2(inNode2, outNode);
         edge2.m_weight = weight2;
-        edges[edgeId2] = edge2;
+        edges.insert({ edgeId2, edge2 });
     }
 
     NN::NodeIds outputNodes;

@@ -101,17 +101,17 @@ bool MutableNetwork<Node>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeId new
     // Create two new edges.
     Edge newEdge1(edgeToDivide.getInNode(), newNodeId, 1.0f);
     {
-        this->m_edges[newIncomingEdgeId] = newEdge1;
+        this->m_edges.insert({ newIncomingEdgeId, newEdge1 });
     }
     Edge newEdge2(newNodeId, edgeToDivide.getOutNode(), weight);
     {
-        this->m_edges[newOutgoingEdgeId] = newEdge2;
+        this->m_edges.insert({ newOutgoingEdgeId, newEdge2 });
     }
 
     // Create a new node.
     NodeData newNode;
     newNode.m_incomingEdges.push_back(newIncomingEdgeId);
-    this->m_nodes[newNodeId] = newNode;
+    this->m_nodes.insert({ newNodeId, newNode });
 
     // Update incoming edges of the out node.
     this->m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeId);
@@ -158,8 +158,7 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
     }
 
     // Create a new edge
-    Edge newEdge(node1, node2, weight);
-    this->m_edges[newEdgeId] = newEdge;
+    this->m_edges.insert({ newEdgeId, Edge(node1, node2, weight) });
 
     edgesToOutNode.push_back(newEdgeId);
 

@@ -47,7 +47,7 @@ namespace
 
                     if (currentSpecies != g.getSpeciesId())
                     {
-                        m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
+                        m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
                         currentSpecies = g.getSpeciesId();
                         fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
@@ -78,7 +78,7 @@ namespace
                 }
             }
 
-            m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
+            m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
             assert(m_genomes.size() + 1 == m_sumFitness.size());
 

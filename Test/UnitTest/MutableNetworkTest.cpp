@@ -28,13 +28,13 @@ TEST(MutableNetwork, EnableDisableEdge)
     NodeId outNode(1);
 
     MN::Nodes nodes;
-    nodes[inNode] = Node();
-    nodes[outNode] = Node();
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
 
     EdgeId edge(0);
 
     MN::Edges edges;
-    edges[edge] = MN::Edge(inNode, outNode, 0.5f);
+    edges.insert({ edge, MN::Edge(inNode, outNode, 0.5f) });
 
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
@@ -64,13 +64,13 @@ TEST(MutableNetwork, AddNode)
     NodeId outNode(1);
 
     MN::Nodes nodes;
-    nodes[inNode] = Node();
-    nodes[outNode] = Node();
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
 
     EdgeId edge(0);
 
     MN::Edges edges;
-    edges[edge] = MN::Edge(inNode, outNode, 0.5f);
+    edges.insert({ edge, MN::Edge(inNode, outNode, 0.5f) });
 
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
@@ -172,12 +172,12 @@ TEST(MutableNetwork, AddEdge)
     NodeId hiddenNode2(5);
 
     MN::Nodes nodes;
-    nodes[inNode1] = Node();
-    nodes[inNode2] = Node();
-    nodes[outNode1] = Node();
-    nodes[outNode2] = Node();
-    nodes[hiddenNode1] = Node();
-    nodes[hiddenNode2] = Node();
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
 
     EdgeId edge1(1);
     EdgeId edge2(2);
@@ -185,10 +185,10 @@ TEST(MutableNetwork, AddEdge)
     EdgeId edge4(4);
 
     MN::Edges edges;
-    edges[edge1] = MN::Edge(inNode1, hiddenNode1, 0.5f);
-    edges[edge2] = MN::Edge(inNode2, hiddenNode2, 0.5f);
-    edges[edge3] = MN::Edge(hiddenNode1, outNode1, 0.5f);
-    edges[edge4] = MN::Edge(hiddenNode2, outNode2, 0.5f);
+    edges.insert({ edge1, MN::Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, MN::Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
 
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode1);

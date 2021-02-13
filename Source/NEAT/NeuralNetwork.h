@@ -146,7 +146,7 @@ void NeuralNetwork<Node, Edge>::constructNodeData(const Nodes& nodes)
     m_nodes.reserve(nodes.size());
     for (const auto& itr : nodes)
     {
-        m_nodes[itr.first] = NodeData{ itr.second };
+        m_nodes.insert({ itr.first, NodeData{ itr.second } });
     }
 
     // Set incoming edges array in each node

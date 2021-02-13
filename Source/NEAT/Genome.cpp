@@ -43,12 +43,12 @@ Genome::Genome(const Cinfo& cinfo)
     m_inputNodes.resize(cinfo.m_numInputNodes);
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
-        nodes[i] = Node(Node::Type::INPUT);
+        nodes.insert({ i, Node(Node::Type::INPUT) });
         m_inputNodes[i] = m_innovIdCounter.getNewNodeId();
     }
     for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
     {
-        nodes[i] = Node(Node::Type::OUTPUT);
+        nodes.insert({ i, Node(Node::Type::OUTPUT) });
         m_innovIdCounter.getNewNodeId();
     }
 
@@ -63,7 +63,7 @@ Genome::Genome(const Cinfo& cinfo)
             for (int j = 0; j < cinfo.m_numOutputNodes; j++)
             {
                 EdgeId eid = m_innovIdCounter.getNewInnovationId();
-                edges[eid] = Network::Edge(NodeId(i), NodeId(cinfo.m_numInputNodes + j));
+                edges.insert({ eid, Network::Edge(NodeId(i), NodeId(cinfo.m_numInputNodes + j)) });
                 m_innovations.push_back(eid);
             }
         }
@@ -393,7 +393,7 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
                 disjointEnableEdges.push_back(edgeId);
             }
 
-            newGenomeEdges[edgeId] = edge;
+            newGenomeEdges.insert({ edgeId,  edge });
             assert(newGenome.m_innovations.empty() || edgeId > newGenome.m_innovations.back());
             newGenome.m_innovations.push_back(edgeId);
         };
@@ -479,13 +479,13 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
 
             if (addedNodes.find(inNode) == addedNodes.end())
             {
-                newGnomeNodes[inNode] = network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode);
+                newGnomeNodes.insert({ inNode, network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode) });
                 addedNodes.insert(inNode);
             }
 
             if (addedNodes.find(outNode) == addedNodes.end())
             {
-                newGnomeNodes[outNode] = network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode);
+                newGnomeNodes.insert({ outNode, network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode) });
                 addedNodes.insert(outNode);
             }
         }

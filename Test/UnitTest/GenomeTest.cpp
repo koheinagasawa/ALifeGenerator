@@ -223,7 +223,7 @@ TEST(Genome, MutateGenome)
         const Genome::Network::Edges& edges = network->getEdges();
         for (auto& itr : edges)
         {
-            originalWeights[itr.first] = network->getWeightRaw(itr.first);
+            originalWeights.insert({ itr.first, network->getWeightRaw(itr.first) });
         }
 
         genome.mutate(params, out);

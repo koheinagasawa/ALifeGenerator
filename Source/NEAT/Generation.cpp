@@ -37,30 +37,53 @@ namespace
 #ifdef _DEBUG
             std::unordered_set<SpeciesId> speciesIndices;
             speciesIndices.insert(currentSpecies);
+
+            // Here we are assuming that genomes are sorted by species id.
+            {
+                SpeciesId curId = genomesIn[0].getSpeciesId();
+                for (const Generation::GenomeData& g : genomesIn)
+                {
+                    if (!g.canReproduce() || g.getFitness() == 0)
+                    {
+                        continue;
+                    }
+
+                    SpeciesId id = g.getSpeciesId();
+                    if (curId != id)
+                    {
+                        assert(curId < id);
+                        curId = id;
+                    }
+                }
+            }
 #endif
 
             for (const Generation::GenomeData& g : genomesIn)
             {
-                if (g.canReproduce())
+                if (!g.canReproduce() || g.getFitness() == 0)
                 {
-                    m_genomes.push_back(&g);
-
-                    if (currentSpecies != g.getSpeciesId())
-                    {
-                        m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-                        currentSpecies = g.getSpeciesId();
-                        fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
-                        currentSpeciesStartIndex = (int)m_genomes.size();
-#ifdef _DEBUG
-                        assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
-#endif
-                    }
-
-                    const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
-                    sumFitness += adjustedFitness;
-                    m_sumFitness.push_back(sumFitness);
+                    continue;
                 }
+
+                if (currentSpecies != g.getSpeciesId())
+                {
+                    m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
+
+                    currentSpecies = g.getSpeciesId();
+                    fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
+                    currentSpeciesStartIndex = (int)m_genomes.size();
+#ifdef _DEBUG
+                    assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
+#endif
+                }
+
+                m_genomes.push_back(&g);
+
+                assert(g.getFitness() >= 0);
+
+                const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
+                sumFitness += adjustedFitness;
+                m_sumFitness.push_back(sumFitness);
             }
 
             if (m_genomes.size() == 0)
@@ -140,17 +163,28 @@ namespace
             assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
             assert(start >= 0 &&  end < (int)m_sumFitness.size() && start < end);
 
-            const float v = m_random.randomReal(m_sumFitness[start], m_sumFitness[end] - std::numeric_limits<float>::epsilon());
-            for (int i = start; i < end; i++)
+            if (m_sumFitness[start] < m_sumFitness[end])
             {
-                if (v < m_sumFitness[i+1])
+                const float v = m_random.randomReal(m_sumFitness[start], m_sumFitness[end]);
+                for (int i = start; i < end; i++)
                 {
-                    return m_genomes[i];
+                    // Here we should check v < m_sumFitness[i + 1] instead of <= in fact.
+                    // However, m_random.randomReal above can return the max value (m_sumFitness[end]) although it should be exclusive about the upper bound.
+                    // We use <= for now but it would add a slight bias on genome selection.
+                    if (v <= m_sumFitness[i + 1])
+                    {
+                        return m_genomes[i];
+                    }
                 }
-            }
 
-            assert(0);
-            return nullptr;
+                assert(0);
+                return nullptr;
+            }
+            else
+            {
+                // Fitness are all the same. Just select one by randomly.
+                return m_genomes[m_random.randomInteger(start, end - 1)];
+            }
         }
 
         inline float calcFitnessSharingFactor(SpeciesId speciesId, const Generation::SpeciesList& species) const
@@ -342,6 +376,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         }
 
         //TODO check the same structural mutation is assigned the same innovation id.
+        // STARTFROMHERE
     }
 
     // Select and generate new genomes by crossover.
@@ -398,13 +433,13 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 
     // Speciation
     {
-        // Remove stagnant species and empty species first.
+        // Remove stagnant species first.
         {
             auto itr = m_species.begin();
             while (itr != m_species.end())
             {
                 const SpeciesPtr& s = itr->second;
-                if (s->getNumMembers() == 0 || s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
+                if (s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
                 {
                     itr = m_species.erase(itr);
                 }
@@ -447,6 +482,23 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             }
         }
 
+        // Remove empty species.
+        {
+            auto itr = m_species.begin();
+            while (itr != m_species.end())
+            {
+                const SpeciesPtr& s = itr->second;
+                if (s->getNumMembers() == 0)
+                {
+                    itr = m_species.erase(itr);
+                }
+                else
+                {
+                    itr++;
+                }
+            }
+        }
+
         // Finalize new generation of species.
         for (auto& itr : m_species)
         {
@@ -457,7 +509,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         // Sort genomes by species id
         std::sort(m_genomes->begin(), m_genomes->end(), [](const GenomeData& g1, const GenomeData& g2)
             {
-                return g1.getSpeciesId() != g2.getSpeciesId() ? g1.getSpeciesId() > g2.getSpeciesId() : g1.getFitness() > g2.getFitness();
+                return g1.getSpeciesId() != g2.getSpeciesId() ? g1.getSpeciesId() < g2.getSpeciesId() : g1.getFitness() > g2.getFitness();
             });
     }
 

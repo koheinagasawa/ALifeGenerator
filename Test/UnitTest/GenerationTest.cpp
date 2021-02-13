@@ -23,7 +23,7 @@ namespace
             {
                 fitness += genome.getNetwork()->getNode(node).getValue();
             }
-            return fitness;
+            return std::max(0.f, fitness);
         }
     };
 }
@@ -58,17 +58,20 @@ TEST(Generation, IncrementGeneration)
 
     InnovationCounter innovCounter;
     MyFitnessCalculator calclator;
+    Genome::Activation activation = [](float value) { return value; };
     Generation::Cinfo cinfo;
     cinfo.m_numGenomes = 100;
     cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
     cinfo.m_genomeCinfo.m_numInputNodes = 3;
     cinfo.m_genomeCinfo.m_numOutputNodes = 3;
-    cinfo.m_maxWeight = 10.f;
-    cinfo.m_minWeight = -10.f;
+    cinfo.m_genomeCinfo.m_defaultActivation = &activation;
+    cinfo.m_maxWeight = 3.f;
+    cinfo.m_minWeight = -3.f;
     cinfo.m_fitnessCalculator = &calclator;
     Generation generation(cinfo);
 
     generation.setInputNodeValues({ 1.f, 1.f, 1.f });
+    generation.calcFitness();
 
     Generation::CreateNewGenParams params;
     generation.createNewGeneration(params);

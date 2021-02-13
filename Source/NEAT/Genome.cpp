@@ -93,6 +93,7 @@ Genome::Genome(const Genome& other)
     : m_inputNodes(other.m_inputNodes)
     , m_innovations(other.m_innovations)
     , m_innovIdCounter(other.m_innovIdCounter)
+    , m_defaultActivation(other.m_defaultActivation)
 {
     m_network = std::make_shared<Network>(*other.m_network.get());
 }
@@ -102,6 +103,7 @@ void Genome::operator= (const Genome& other)
     assert(&m_innovIdCounter == &other.m_innovIdCounter);
     m_inputNodes = other.m_inputNodes;
     m_innovations = other.m_innovations;
+    m_defaultActivation = other.m_defaultActivation;
     m_network = std::make_shared<Network>(*other.m_network.get());
 }
 

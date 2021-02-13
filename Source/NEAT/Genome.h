@@ -178,10 +178,10 @@ namespace NEAT
         struct CalcDistParams
         {
             // Factor for the number of disjoint edges.
-            float m_disjointFactor;
+            float m_disjointFactor = 1.f;
 
             // Factor for weight differences.
-            float m_weightFactor;
+            float m_weightFactor = 0.4f;
 
             // The minimum number of edges to apply normalization for the disjoint edge distance.
             int m_edgeNormalizationThreshold = 20;

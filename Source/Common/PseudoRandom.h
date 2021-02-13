@@ -12,13 +12,13 @@ class RandomGenerator
 {
 public:
 
-    // Get a random float between 0 and 1.
+    // Get a random float between [0, 1] (both bounds are inclusive).
     virtual float randomReal01() = 0;
 
-    // Get a random float between min and max.
+    // Get a random float between [min, max) (upper bound is exclusive).
     virtual float randomReal(float min, float max) = 0;
 
-    // Get a random integer between min and max.
+    // Get a random integer between [min, max] (both bounds are inclusive).
     virtual int randomInteger(int min, int max) = 0;
 
     // Get a random boolean.
@@ -34,13 +34,13 @@ public:
     // Get the global random generator.
     static PseudoRandom& getInstance();
 
-    // Get a random float between 0 and 1.
+    // Get a random float between [0, 1] (both bounds are inclusive).
     virtual float randomReal01() override;
 
-    // Get a random float between min and max.
+    // Get a random float between [min, max) (upper bound is exclusive).
     virtual float randomReal(float min, float max) override;
 
-    // Get a random integer between min and max.
+    // Get a random integer between [min, max] (both bounds are inclusive).
     virtual int randomInteger(int min, int max) override;
 
     // Get a random boolean.

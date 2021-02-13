@@ -69,10 +69,10 @@ namespace NEAT
             Genome::Cinfo m_genomeCinfo;
 
             // Minimum weight for initial set of genomes.
-            float m_minWeight;
+            float m_minWeight = -1.f;
 
             // Maximum weight for initial set of genomes.
-            float m_maxWeight;
+            float m_maxWeight = 1.f;
 
             // Fitness calculator.
             FitnessCalculatorBase* m_fitnessCalculator;

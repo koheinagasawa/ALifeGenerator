@@ -21,13 +21,13 @@ PseudoRandom::PseudoRandom(int seed)
 
 float PseudoRandom::randomReal01()
 {
-    return randomReal(0.f, 1.f);
+    return randomReal(0.f, std::nexttoward(1.f, std::numeric_limits<float>::max()));
 }
 
 float PseudoRandom::randomReal(float min, float max)
 {
-    std::uniform_real_distribution<> dist(min, max);
-    return (float)dist(m_engine);
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(m_engine);
 }
 
 int PseudoRandom::randomInteger(int min, int max)
@@ -38,5 +38,5 @@ int PseudoRandom::randomInteger(int min, int max)
 
 bool PseudoRandom::randomBoolean()
 {
-    return randomInteger(0, 9) < 5;
+    return randomInteger(0, 1);
 }

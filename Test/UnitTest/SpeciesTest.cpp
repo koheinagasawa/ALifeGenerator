@@ -50,9 +50,9 @@ TEST(Species, AddGenomeToSpecies)
 
     // Try to add the genome to the species
     EXPECT_FALSE(species.tryAddGenome(genome1, 1.f, 0.0001f, calcDistParams));
-    EXPECT_EQ(species.getNumMembers(), 1);
+    EXPECT_EQ(species.getNumMembers(), 0);
     EXPECT_TRUE(species.tryAddGenome(genome1, 1.f, 5.f, calcDistParams));
-    EXPECT_EQ(species.getNumMembers(), 2);
+    EXPECT_EQ(species.getNumMembers(), 1);
 
     species.postNewGeneration();
     EXPECT_EQ(species.getStagnantGenerationCount(), 0);

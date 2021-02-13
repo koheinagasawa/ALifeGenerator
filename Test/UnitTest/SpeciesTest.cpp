@@ -69,6 +69,6 @@ TEST(Species, AddGenomeToSpecies)
     EXPECT_EQ(species.getNumMembers(), 1);
     species.postNewGeneration();
 
-    EXPECT_EQ(species.getStagnantGenerationCount(), 1);
+    EXPECT_EQ(species.getStagnantGenerationCount(), 0);
 }
 

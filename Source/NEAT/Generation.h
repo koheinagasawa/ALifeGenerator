@@ -11,6 +11,7 @@
 
 DECLARE_ID(GenerationId);
 DECLARE_ID(GenomeId);
+DECLARE_ID(SpeciesId);
 
 namespace NEAT
 {
@@ -26,7 +27,8 @@ namespace NEAT
     public:
         using GenomePtr = std::shared_ptr<Genome>;
         using Genomes = std::vector<GenomePtr>;
-        using SpeciesList = std::vector<Species>;
+        using SpeciesPtr = std::shared_ptr<Species>;
+        using SpeciesList = std::unordered_map<SpeciesId, SpeciesPtr>;
 
         struct GenomeData
         {
@@ -36,7 +38,7 @@ namespace NEAT
 
             inline auto getGenome() const->const Genome* { return m_genome.get(); }
             inline float getFitness() const { return m_fitness; }
-            inline int getSpeciesIndex() const { return m_speciesIndex; }
+            inline auto getSpeciesId() const->SpeciesId { return m_speciesId; }
             inline bool canReproduce() const { return m_canReproduce; }
 
         protected:
@@ -49,7 +51,7 @@ namespace NEAT
             GenomePtr m_genome;
             GenomeId m_id;
             float m_fitness = 0.f;
-            int m_speciesIndex = -1;
+            SpeciesId m_speciesId = SpeciesId::invalid();
             bool m_canReproduce = true;
 
             friend class Generation;
@@ -130,7 +132,8 @@ namespace NEAT
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
         inline int getNumGenomes() const { return m_numGenomes; }
 
-        inline auto getSpecies() const->const SpeciesList& { return m_species; }
+        inline auto getAllSpecies() const->const SpeciesList& { return m_species; }
+        inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return m_species.find(id) != m_species.end() ? m_species.at(id) : nullptr; }
 
         inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
 
@@ -142,8 +145,9 @@ namespace NEAT
         GenomeDatasPtr m_genomes;
         GenomeDatasPtr m_prevGenGenomes;
         SpeciesList m_species;
+        UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
         FitnessCalculatorBase* m_fitnessCalculator;
-        GenerationId m_id;
         int m_numGenomes;
+        GenerationId m_id;
     };
 }

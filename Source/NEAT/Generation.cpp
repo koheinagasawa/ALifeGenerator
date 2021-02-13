@@ -30,12 +30,12 @@ namespace
             float sumFitness = 0;
             m_sumFitness.push_back(0);
 
-            int currentSpecies = genomesIn[0].getSpeciesIndex();
+            SpeciesId currentSpecies = genomesIn[0].getSpeciesId();
             float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
             int currentSpeciesStartIndex = 0;
 
 #ifdef _DEBUG
-            std::unordered_set<int> speciesIndices;
+            std::unordered_set<SpeciesId> speciesIndices;
             speciesIndices.insert(currentSpecies);
 #endif
 
@@ -45,11 +45,11 @@ namespace
                 {
                     m_genomes.push_back(&g);
 
-                    if (currentSpecies != g.getSpeciesIndex())
+                    if (currentSpecies != g.getSpeciesId())
                     {
                         m_spciecesStartEndIndices[currentSpecies] = { currentSpeciesStartIndex, (int)m_genomes.size() };
 
-                        currentSpecies = g.getSpeciesIndex();
+                        currentSpecies = g.getSpeciesId();
                         fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
                         currentSpeciesStartIndex = (int)m_genomes.size();
 #ifdef _DEBUG
@@ -112,7 +112,7 @@ namespace
                 assert(g1);
 
                 // Get start and end indices of the species of g1.
-                const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesIndex());
+                const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesId());
 
                 if (startEnd.m_end - startEnd.m_start < 2)
                 {
@@ -130,7 +130,7 @@ namespace
                 break;
             }
 
-            assert(g1->getSpeciesIndex() == g2->getSpeciesIndex());
+            assert(g1->getSpeciesId() == g2->getSpeciesId());
         }
 
     private:
@@ -153,9 +153,9 @@ namespace
             return nullptr;
         }
 
-        inline float calcFitnessSharingFactor(int speciesIndex, const Generation::SpeciesList& species) const
+        inline float calcFitnessSharingFactor(SpeciesId speciesIndex, const Generation::SpeciesList& species) const
         {
-            return speciesIndex >= 0 ? 1.f / (float)species[speciesIndex].getNumMembers() : 1.0f;
+            return speciesIndex >= 0 ? 1.f / (float)species.at(speciesIndex)->getNumMembers() : 1.0f;
         }
 
         struct IndexSet
@@ -166,7 +166,7 @@ namespace
 
         std::vector<const Generation::GenomeData*> m_genomes;
         std::vector<float> m_sumFitness;
-        std::unordered_map<int, IndexSet> m_spciecesStartEndIndices;
+        std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices;
         PseudoRandom& m_random;
     };
 }
@@ -204,7 +204,7 @@ Generation::Generation(const Cinfo& cinfo)
     {
         GenomePtr genome = std::make_shared<Genome>(archetypeGenome);
 
-        // Randomize edge weights
+        // Randomize edge weights.
         const Genome::Network* network = genome->getNetwork();
         for (auto itr : network->getEdges())
         {
@@ -215,10 +215,11 @@ Generation::Generation(const Cinfo& cinfo)
     }
     m_numGenomes = m_genomes->size();
 
-    // Create one species
+    // Create one species.
     {
         const GenomeData& representative = (*m_genomes)[random.randomInteger(0, m_genomes->size() - 1)];
-        m_species.push_back(Species(*representative.m_genome));
+        SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
+        m_species.insert({ newSpecies, std::make_shared<Species>(*representative.m_genome) });
     }
 
 }
@@ -232,7 +233,7 @@ Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCal
 
     m_genomes = std::make_shared<GenomeDatas>();
 
-    // Create GenomeData for each given genome
+    // Create GenomeData for each given genome.
     {
         m_genomes->reserve(genomes.size());
         GenomeId id(0);
@@ -244,11 +245,12 @@ Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCal
     }
     m_numGenomes = m_genomes->size();
 
-    // Create one species
+    // Create one species.
     {
         PseudoRandom& random = PseudoRandom::getInstance();
         const GenomeData& representative = (*m_genomes)[random.randomInteger(0, m_genomes->size() - 1)];
-        m_species.push_back(Species(*representative.m_genome));
+        SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
+        m_species.insert({ newSpecies, std::make_shared<Species>(*representative.m_genome) });
     }
 }
 
@@ -264,7 +266,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
 
     m_numGenomes = 0;
 
-    // Helper function to add a new genome to the new generation
+    // Helper function to add a new genome to the new generation.
     auto addGenomeToNewGen = [this, &numGenomesToAdd](GenomePtr genome)
     {
         addGenome(genome);
@@ -281,17 +283,18 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         m_genomes->resize(numGenomes);
     }
 
-    // Select genomes which are copied to the next generation unchanged
-    for (const Species& species : m_species)
+    // Select genomes which are copied to the next generation unchanged.
+    for (auto& itr : m_species)
     {
-        if (species.getStagnantGenerationCount() >= params.m_maxStagnantCount)
+        const SpeciesPtr& species = itr.second;
+        if (species->getStagnantGenerationCount() >= params.m_maxStagnantCount)
         {
             continue;
         }
 
-        if (species.getNumMembers() >= params.m_minMembersInSpeciesToCopyChampion)
+        if (species->getNumMembers() >= params.m_minMembersInSpeciesToCopyChampion)
         {
-            addGenomeToNewGen(species.getBestGenome());
+            addGenomeToNewGen(species->getBestGenome());
         }
     }
 
@@ -312,7 +315,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         assert(res);
     }
 
-    // Select and mutate genomes
+    // Select and mutate genomes.
     {
         const int numGenomesToSelect = std::min(numGenomesToAdd, int(numGenomes * (1.f - params.m_crossOverRate)));
         Genome::MutationOut mout;
@@ -335,7 +338,7 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
         }
     }
 
-    // Select and generate new genomes by crossover
+    // Select and generate new genomes by crossover.
     {
         int numGenomesToInterSpeciesCO = (int)(numGenomesToAdd * params.m_interSpeciesCrossOverRate);
         int numGenomesToIntraSpeciesCO = (int)(numGenomesToAdd - numGenomesToInterSpeciesCO);
@@ -384,17 +387,18 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     // We should have added all the genomes at this point.
     assert(m_genomes->size() == m_prevGenGenomes->size());
 
-    // Evaluate all genomes
+    // Evaluate all genomes.
     calcFitness();
 
     // Speciation
     {
-        // Remove stagnant species and empty species first
+        // Remove stagnant species and empty species first.
         {
             auto itr = m_species.begin();
             while (itr != m_species.end())
             {
-                if (itr->getNumMembers() == 0 ||  itr->getStagnantGenerationCount() >= params.m_maxStagnantCount)
+                const SpeciesPtr& s = itr->second;
+                if (s->getNumMembers() == 0 ||  s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
                 {
                     itr = m_species.erase(itr);
                 }
@@ -405,43 +409,50 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             }
         }
 
-        for (Species& s : m_species)
+        // Prepare for the new generation of species.
+        for (auto& itr : m_species)
         {
-            s.preNewGeneration(&random);
+            SpeciesPtr& s = itr.second;
+            s->preNewGeneration(&random);
         }
 
+        // Assign each genome to a species.
         for (GenomeData& gd : *m_genomes)
         {
-            // Try to find a species
-            int i = 0;
-            for (; i < (int)m_species.size(); i++)
+            // Try to find a species.
+            auto itr = m_species.begin();
+            for(; itr != m_species.end(); itr++)
             {
-                if (m_species[i].tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams))
+                SpeciesPtr& s = itr->second;
+                if (s->tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams))
                 {
-                    gd.m_speciesIndex = i;
+                    gd.m_speciesId = itr->first;
                     break;
                 }
             }
 
-            if (i == (int)m_species.size())
+            if (itr == m_species.end())
             {
                 // No species found. Create a new one for this genome.
-                gd.m_speciesIndex = i;
-                m_species.push_back(Species(*gd.m_genome));
-                m_species.back().tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams);
+                SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
+                gd.m_speciesId = newSpecies;
+                m_species.insert({ newSpecies, std::make_shared<Species>(*gd.m_genome) });
+                m_species[newSpecies]->tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams);
             }
         }
 
-        for (Species& s : m_species)
+        // Finalize new generation of species.
+        for (auto& itr : m_species)
         {
-            s.postNewGeneration();
+            SpeciesPtr& s = itr.second;
+            s->postNewGeneration();
         }
     }
 
-    // Mark genomes which shouldn't reproduce anymore
+    // Mark genomes which shouldn't reproduce anymore.
     for(GenomeData& gd : *m_genomes)
     {
-        gd.m_canReproduce = m_species[gd.getSpeciesIndex()].getStagnantGenerationCount() < params.m_maxStagnantCount;
+        gd.m_canReproduce = m_species[gd.getSpeciesId()]->getStagnantGenerationCount() < params.m_maxStagnantCount;
     }
 
     // Update the generation id.

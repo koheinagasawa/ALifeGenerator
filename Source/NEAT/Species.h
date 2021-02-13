@@ -9,6 +9,7 @@
 #include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
+
 namespace NEAT
 {
     // Species for NEAT.
@@ -17,6 +18,7 @@ namespace NEAT
     public:
         using GenomePtr = std::shared_ptr<Genome>;
 
+        // Constructors
         Species(const Genome& initialRepresentative);
 
         // This should be called before creating a new generation.

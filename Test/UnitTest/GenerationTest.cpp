@@ -17,7 +17,13 @@ namespace
     public:
         virtual float calcFitness(const Genome& genome) const override
         {
-            return 1.0;
+            const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
+            float fitness = 0.f;
+            for (NodeId node : outputNodes)
+            {
+                fitness += genome.getNetwork()->getNode(node).getValue();
+            }
+            return fitness;
         }
     };
 }
@@ -40,9 +46,9 @@ TEST(Generation, CreateGeneration)
     const Generation::GenomeData& gd = generation.getGenomes()[0];
     EXPECT_TRUE(gd.getGenome());
     EXPECT_EQ(gd.getFitness(), 0.f);
-    EXPECT_EQ(gd.getSpeciesIndex(), -1);
+    EXPECT_EQ(gd.getSpeciesId(), -1);
     EXPECT_TRUE(gd.canReproduce());
-    EXPECT_EQ(generation.getSpecies().size(), 1);
+    EXPECT_EQ(generation.getAllSpecies().size(), 1);
     EXPECT_EQ(generation.getId().val(), 0);
 }
 
@@ -67,6 +73,6 @@ TEST(Generation, IncrementGeneration)
     const Generation::GenomeData& gd = generation.getGenomes()[0];
     EXPECT_TRUE(gd.getGenome());
     EXPECT_EQ(gd.getFitness(), 1.f);
-    EXPECT_NE(gd.getSpeciesIndex(), -1);
+    EXPECT_NE(gd.getSpeciesId(), -1);
     EXPECT_EQ(generation.getId().val(), 1);
 }

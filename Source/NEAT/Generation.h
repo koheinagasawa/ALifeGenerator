@@ -149,17 +149,14 @@ namespace NEAT
             bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species);
 
             // Select a random genome.
-            inline auto selectRandomGenome()->const Generation::GenomeData*
-            {
-                return selectRandomGenome(0, m_genomes.size());
-            }
+            inline auto selectRandomGenome()->const Generation::GenomeData* { return selectRandomGenome(0, m_genomes.size()); }
 
             // Select two random genomes in the same species.
             void selectTwoRandomGenomes(float interSpeciesCrossOverRate, const Generation::GenomeData*& g1, const Generation::GenomeData*& g2);
 
         private:
             // Select a random genome between start and end (not including end) in m_genomes array.
-            const Generation::GenomeData* selectRandomGenome(int start, int end);
+            auto selectRandomGenome(int start, int end)->const Generation::GenomeData*;
 
             struct IndexSet
             {

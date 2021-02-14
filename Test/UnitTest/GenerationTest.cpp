@@ -17,6 +17,8 @@ namespace
     public:
         virtual float calcFitness(const Genome& genome) const override
         {
+            genome.evaluate({ 1.f, 1.f, 1.f });
+
             const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
             float fitness = 0.f;
             for (NodeId node : outputNodes)
@@ -45,7 +47,6 @@ TEST(Generation, CreateGeneration)
     EXPECT_EQ(generation.getNumGenomes(), 100);
     const Generation::GenomeData& gd = generation.getGenomes()[0];
     EXPECT_TRUE(gd.getGenome());
-    EXPECT_EQ(gd.getFitness(), 0.f);
     EXPECT_EQ(gd.getSpeciesId(), -1);
     EXPECT_TRUE(gd.canReproduce());
     EXPECT_EQ(generation.getAllSpecies().size(), 1);
@@ -69,9 +70,6 @@ TEST(Generation, IncrementGeneration)
     cinfo.m_minWeight = -3.f;
     cinfo.m_fitnessCalculator = &calclator;
     Generation generation(cinfo);
-
-    generation.setInputNodeValues({ 1.f, 1.f, 1.f });
-    generation.calcFitness();
 
     Generation::CreateNewGenParams params;
     generation.createNewGeneration(params);

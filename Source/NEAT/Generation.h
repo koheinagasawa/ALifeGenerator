@@ -122,10 +122,6 @@ namespace NEAT
         // Create a new generation.
         void createNewGeneration(const CreateNewGenParams& params);
 
-        // Set values of input nodes.
-        // inputNodeValues has to be the same size as the number of input nodes and has to be sorted in the same order as them.
-        void setInputNodeValues(const std::vector<float>& values);
-
         // Calculate fitness of all the genomes.
         void calcFitness();
 

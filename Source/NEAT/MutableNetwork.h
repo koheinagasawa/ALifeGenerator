@@ -66,6 +66,9 @@ public:
     // Add a new edge between node1 and node2 with weight.
     bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
 
+    // Remove an edge with a new edge id
+    void replaceEdge(EdgeId edgeId, EdgeId newId);
+
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
     bool isEdgeEnabled(EdgeId edgeId) const;
@@ -175,6 +178,46 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
     assert(this->validate());
 
     return true;
+}
+
+template <typename Node>
+void MutableNetwork<Node>::replaceEdge(EdgeId edgeId, EdgeId newId)
+{
+    assert(this->validate());
+    assert(this->hasEdge(edgeId));
+    assert(!this->hasEdge(newId));
+
+    const SwitchableEdge& edge = this->m_edges.at(edgeId);
+
+    // Update incoming edges of output node
+    NodeData& outputNode = this->m_nodes[edge.getOutNode()];
+    EdgeIds& edgesToOutNode = outputNode.m_incomingEdges;
+    for (EdgeId& e : edgesToOutNode)
+    {
+        if (e == edgeId)
+        {
+            e = newId;
+            break;
+        }
+    }
+
+    // Replace the edge.
+    const Edge e = this->getEdges().at(edgeId);
+
+    // Remove the original edge id
+    for (auto itr = this->m_edges.begin(); itr != this->m_edges.end(); itr++)
+    {
+        if (itr->first == edgeId)
+        {
+            this->m_edges.erase(itr);
+            break;
+        }
+    }
+
+    // Add the new edge id
+    this->m_edges.insert({ newId, e });
+
+    assert(this->validate());
 }
 
 template <typename Node>

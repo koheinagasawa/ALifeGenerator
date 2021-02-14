@@ -55,6 +55,44 @@ TEST(Genome, CreateGenome)
     }
 }
 
+TEST(Genome, ReassignInnovation)
+{
+    using namespace NEAT;
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    // Create a genome.
+    Genome genome(cinfo);
+
+    const Genome::Network* network = genome.getNetwork();
+
+    EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network->getNumEdges(), 4);
+    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getInnovations().size(), 4);
+
+    EdgeId originalEdge(0);
+    EdgeId newEdge(4);
+    NodeId outNode1(2);
+    EXPECT_TRUE(network->hasEdge(originalEdge));
+    EXPECT_FALSE(network->hasEdge(newEdge));
+    EXPECT_EQ(network->getIncomingEdges(outNode1)[0], originalEdge);
+    genome.reassignInnovation(originalEdge, newEdge);
+    EXPECT_FALSE(network->hasEdge(originalEdge));
+    EXPECT_TRUE(network->hasEdge(newEdge));
+    EXPECT_EQ(network->getIncomingEdges(outNode1)[0], newEdge);
+}
+
 TEST(Genome, EvaluateGenome)
 {
     using namespace NEAT;

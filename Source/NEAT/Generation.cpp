@@ -369,9 +369,11 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
     // Select and mutate genomes.
     {
         const int numGenomesToSelect = std::min(numGenomesToAdd, int(numGenomes * (1.f - params.m_crossOverRate)));
-        Genome::MutationOut mout;
-        int i = 0;
-        while (i < numGenomesToSelect)
+
+        std::vector<Genome::MutationOut> mutationOuts;
+        mutationOuts.resize(numGenomesToSelect);
+
+        for (int i = 0; i < numGenomesToSelect; i++)
         {
             // Select a random genome.
             const GenomeData* gd = selector.selectRandomGenome();
@@ -382,14 +384,42 @@ void Generation::createNewGeneration(const CreateNewGenParams& params)
             GenomePtr copy = std::make_shared<Genome>(*gd->m_genome);
 
             // Mutate the genome.
+            Genome::MutationOut& mout = mutationOuts[i];
             copy->mutate(params.m_mutationParams, mout);
 
-            addGenomeToNewGen(copy);
-            i++;
-        }
+            // Check if there is already a mutation of the same structural change.
+            // If so, assign the same innovation id to it.
+            for (int innov1 = 0; innov1 < mout.m_numEdgesAdded; innov1++)
+            {
+                Genome::MutationOut::NewEdgeInfo& newEdge = mout.m_newEdges[innov1];
+                NodeId inNode = newEdge.m_sourceInNode;
+                NodeId outNode = newEdge.m_sourceOutNode;
 
-        //TODO check the same structural mutation is assigned the same innovation id.
-        // STARTFROMHERE
+                bool idChanged = false;
+                for (int j = 0; j < i; j++)
+                {
+                    const Genome::MutationOut& mout2 = mutationOuts[j];
+                    for (int innov2 = 0; innov2 < mout2.m_numEdgesAdded; innov2++)
+                    {
+                        const Genome::MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
+                        if (newEdge2.m_sourceInNode == inNode && newEdge2.m_sourceOutNode == outNode)
+                        {
+                            copy->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
+                            newEdge.m_newEdge = newEdge2.m_newEdge;
+                            idChanged = true;
+                            break;
+                        }
+                    }
+
+                    if (idChanged)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            addGenomeToNewGen(copy);
+        }
     }
 
     // Select and generate new genomes by crossover.

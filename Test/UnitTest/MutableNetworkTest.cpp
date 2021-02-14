@@ -264,3 +264,52 @@ TEST(MutableNetwork, AddEdge)
         EXPECT_EQ(mn.getIncomingEdges(inNode1).size(), 0);
     }
 }
+
+TEST(MutableNetwork, ReplaceEdge)
+{
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    MN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    MN::Edges edges;
+    edges.insert({ edge1, MN::Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, MN::Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
+
+    MN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    MN mn(nodes, edges, outputNodes);
+
+    EXPECT_TRUE(mn.validate());
+    EXPECT_EQ(mn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(mn.getNumEdges(), numEdges);
+
+    // Remove an edge.
+    EdgeId edge5(5);
+    mn.replaceEdge(edge1, edge5);
+    EXPECT_FALSE(mn.hasEdge(edge1));
+    EXPECT_TRUE(mn.hasEdge(edge5));
+    EXPECT_EQ(mn.getNumEdges(), numEdges);
+    EXPECT_EQ(mn.getIncomingEdges(hiddenNode1).size(), 1);
+    EXPECT_EQ(mn.getIncomingEdges(hiddenNode1)[0], edge5);
+}

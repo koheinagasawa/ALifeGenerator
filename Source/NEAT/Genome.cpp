@@ -524,6 +524,37 @@ Genome Genome::crossOver(const Genome& genome1, const Genome& genome2, bool same
     return newGenome;
 }
 
+void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)
+{
+    assert(m_network->hasEdge(originalId) && !m_network->hasEdge(newId));
+
+    // Remove the original edge and add the new one.
+    m_network->replaceEdge(originalId, newId);
+
+    // Fix m_innovations. We perform reverse iteration here because this function is
+    // typically called to fix newly added edges after mutation.
+    // Add the new edge id to the innovation list
+    for (auto itr = m_innovations.rbegin(); itr != m_innovations.rend(); itr++)
+    {
+        if (*itr < newId)
+        {
+            m_innovations.insert(itr.base(), newId);
+            break;
+        }
+    }
+    // Remove the original edge id from the innovation list
+    for (auto itr = m_innovations.rbegin(); itr != m_innovations.rend(); itr++)
+    {
+        if (*itr == originalId)
+        {
+            m_innovations.erase((itr+1).base());
+            break;
+        }
+    }
+
+    assert(validate());
+}
+
 float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params)
 {
     assert(genome1.validate());

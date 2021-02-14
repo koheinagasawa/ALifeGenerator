@@ -270,7 +270,8 @@ Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCal
 
 void Generation::createNewGeneration(const CreateNewGenParams& params)
 {
-    // TODO: profile each process by adding timers.
+    // TODO: Break this function into smaller parts so that we can test it more thoroughly.
+    // TODO: Profile each process by adding timers.
 
     PseudoRandom& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
 

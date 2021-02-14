@@ -45,11 +45,19 @@ TEST(Generation, CreateGeneration)
     Generation generation(cinfo);
 
     EXPECT_EQ(generation.getNumGenomes(), 100);
-    const Generation::GenomeData& gd = generation.getGenomes()[0];
-    EXPECT_TRUE(gd.getGenome());
-    EXPECT_EQ(gd.getSpeciesId(), -1);
-    EXPECT_TRUE(gd.canReproduce());
+    for (int i = 0; i < generation.getNumGenomes(); i++)
+    {
+        const Generation::GenomeData& gd = generation.getGenomes()[i];
+        EXPECT_TRUE(gd.getGenome());
+        EXPECT_EQ(gd.getSpeciesId(), -1);
+        EXPECT_TRUE(gd.canReproduce());
+    }
     EXPECT_EQ(generation.getAllSpecies().size(), 1);
+    EXPECT_TRUE(generation.getSpecies(SpeciesId(0)));
+    EXPECT_FALSE(generation.getSpecies(SpeciesId(0))->getBestGenome());
+    EXPECT_EQ(generation.getSpecies(SpeciesId(0))->getStagnantGenerationCount(), 0);
+    EXPECT_EQ(generation.getSpecies(SpeciesId(0))->getNumMembers(), 0);
+    EXPECT_EQ(&generation.getFitnessCalculator(), &calclator);
     EXPECT_EQ(generation.getId().val(), 0);
 }
 
@@ -60,27 +68,35 @@ TEST(Generation, IncrementGeneration)
     InnovationCounter innovCounter;
     MyFitnessCalculator calclator;
     Genome::Activation activation = [](float value) { return value; };
+
     Generation::Cinfo cinfo;
-    cinfo.m_numGenomes = 100;
-    cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
-    cinfo.m_genomeCinfo.m_numInputNodes = 3;
-    cinfo.m_genomeCinfo.m_numOutputNodes = 3;
-    cinfo.m_genomeCinfo.m_defaultActivation = &activation;
-    cinfo.m_maxWeight = 3.f;
-    cinfo.m_minWeight = -3.f;
-    cinfo.m_fitnessCalculator = &calclator;
+    {
+        cinfo.m_numGenomes = 100;
+        cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
+        cinfo.m_genomeCinfo.m_numInputNodes = 3;
+        cinfo.m_genomeCinfo.m_numOutputNodes = 3;
+        cinfo.m_genomeCinfo.m_defaultActivation = &activation;
+        cinfo.m_maxWeight = 3.f;
+        cinfo.m_minWeight = -3.f;
+        cinfo.m_fitnessCalculator = &calclator;
+    }
+
     Generation generation(cinfo);
 
     Generation::CreateNewGenParams params;
     generation.createNewGeneration(params);
 
     EXPECT_EQ(generation.getNumGenomes(), 100);
-    const Generation::GenomeData& gd = generation.getGenomes()[0];
-    EXPECT_TRUE(gd.getGenome());
-    EXPECT_NE(gd.getSpeciesId(), -1);
+    for (int i = 0; i < generation.getNumGenomes(); i++)
+    {
+        const Generation::GenomeData& gd = generation.getGenomes()[i];
+        EXPECT_TRUE(gd.getGenome());
+        EXPECT_NE(gd.getSpeciesId(), -1);
+    }
     EXPECT_EQ(generation.getId().val(), 1);
 
     generation.createNewGeneration(params);
+
     EXPECT_EQ(generation.getNumGenomes(), 100);
     EXPECT_EQ(generation.getId().val(), 2);
 }

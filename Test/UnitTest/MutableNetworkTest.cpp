@@ -306,7 +306,7 @@ TEST(MutableNetwork, ReplaceEdge)
 
     // Remove an edge.
     EdgeId edge5(5);
-    mn.replaceEdge(edge1, edge5);
+    mn.replaceEdgeId(edge1, edge5);
     EXPECT_FALSE(mn.hasEdge(edge1));
     EXPECT_TRUE(mn.hasEdge(edge5));
     EXPECT_EQ(mn.getNumEdges(), numEdges);

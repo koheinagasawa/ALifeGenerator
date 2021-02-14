@@ -529,7 +529,7 @@ void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)
     assert(m_network->hasEdge(originalId) && !m_network->hasEdge(newId));
 
     // Remove the original edge and add the new one.
-    m_network->replaceEdge(originalId, newId);
+    m_network->replaceEdgeId(originalId, newId);
 
     // Fix m_innovations. We perform reverse iteration here because this function is
     // typically called to fix newly added edges after mutation.

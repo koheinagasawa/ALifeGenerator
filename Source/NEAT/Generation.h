@@ -136,6 +136,7 @@ namespace NEAT
         inline auto getId() const->GenerationId { return m_id; }
 
     protected:
+        // Called inside createNewGeneration().
         void addGenome(GenomePtr genome);
 
         // Helper class to select a random genome by taking fitness into account.
@@ -154,7 +155,7 @@ namespace NEAT
             // Select two random genomes in the same species.
             void selectTwoRandomGenomes(float interSpeciesCrossOverRate, const Generation::GenomeData*& g1, const Generation::GenomeData*& g2);
 
-        private:
+        protected:
             // Select a random genome between start and end (not including end) in m_genomes array.
             auto selectRandomGenome(int start, int end)->const Generation::GenomeData*;
 

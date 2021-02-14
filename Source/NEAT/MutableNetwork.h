@@ -67,7 +67,7 @@ public:
     bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
 
     // Remove an edge with a new edge id
-    void replaceEdge(EdgeId edgeId, EdgeId newId);
+    void replaceEdgeId(EdgeId edgeId, EdgeId newId);
 
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
@@ -181,7 +181,7 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
 }
 
 template <typename Node>
-void MutableNetwork<Node>::replaceEdge(EdgeId edgeId, EdgeId newId)
+void MutableNetwork<Node>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
 {
     assert(this->validate());
     assert(this->hasEdge(edgeId));

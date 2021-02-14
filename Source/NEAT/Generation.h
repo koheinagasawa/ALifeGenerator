@@ -138,6 +138,40 @@ namespace NEAT
     protected:
         void addGenome(GenomePtr genome);
 
+        // Helper class to select a random genome by taking fitness into account.
+        class GenomeSelector
+        {
+        public:
+            // Constructor
+            GenomeSelector(PseudoRandom& random) : m_random(random) {}
+
+            // Set genomes to select and initialize internal data.
+            bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species);
+
+            // Select a random genome.
+            inline auto selectRandomGenome()->const Generation::GenomeData*
+            {
+                return selectRandomGenome(0, m_genomes.size());
+            }
+
+            // Select two random genomes in the same species.
+            void selectTwoRandomGenomes(float interSpeciesCrossOverRate, const Generation::GenomeData*& g1, const Generation::GenomeData*& g2);
+
+        private:
+            // Select a random genome between start and end (not including end) in m_genomes array.
+            const Generation::GenomeData* selectRandomGenome(int start, int end);
+
+            struct IndexSet
+            {
+                int m_start, m_end;
+            };
+
+            std::vector<const Generation::GenomeData*> m_genomes;
+            std::vector<float> m_sumFitness;
+            std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices;
+            PseudoRandom& m_random;
+        };
+
         GenomeDatasPtr m_genomes;
         GenomeDatasPtr m_prevGenGenomes;
         SpeciesList m_species;

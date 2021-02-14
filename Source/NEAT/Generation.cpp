@@ -11,205 +11,174 @@
 
 using namespace NEAT;
 
-namespace
+bool Generation::GenomeSelector::setGenomes(const GenomeDatas& genomesIn, const SpeciesList& species)
 {
-    // Helper class to select a random genome by taking fitness into account.
-    class GenomeSelector
+    assert(genomesIn.size() > 0);
+
+    m_genomes.reserve(genomesIn.size());
+    m_sumFitness.reserve(genomesIn.size() + 1);
+    float sumFitness = 0;
+    m_sumFitness.push_back(0);
+
+    auto calcFitnessSharingFactor = [&species](SpeciesId speciesId)->float
     {
-    public:
-        // Constructor
-        GenomeSelector(PseudoRandom& random) : m_random(random) {}
+        return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
+    };
 
-        // Set genomes to select and initialize internal data.
-        bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species)
+    SpeciesId currentSpecies = genomesIn[0].getSpeciesId();
+    float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
+    int currentSpeciesStartIndex = 0;
+
+#ifdef _DEBUG
+    std::unordered_set<SpeciesId> speciesIndices;
+    speciesIndices.insert(currentSpecies);
+
+    // Here we are assuming that genomes are sorted by species id.
+    {
+        SpeciesId curId = genomesIn[0].getSpeciesId();
+        for (const GenomeData& g : genomesIn)
         {
-            assert(genomesIn.size() > 0);
-
-            m_genomes.reserve(genomesIn.size());
-            m_sumFitness.reserve(genomesIn.size()+1);
-            float sumFitness = 0;
-            m_sumFitness.push_back(0);
-
-            SpeciesId currentSpecies = genomesIn[0].getSpeciesId();
-            float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
-            int currentSpeciesStartIndex = 0;
-
-#ifdef _DEBUG
-            std::unordered_set<SpeciesId> speciesIndices;
-            speciesIndices.insert(currentSpecies);
-
-            // Here we are assuming that genomes are sorted by species id.
+            if (!g.canReproduce() || g.getFitness() == 0)
             {
-                SpeciesId curId = genomesIn[0].getSpeciesId();
-                for (const Generation::GenomeData& g : genomesIn)
-                {
-                    if (!g.canReproduce() || g.getFitness() == 0)
-                    {
-                        continue;
-                    }
-
-                    SpeciesId id = g.getSpeciesId();
-                    if (curId != id)
-                    {
-                        assert(curId < id);
-                        curId = id;
-                    }
-                }
+                continue;
             }
+
+            SpeciesId id = g.getSpeciesId();
+            if (curId != id)
+            {
+                assert(curId < id);
+                curId = id;
+            }
+        }
+    }
 #endif
 
-            for (const Generation::GenomeData& g : genomesIn)
-            {
-                if (!g.canReproduce() || g.getFitness() == 0)
-                {
-                    continue;
-                }
+    for (const GenomeData& g : genomesIn)
+    {
+        if (!g.canReproduce() || g.getFitness() == 0)
+        {
+            continue;
+        }
 
-                if (currentSpecies != g.getSpeciesId())
-                {
-                    m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-                    currentSpecies = g.getSpeciesId();
-                    fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies, species);
-                    currentSpeciesStartIndex = (int)m_genomes.size();
-#ifdef _DEBUG
-                    assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
-#endif
-                }
-
-                m_genomes.push_back(&g);
-
-                assert(g.getFitness() > 0);
-
-                const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
-                sumFitness += adjustedFitness;
-                m_sumFitness.push_back(sumFitness);
-            }
-
-            if (m_genomes.size() == 0)
-            {
-                return false;
-            }
-
-            if (sumFitness == 0.f)
-            {
-                // All genomes have 0 fitness.
-                // Set up homogeneous distribution.
-                for (int i = 0; i <= (int)m_genomes.size(); i++)
-                {
-                    m_sumFitness[i] = (float)i;
-                }
-            }
-
+        if (currentSpecies != g.getSpeciesId())
+        {
             m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
-            assert(m_genomes.size() + 1 == m_sumFitness.size());
-
-            return true;
+            currentSpecies = g.getSpeciesId();
+            fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
+            currentSpeciesStartIndex = (int)m_genomes.size();
+#ifdef _DEBUG
+            assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
+#endif
         }
 
-        // Select a random genome.
-        auto selectRandomGenome()->const Generation::GenomeData*
+        m_genomes.push_back(&g);
+
+        assert(g.getFitness() > 0);
+
+        const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
+        sumFitness += adjustedFitness;
+        m_sumFitness.push_back(sumFitness);
+    }
+
+    if (m_genomes.size() == 0)
+    {
+        return false;
+    }
+
+    if (sumFitness == 0.f)
+    {
+        // All genomes have 0 fitness.
+        // Set up homogeneous distribution.
+        for (int i = 0; i <= (int)m_genomes.size(); i++)
         {
-            return selectRandomGenome(0, m_genomes.size());
+            m_sumFitness[i] = (float)i;
         }
+    }
 
-        // Select two random genomes in the same species.
-        void selectTwoRandomGenomes(float interSpeciesCrossOverRate, const Generation::GenomeData*& g1, const Generation::GenomeData*& g2)
-        {
-            assert(m_spciecesStartEndIndices.size() > 0);
+    m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
-            g1 = nullptr;
-            g2 = nullptr;
+    assert(m_genomes.size() + 1 == m_sumFitness.size());
 
-            // Select a random genome.
-            g1 = selectRandomGenome();
-            assert(g1);
-
-            // Get start and end indices of the species of g1.
-            const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesId());
-
-            if (m_random.randomReal01() < interSpeciesCrossOverRate || (startEnd.m_end - startEnd.m_start) < 2)
-            {
-                // Inter species cross-over. Just select another genome among the entire generation.
-                g2 = g1;
-                while (g1 == g2)
-                {
-                    g2 = selectRandomGenome();
-                }
-            }
-            else
-            {
-                // Intra species cross-over. Select another genome within the same species.
-
-                if (startEnd.m_end - startEnd.m_start == 2)
-                {
-                    // There are only two genomes in this species.
-                    g1 = m_genomes[startEnd.m_start];
-                    g2 = m_genomes[startEnd.m_end - 1];
-                }
-                else
-                {
-                    // Select g2 among the species.
-                    g2 = g1;
-                    while (g1 == g2)
-                    {
-                        g2 = selectRandomGenome(startEnd.m_start, startEnd.m_end);
-                    }
-                }
-
-                assert(g1->getSpeciesId() == g2->getSpeciesId());
-            }
-        }
-
-    private:
-        // Select a random genome between start and end (not including end) in m_genomes array.
-        const Generation::GenomeData* selectRandomGenome(int start, int end)
-        {
-            assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
-            assert(start >= 0 &&  end < (int)m_sumFitness.size() && start < end);
-
-            if (m_sumFitness[start] < m_sumFitness[end])
-            {
-                // std::uniform_real_distribution should return [min, max), but if we call randomReal(m_sumFitness[start], m_sumFitness[end])
-                // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
-                // calculation later.
-                const float v = m_random.randomReal(m_sumFitness[start], std::nexttoward(m_sumFitness[end], -1.f));
-                for (int i = start; i < end; i++)
-                {
-                    if (v < m_sumFitness[i + 1])
-                    {
-                        return m_genomes[i];
-                    }
-                }
-
-                assert(0);
-                return nullptr;
-            }
-            else
-            {
-                // Fitness are all the same. Just select one by randomly.
-                return m_genomes[m_random.randomInteger(start, end - 1)];
-            }
-        }
-
-        inline float calcFitnessSharingFactor(SpeciesId speciesId, const Generation::SpeciesList& species) const
-        {
-            return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
-        }
-
-        struct IndexSet
-        {
-            int m_start;
-            int m_end;
-        };
-
-        std::vector<const Generation::GenomeData*> m_genomes;
-        std::vector<float> m_sumFitness;
-        std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices;
-        PseudoRandom& m_random;
-    };
+    return true;
 }
+
+void Generation::GenomeSelector::selectTwoRandomGenomes(float interSpeciesCrossOverRate, const GenomeData*& g1, const GenomeData*& g2)
+{
+    assert(m_spciecesStartEndIndices.size() > 0);
+
+    g1 = nullptr;
+    g2 = nullptr;
+
+    // Select a random genome.
+    g1 = selectRandomGenome();
+    assert(g1);
+
+    // Get start and end indices of the species of g1.
+    const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesId());
+
+    if (m_random.randomReal01() < interSpeciesCrossOverRate || (startEnd.m_end - startEnd.m_start) < 2)
+    {
+        // Inter species cross-over. Just select another genome among the entire generation.
+        g2 = g1;
+        while (g1 == g2)
+        {
+            g2 = selectRandomGenome();
+        }
+    }
+    else
+    {
+        // Intra species cross-over. Select another genome within the same species.
+
+        if (startEnd.m_end - startEnd.m_start == 2)
+        {
+            // There are only two genomes in this species.
+            g1 = m_genomes[startEnd.m_start];
+            g2 = m_genomes[startEnd.m_end - 1];
+        }
+        else
+        {
+            // Select g2 among the species.
+            g2 = g1;
+            while (g1 == g2)
+            {
+                g2 = selectRandomGenome(startEnd.m_start, startEnd.m_end);
+            }
+        }
+
+        assert(g1->getSpeciesId() == g2->getSpeciesId());
+    }
+}
+
+auto Generation::GenomeSelector::selectRandomGenome(int start, int end)->const GenomeData*
+{
+    assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
+    assert(start >= 0 && end < (int)m_sumFitness.size() && start < end);
+
+    if (m_sumFitness[start] < m_sumFitness[end])
+    {
+        // std::uniform_real_distribution should return [min, max), but if we call randomReal(m_sumFitness[start], m_sumFitness[end])
+        // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
+        // calculation later.
+        const float v = m_random.randomReal(m_sumFitness[start], std::nexttoward(m_sumFitness[end], -1.f));
+        for (int i = start; i < end; i++)
+        {
+            if (v < m_sumFitness[i + 1])
+            {
+                return m_genomes[i];
+            }
+        }
+
+        assert(0);
+        return nullptr;
+    }
+    else
+    {
+        // Fitness are all the same. Just select one by randomly.
+        return m_genomes[m_random.randomInteger(start, end - 1)];
+    }
+}
+
 
 Generation::GenomeData::GenomeData(GenomePtr genome, GenomeId id)
     : m_genome(genome)

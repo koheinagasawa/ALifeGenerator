@@ -6,4 +6,5 @@
 
 #pragma once
 
+#include <cassert>
 #include <Common/BaseType.h>

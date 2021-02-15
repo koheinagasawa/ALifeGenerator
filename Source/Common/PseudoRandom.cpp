@@ -7,8 +7,6 @@
 #include <Common/Common.h>
 #include <Common/PseudoRandom.h>
 
-#include <cassert>
-
 PseudoRandom PseudoRandom::s_instance(0);
 
 PseudoRandom& PseudoRandom::getInstance()

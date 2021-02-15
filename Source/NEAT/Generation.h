@@ -10,8 +10,8 @@
 #include <NEAT/Species.h>
 
 DECLARE_ID(GenerationId);
-DECLARE_ID(GenomeId);
 DECLARE_ID(SpeciesId);
+DECLARE_ID(GenomeId);
 
 namespace NEAT
 {

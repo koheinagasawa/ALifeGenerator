@@ -120,6 +120,11 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_TRUE(nn.hasNode(outNode));
     EXPECT_FALSE(nn.hasNode(NodeId(2)));
 
+    EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
+    EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
+    EXPECT_TRUE(nn.isConnected(inNode, outNode));
+
     EXPECT_EQ(nn.getNumNodes(), 2);
     EXPECT_EQ(nn.getNumEdges(), 1);
 
@@ -129,6 +134,7 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_EQ(nn.getOutNode(edge), outNode);
 
     EXPECT_EQ(nn.getNumOutputNodes(), 1);
+    EXPECT_EQ(nn.getOutputNodes()[0], outNode);
 }
 
 TEST(NeuralNetwork, GetSetNodeValues)

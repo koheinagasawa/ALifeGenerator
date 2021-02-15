@@ -14,14 +14,22 @@ Species::Species(const Genome& initialRepresentative)
 {
 }
 
-void Species::preNewGeneration(PseudoRandom* randomIn)
+Species::Species(CGenomePtr initialMember, float fitness)
+    : m_representative(*initialMember.get())
+    , m_bestGenome(initialMember)
+    , m_bestFitness(fitness)
+{
+    m_members.push_back(initialMember);
+}
+
+void Species::preNewGeneration(RandomGenerator* randomIn)
 {
     // Select a new representative
     if(getNumMembers() > 0)
     {
         RandomGenerator* random = randomIn ? randomIn : &PseudoRandom::getInstance();
         int index = random->randomInteger(0, m_members.size() - 1);
-        GenomePtr representative = m_members[index];
+        CGenomePtr representative = m_members[index];
         m_representative = *representative.get();
     }
 
@@ -45,7 +53,7 @@ void Species::postNewGeneration()
     }
 }
 
-bool Species::tryAddGenome(GenomePtr genome, float fitness, float distanceThreshold, const Genome::CalcDistParams& params)
+bool Species::tryAddGenome(CGenomePtr genome, float fitness, float distanceThreshold, const Genome::CalcDistParams& params)
 {
     // Calculate distance between the representative.
     const float distance = Genome::calcDistance(*genome.get(), m_representative, params);

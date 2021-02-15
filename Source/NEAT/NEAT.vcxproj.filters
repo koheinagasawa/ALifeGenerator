@@ -6,6 +6,14 @@
     <ClCompile Include="Neat.cpp" />
     <ClCompile Include="Species.cpp" />
     <ClCompile Include="Generation.cpp" />
+    <ClCompile Include="GenomeBase.cpp" />
+    <ClCompile Include="DefaultMutation.cpp" />
+    <ClCompile Include="DefaultCrossOver.cpp" />
+    <ClCompile Include="DefaultGenomeSelector.cpp" />
+    <ClCompile Include="GenerationBase.cpp" />
+    <ClCompile Include="SpeciesChampionSelector.cpp" />
+    <ClCompile Include="MutationDelegate.cpp" />
+    <ClCompile Include="UniformGenomeSelector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />
@@ -15,5 +23,16 @@
     <ClInclude Include="Species.h" />
     <ClInclude Include="Generation.h" />
     <ClInclude Include="NeatBase.h" />
+    <ClInclude Include="GenerationBase.h" />
+    <ClInclude Include="GenomeBase.h" />
+    <ClInclude Include="DefaultMutation.h" />
+    <ClInclude Include="DefaultCrossOver.h" />
+    <ClInclude Include="DefaultGenomeSelector.h" />
+    <ClInclude Include="SpeciesChampionSelector.h" />
+    <ClInclude Include="GenomeGenerator.h" />
+    <ClInclude Include="MutationDelegate.h" />
+    <ClInclude Include="CrossOverDelegate.h" />
+    <ClInclude Include="GenomeSelector.h" />
+    <ClInclude Include="UniformGenomeSelector.h" />
   </ItemGroup>
 </Project>

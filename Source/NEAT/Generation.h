@@ -6,60 +6,39 @@
 
 #pragma once
 
+#include <NEAT/GenerationBase.h>
 #include <NEAT/Genome.h>
 #include <NEAT/Species.h>
-
-DECLARE_ID(GenerationId);
-DECLARE_ID(GenomeId);
-DECLARE_ID(SpeciesId);
+#include <NEAT/DefaultMutation.h>
+#include <NEAT/DefaultCrossOver.h>
 
 namespace NEAT
 {
-    class FitnessCalculatorBase
-    {
-    public:
-        virtual float calcFitness(const Genome& genome) const = 0;
-    };
-
     // Generation for NEAT.
-    class Generation
+    class Generation : public GenerationBase
     {
     public:
+        // Type declarations.
         using GenomePtr = std::shared_ptr<Genome>;
         using Genomes = std::vector<GenomePtr>;
         using SpeciesPtr = std::shared_ptr<Species>;
         using SpeciesList = std::unordered_map<SpeciesId, SpeciesPtr>;
 
-        struct GenomeData
+        // Parameters used for generation.
+        struct GenerationParams
         {
-        public:
-            // Default constructor
-            GenomeData() = default;
+            // Maximum count of generations which one species can stay in stagnant.
+            // Species who is stagnant more than this count is not allowed to reproduce.
+            uint16_t m_maxStagnantCount = 5;
 
-            inline auto getGenome() const->const Genome* { return m_genome.get(); }
-            inline float getFitness() const { return m_fitness; }
-            inline auto getSpeciesId() const->SpeciesId { return m_speciesId; }
-            inline bool canReproduce() const { return m_canReproduce; }
+            // Parameters used for distance calculation of two genomes.
+            Genome::CalcDistParams m_calcDistParams;
 
-        protected:
-            // Constructor with a pointer to the genome and its id.
-            GenomeData(GenomePtr genome, GenomeId id);
-
-            // Initialize by a pointer to the genome and its id.
-            void init(GenomePtr genome, GenomeId id);
-
-            GenomePtr m_genome;
-            GenomeId m_id;
-            float m_fitness = 0.f;
-            SpeciesId m_speciesId = SpeciesId::invalid();
-            bool m_canReproduce = true;
-
-            friend class Generation;
+            // Distance threshold used for speciation.
+            float m_speciationDistanceThreshold = 3.f;
         };
 
-        using GenomeDatas = std::vector<GenomeData>;
-        using GenomeDatasPtr = std::shared_ptr<GenomeDatas>;
-
+        // Cinfo of generation.
         struct Cinfo
         {
             // The number of genomes in one generation.
@@ -75,107 +54,58 @@ namespace NEAT
             float m_maxWeight = 1.f;
 
             // Fitness calculator.
-            FitnessCalculatorBase* m_fitnessCalculator;
+            FitnessCalcPtr m_fitnessCalculator;
 
-            // Random generator.
-            PseudoRandom* m_random = nullptr;
-        };
-
-        // Parameters used in createNewGeneration()
-        struct CreateNewGenParams
-        {
             // Parameters used for mutation.
-            Genome::MutationParams m_mutationParams;
+            DefaultMutation::MutationParams m_mutationParams;
 
             // Parameters used for cross over.
-            Genome::CrossOverParams m_crossOverParams;
-
-            // Parameters used for distance calculation of two genomes.
-            Genome::CalcDistParams m_calcDistParams;
+            DefaultCrossOver::CrossOverParams m_crossOverParams;
 
             // Minimum numbers of species members to copy its champion without modifying it.
             uint16_t m_minMembersInSpeciesToCopyChampion = 5;
 
-            // Maximum count of generations which one species can stay in stagnant.
-            // Species who is stagnant more than this count is not allowed to reproduce.
-            uint16_t m_maxStagnantCount = 5;
-
-            // Rate of the number of genomes to generate by cross over.
-            float m_crossOverRate = 0.75f;
-
-            // Rate of interspecies crossover.
-            float m_interSpeciesCrossOverRate = 0.001f;
-
-            // Distance threshold used for speciation.
-            float m_speciationDistanceThreshold = 3.f;
+            // The generation params.
+            GenerationParams m_generationParams;
 
             // Random generator.
-            PseudoRandom* m_random = nullptr;
+            RandomGenerator* m_random = nullptr;
         };
 
         // Constructor by Cinfo.
         Generation(const Cinfo& cinfo);
 
         // Constructor by a collection of Genomes.
-        Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCalculator);
+        Generation(const Genomes& genomes, const Cinfo& cinfo);
 
-        // Create a new generation.
-        void createNewGeneration(const CreateNewGenParams& params);
-
-        // Calculate fitness of all the genomes.
-        void calcFitness();
-
+        // Returns the list of all genomes. Genomes are sorted by SpeciesId.
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
-        inline int getNumGenomes() const { return m_numGenomes; }
 
+        // Returns the list of all species.
         inline auto getAllSpecies() const->const SpeciesList& { return m_species; }
+
+        // Returns pointer to a species.
         inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return m_species.find(id) != m_species.end() ? m_species.at(id) : nullptr; }
 
-        inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
+        // Returns SpeciesId of the genome.
+        inline auto getSpecies(GenomeId genomeId) const->SpeciesId { return m_genomesSpecies.find(genomeId) != m_genomesSpecies.end() ? m_genomesSpecies.at(genomeId) : SpeciesId::invalid(); }
 
-        inline auto getId() const->GenerationId { return m_id; }
+        // Returns true if the species can reproduce descendants to the next generation.
+        bool isSpeciesReproducible(SpeciesId speciesId) const;
 
     protected:
-        // Called inside createNewGeneration().
-        void addGenome(GenomePtr genome);
+        void init(const Cinfo& cinfo);
 
-        // Helper class to select a random genome by taking fitness into account.
-        class GenomeSelector
-        {
-        public:
-            // Constructor
-            GenomeSelector(PseudoRandom& random) : m_random(random) {}
+        virtual void postUpdateGeneration() override;
 
-            // Set genomes to select and initialize internal data.
-            bool setGenomes(const Generation::GenomeDatas& genomesIn, const Generation::SpeciesList& species);
+        virtual auto createSelector()->GenomeSelectorPtr override;
 
-            // Select a random genome.
-            inline auto selectRandomGenome()->const Generation::GenomeData* { return selectRandomGenome(0, m_genomes.size()); }
+    public:
+        GenerationParams m_params;                                  // The parameters for this generation.
 
-            // Select two random genomes in the same species.
-            void selectTwoRandomGenomes(float interSpeciesCrossOverRate, const Generation::GenomeData*& g1, const Generation::GenomeData*& g2);
-
-        protected:
-            // Select a random genome between start and end (not including end) in m_genomes array.
-            auto selectRandomGenome(int start, int end)->const Generation::GenomeData*;
-
-            struct IndexSet
-            {
-                int m_start, m_end;
-            };
-
-            std::vector<const Generation::GenomeData*> m_genomes;
-            std::vector<float> m_sumFitness;
-            std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices;
-            PseudoRandom& m_random;
-        };
-
-        GenomeDatasPtr m_genomes;
-        GenomeDatasPtr m_prevGenGenomes;
-        SpeciesList m_species;
+    protected:
+        SpeciesList m_species;                                      // The list of Species.
+        std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;   // A map between genome and species.
         UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
-        FitnessCalculatorBase* m_fitnessCalculator;
-        int m_numGenomes;
-        GenerationId m_id;
     };
 }

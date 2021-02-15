@@ -5,3 +5,5 @@
 */
 
 #pragma once
+
+#include <cassert>

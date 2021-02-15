@@ -66,7 +66,10 @@ public:
     // Add a new edge between node1 and node2 with weight.
     bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
 
-    // Remove an edge with a new edge id
+    // Replace an node id with a new node id
+    void replaceNodeId(NodeId nodeId, NodeId newId);
+
+    // Replace an edge id with a new edge id
     void replaceEdgeId(EdgeId edgeId, EdgeId newId);
 
     // Enable/disable an edge.
@@ -181,13 +184,52 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
 }
 
 template <typename Node>
+void MutableNetwork<Node>::replaceNodeId(NodeId nodeId, NodeId newId)
+{
+    assert(this->validate());
+    assert(this->hasNode(nodeId));
+    assert(!this->hasNode(newId));
+
+    // Replace nodeIds stored in edges.
+    for (auto& itr : this->m_edges)
+    {
+        Edge& edge = itr.second;
+        if (edge.getInNode() == nodeId)
+        {
+            itr.second = Edge(newId, edge.getOutNode(), edge.getWeight(), edge.isEnabled());
+        }
+        else if (edge.getOutNode() == nodeId)
+        {
+            itr.second = Edge(edge.getInNode(), newId, edge.getWeight(), edge.isEnabled());
+        }
+    }
+
+    // Replace the node itself
+    const NodeData& nd = this->m_nodes.at(nodeId);
+    this->m_nodes.insert({ newId, nd });
+    this->m_nodes.erase(nodeId);
+
+    for (auto itr = this->m_outputNodes.begin(); itr != this->m_outputNodes.end(); itr++)
+    {
+        if (*itr == nodeId)
+        {
+            this->m_outputNodes.erase(itr);
+            this->m_outputNodes.push_back(newId);
+            break;
+        }
+    }
+
+    assert(this->validate());
+}
+
+template <typename Node>
 void MutableNetwork<Node>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
 {
     assert(this->validate());
     assert(this->hasEdge(edgeId));
     assert(!this->hasEdge(newId));
 
-    const SwitchableEdge& edge = this->m_edges.at(edgeId);
+    const Edge& edge = this->m_edges.at(edgeId);
 
     // Update incoming edges of output node
     NodeData& outputNode = this->m_nodes[edge.getOutNode()];

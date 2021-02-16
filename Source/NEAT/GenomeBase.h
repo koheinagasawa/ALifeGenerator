@@ -111,6 +111,8 @@ public:
     // Set activation of all nodes except input nodes.
     void setActivationAll(const Activation* activation);
 
+    inline auto getDefaultActivation() const->const Activation* { return m_defaultActivation; }
+
     //
     // Evaluation
     //

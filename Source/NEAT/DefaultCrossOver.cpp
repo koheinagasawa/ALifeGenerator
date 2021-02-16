@@ -10,7 +10,7 @@
 
 using namespace NEAT;
 
-auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& genome2In, bool sameFittingScore)->GenomeBase*
+auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& genome2In, bool sameFittingScore)->GenomeBasePtr
 {
     using Network = Genome::Network;
 
@@ -34,7 +34,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
 
     // Create a new genome and arrays to store nodes and edges for it.
-    Genome newGenome(genome1.m_inputNodes, genome1.m_innovIdCounter);
+    //Genome newGenome(genome1);
+    Network::EdgeIds innovations;
     Network::Nodes newGnomeNodes;
     Network::Edges newGenomeEdges;
 
@@ -51,7 +52,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     // Inherit edges
     {
         // Helper function to add an inherit edge.
-        auto addEdge = [&](const EdgeId edgeId, const Network* networkA, const Network* networkB, bool disjoint)
+        auto addEdge = [&disjointEnableEdges, &enabledEdges, &newGenomeEdges, &innovations, &random, this](const EdgeId edgeId, const Network* networkA, const Network* networkB, bool disjoint)
         {
             // Copy the edge
             const Network::Edge& edgeA = networkA->getEdges().at(edgeId);
@@ -78,8 +79,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             }
 
             newGenomeEdges.insert({ edgeId,  edge });
-            assert(newGenome.m_innovations.empty() || edgeId > newGenome.m_innovations.back());
-            newGenome.m_innovations.push_back(edgeId);
+            assert(innovations.empty() || edgeId > innovations.back());
+            innovations.push_back(edgeId);
         };
 
         // Iterate over all edges in both genomes including disabled edges.
@@ -176,11 +177,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Create a new network.
-    newGenome.m_network = std::make_shared<Network>(newGnomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
+    Genome::NetworkPtr network = std::make_shared<Network>(newGnomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.
-    while (!newGenome.m_network->validate())
+    while (!network->validate())
     {
         EdgeId edge;
 
@@ -198,9 +199,9 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             enabledEdges.pop_back();
         }
 
-        assert(newGenome.m_network->isEdgeEnabled(edge));
-        newGenome.m_network->setEdgeEnabled(edge, false);
+        assert(network->isEdgeEnabled(edge));
+        network->setEdgeEnabled(edge, false);
     }
 
-    return newGenome;
+    return std::make_unique<Genome>(genome1, network, innovations);
 }

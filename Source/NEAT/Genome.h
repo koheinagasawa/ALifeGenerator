@@ -72,6 +72,9 @@ namespace NEAT
         // all input nodes and output nodes are fully connected.
         Genome(const Cinfo& cinfo);
 
+        // Constructor which should be used by CrossOverDelegate.
+        Genome(const Genome& other, NetworkPtr network, const Network::EdgeIds& innovations);
+
         // Copy constructor and operator
         Genome(const Genome& other);
         void operator= (const Genome& other);
@@ -83,11 +86,6 @@ namespace NEAT
         void addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge);
 
         EdgeId addEdgeAt(NodeId inNode, NodeId outNode, float weight);
-
-        // Cross over two genomes and generate a new one.
-        // genome1 has to have higher fitting score.
-        // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
-        static Genome crossOver(const Genome& genome1, const Genome& genome2, bool sameFittingScore, const CrossOverParams& params);
 
         //
         // Innovation interface
@@ -107,9 +105,6 @@ namespace NEAT
         bool validate() const;
 
     protected:
-        // Constructor used by crossOver().
-        Genome(const Network::NodeIds& inputNodes, const Activation* defaultActivation, InnovationCounter& innovationCounter);
-
         Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.
         InnovationCounter& m_innovIdCounter;    // The innovation counter shared by all the genomes.
     };

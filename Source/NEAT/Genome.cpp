@@ -87,11 +87,30 @@ void Genome::operator= (const Genome& other)
     m_innovations = other.m_innovations;
 }
 
-Genome::Genome(const Network::NodeIds& inputNodes, const Activation* defaultActivation, InnovationCounter& innovationCounter)
-    : GenomeBase(defaultActivation)
-    , m_innovIdCounter(innovationCounter)
+Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds& innovations)
+    : GenomeBase(source)
+    , m_innovations(innovations)
+    , m_innovIdCounter(source.m_innovIdCounter)
 {
-    m_inputNodes = inputNodes;
+    m_network = network;
+
+#ifdef _DEBUG
+    {
+        // Make sure that the network has the same number of input nodes as the source.
+        int numInputNodes = 0;
+        for (auto itr : network->getNodes())
+        {
+            if (itr.second.m_node.getNodeType() == Node::Type::INPUT)
+            {
+                numInputNodes++;
+            }
+        }
+        assert(numInputNodes == (int)source.getInputNodes().size());
+
+        // Make sure that the number of innovations and the edges in the source are the same.
+        assert(innovations.size() == network->getEdges().size());
+    }
+#endif
 }
 
 void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge)

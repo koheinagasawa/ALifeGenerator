@@ -58,8 +58,9 @@ public:
 class CrossOverDelegate
 {
 public:
+    using GenomeBasePtr = std::unique_ptr<GenomeBase>;
 
-    virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBase* = 0;
+    virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
 };
 
 class SpeciationDelegate

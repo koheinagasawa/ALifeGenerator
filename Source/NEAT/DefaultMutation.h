@@ -56,6 +56,8 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBase* genomeIn, MutationOut& mutationOut) override;
 
+        virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>> override;
+
         MutationParams m_params;
     };
 }

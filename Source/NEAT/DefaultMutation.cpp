@@ -173,3 +173,61 @@ void DefaultMutation::mutate(GenomeBase* genomeIn, MutationOut& mutationOut)
 
     assert(network->validate());
 }
+
+auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>>
+{
+    std::vector<MutationOut> mutationOuts;
+    mutationOuts.resize(numGenomesToMutate);
+
+    std::vector<std::shared_ptr<GenerationBase>> mutatedGenomesOut;
+    mutatedGenomesOut.reserve(numGenomesToMutate);
+
+    for (int i = 0; i < numGenomesToMutate; i++)
+    {
+        // Select a random genome.
+        const GenomeData* gd = selector.selectRandomGenome();
+
+        assert(gd->canReproduce());
+
+        // Copy genome in this generation first.
+        GenomePtr copy = std::make_shared<Genome>(*gd->m_genome);
+
+        // Mutate the genome.
+        MutationOut& mout = mutationOuts[i];
+        copy->mutate(m_params, mout);
+
+        // Check if there is already a mutation of the same structural change.
+        // If so, assign the same innovation id to it.
+        for (int innov1 = 0; innov1 < mout.m_numEdgesAdded; innov1++)
+        {
+            MutationOut::NewEdgeInfo& newEdge = mout.m_newEdges[innov1];
+            NodeId inNode = newEdge.m_sourceInNode;
+            NodeId outNode = newEdge.m_sourceOutNode;
+
+            bool idChanged = false;
+            for (int j = 0; j < i; j++)
+            {
+                const MutationOut& mout2 = mutationOuts[j];
+                for (int innov2 = 0; innov2 < mout2.m_numEdgesAdded; innov2++)
+                {
+                    const MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
+                    if (newEdge2.m_sourceInNode == inNode && newEdge2.m_sourceOutNode == outNode)
+                    {
+                        copy->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
+                        newEdge.m_newEdge = newEdge2.m_newEdge;
+                        idChanged = true;
+                        break;
+                    }
+                }
+
+                if (idChanged)
+                {
+                    break;
+                }
+            }
+        }
+
+        mutatedGenomesOut.push_back(copy);
+        addGenomeToNewGen(copy);
+    }
+}

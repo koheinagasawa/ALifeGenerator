@@ -17,6 +17,70 @@ public:
     virtual float calcFitness(const GenomeBase& genome) const = 0;
 };
 
+class CrossOverDelegate
+{
+public:
+    using GenomeBasePtr = std::unique_ptr<GenomeBase>;
+
+    virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
+};
+
+class SpeciationDelegate
+{
+public:
+};
+
+class GenomeSelectorBase
+{
+public:
+
+    virtual auto selectGenome()->GenomeBase* = 0;
+    virtual void selectTwoGenomes(GenomeBase*& genome1, GenomeBase*& genome2) = 0;
+};
+
+DECLARE_ID(GenerationId);
+DECLARE_ID(SpeciesId);
+DECLARE_ID(GenomeId);
+
+class GenerationBase
+{
+public:
+
+    struct GenomeData
+    {
+    public:
+
+    protected:
+
+        std::shared_ptr<GenomeBase> m_genome;
+        GenomeId m_id;
+        float m_fitness = 0.f;
+    };
+
+    using GenomeDatas = std::vector<GenomeData>;
+    using GenomeDatasPtr = std::shared_ptr<GenomeDatas>;
+
+    virtual void createNewGeneration();
+
+    inline int getNumGenomes() const { return m_numGenomes; }
+    inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
+
+    inline auto getId() const->GenerationId { return m_id; }
+
+protected:
+
+    std::shared_ptr<class MutationDelegate> m_mutationDelegate;
+    std::shared_ptr<CrossOverDelegate> m_crossOverDelegate;
+    std::shared_ptr<GenomeSelectorBase> m_genomeSelector;
+
+    std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
+
+    GenomeDatasPtr m_genomes;
+    GenomeDatasPtr m_prevGenGenomes;
+    int m_numGenomes;
+    GenerationId m_id;
+};
+
 class MutationDelegate
 {
 public:
@@ -53,53 +117,6 @@ public:
     };
 
     virtual void mutate(GenomeBase* genomeIn, MutationOut& mutationOut) = 0;
+
+    virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>> = 0;
 };
-
-class CrossOverDelegate
-{
-public:
-    using GenomeBasePtr = std::unique_ptr<GenomeBase>;
-
-    virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
-};
-
-class SpeciationDelegate
-{
-public:
-};
-
-class GenomeSelectorBase
-{
-public:
-
-    virtual auto selectGenome()->GenomeBase* = 0;
-    virtual void selectTwoGenomes(GenomeBase*& genome1, GenomeBase*& genome2) = 0;
-};
-
-DECLARE_ID(GenerationId);
-DECLARE_ID(SpeciesId);
-DECLARE_ID(GenomeId);
-
-class GenerationBase
-{
-public:
-    virtual void createNewGeneration();
-
-    inline int getNumGenomes() const { return m_numGenomes; }
-    inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
-
-    inline auto getId() const->GenerationId { return m_id; }
-
-protected:
-
-    std::shared_ptr<MutationDelegate> m_mutationDelegate;
-    std::shared_ptr<CrossOverDelegate> m_crossOverDelegate;
-    std::shared_ptr<SpeciationDelegate> m_speciationDelegate;
-    std::shared_ptr<GenomeSelectorBase> m_genomeSelector;
-
-    std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
-
-    int m_numGenomes;
-    GenerationId m_id;
-};
-

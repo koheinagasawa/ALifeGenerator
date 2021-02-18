@@ -10,7 +10,7 @@
 
 using namespace NEAT;
 
-void DefaultMutation::mutate(GenomeBase* genomeIn, MutationOut& mutationOut)
+void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
 {
     mutationOut.clear();
 
@@ -139,7 +139,7 @@ void DefaultMutation::mutate(GenomeBase* genomeIn, MutationOut& mutationOut)
         newEdgeInfo.m_newEdge = newEdge;
     };
 
-    Genome* genome = static_cast<Genome*>(genomeIn);
+    Genome* genome = static_cast<Genome*>(genomeIn.get());
 
     // 2. Add a node at a random edge
     if (!edgeCandidates.empty())
@@ -174,18 +174,22 @@ void DefaultMutation::mutate(GenomeBase* genomeIn, MutationOut& mutationOut)
     assert(network->validate());
 }
 
-auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>>
+auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
 {
+    assert(genomeSelector);
+
     std::vector<MutationOut> mutationOuts;
     mutationOuts.resize(numGenomesToMutate);
 
-    std::vector<std::shared_ptr<GenerationBase>> mutatedGenomesOut;
+    GenomeBasePtrs mutatedGenomesOut;
     mutatedGenomesOut.reserve(numGenomesToMutate);
+
+    genomeSelector->setGenomes(generation);
 
     for (int i = 0; i < numGenomesToMutate; i++)
     {
         // Select a random genome.
-        const GenomeData* gd = selector.selectRandomGenome();
+        const GenomeData* gd = genomeSelector->selectGenome();
 
         assert(gd->canReproduce());
 
@@ -194,7 +198,7 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
 
         // Mutate the genome.
         MutationOut& mout = mutationOuts[i];
-        copy->mutate(m_params, mout);
+        mutate(copy, mout);
 
         // Check if there is already a mutation of the same structural change.
         // If so, assign the same innovation id to it.
@@ -227,7 +231,7 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
             }
         }
 
-        mutatedGenomesOut.push_back(copy);
-        addGenomeToNewGen(copy);
+        mutatedGenomesOut.push_back(GenomeBasePtr(copy));
+        //addGenomeToNewGen(copy);
     }
 }

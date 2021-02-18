@@ -7,6 +7,7 @@
 #pragma once
 
 #include <NEAT/GenerationBase.h>
+#include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
 namespace NEAT
@@ -14,6 +15,8 @@ namespace NEAT
     class DefaultMutation : public MutationDelegate
     {
     public:
+        using GenomePtr = std::shared_ptr<Genome>;
+
         // Structure used for mutate().
         struct MutationParams
         {
@@ -54,9 +57,9 @@ namespace NEAT
         // 2. Add a new node at a random edge.
         // 3. Connect random two nodes by a new edge.
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
-        virtual void mutate(GenomeBase* genomeIn, MutationOut& mutationOut) override;
+        virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) override;
 
-        virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>> override;
+        virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
 
         MutationParams m_params;
     };

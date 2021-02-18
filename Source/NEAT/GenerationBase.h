@@ -30,14 +30,6 @@ class SpeciationDelegate
 public:
 };
 
-class GenomeSelectorBase
-{
-public:
-
-    virtual auto selectGenome()->GenomeBase* = 0;
-    virtual void selectTwoGenomes(GenomeBase*& genome1, GenomeBase*& genome2) = 0;
-};
-
 DECLARE_ID(GenerationId);
 DECLARE_ID(SpeciesId);
 DECLARE_ID(GenomeId);
@@ -71,7 +63,7 @@ protected:
 
     std::shared_ptr<class MutationDelegate> m_mutationDelegate;
     std::shared_ptr<CrossOverDelegate> m_crossOverDelegate;
-    std::shared_ptr<GenomeSelectorBase> m_genomeSelector;
+    std::shared_ptr<class GenomeSelectorBase> m_genomeSelector;
 
     std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
 
@@ -84,6 +76,9 @@ protected:
 class MutationDelegate
 {
 public:
+    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
+    using GenomeBasePtrs = std::vector<GenomeBasePtr>;
+
     // Structure to store information about newly added edges by mutate().
     struct MutationOut
     {
@@ -116,7 +111,15 @@ public:
         int m_numEdgesAdded;
     };
 
-    virtual void mutate(GenomeBase* genomeIn, MutationOut& mutationOut) = 0;
+    virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
 
-    virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate)->std::vector<std::shared_ptr<GenerationBase>> = 0;
+    virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
+};
+
+class GenomeSelectorBase
+{
+public:
+    virtual void setGenomes(const GenerationBase::GenomeDatas& generation) = 0;
+    virtual auto selectGenome()->GenomeBase* = 0;
+    virtual void selectTwoGenomes(GenomeBase*& genome1, GenomeBase*& genome2) = 0;
 };

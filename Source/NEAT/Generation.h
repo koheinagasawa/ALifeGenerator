@@ -135,6 +135,10 @@ namespace NEAT
 
         inline auto getId() const->GenerationId { return m_id; }
 
+        auto getSpecies(GenomeId genomeId) const->SpeciesId;
+
+        bool isReproducible(SpeciesId speciesId) const;
+
     protected:
         // Called inside createNewGeneration().
         void addGenome(GenomePtr genome);

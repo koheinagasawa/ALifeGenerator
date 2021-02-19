@@ -189,16 +189,16 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
     for (int i = 0; i < numGenomesToMutate; i++)
     {
         // Select a random genome.
-        const GenomeData* gd = genomeSelector->selectGenome();
+        const GenerationBase::GenomeData* gd = genomeSelector->selectGenome();
 
-        assert(gd->canReproduce());
+        //assert(gd->canReproduce());
 
         // Copy genome in this generation first.
-        GenomePtr copy = std::make_shared<Genome>(*gd->m_genome);
+        GenomePtr newGenome = std::make_shared<Genome>(*static_cast<const Genome*>(gd->getGenome()));
 
         // Mutate the genome.
         MutationOut& mout = mutationOuts[i];
-        mutate(copy, mout);
+        mutate(newGenome, mout);
 
         // Check if there is already a mutation of the same structural change.
         // If so, assign the same innovation id to it.
@@ -217,7 +217,7 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
                     const MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
                     if (newEdge2.m_sourceInNode == inNode && newEdge2.m_sourceOutNode == outNode)
                     {
-                        copy->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
+                        newGenome->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
                         newEdge.m_newEdge = newEdge2.m_newEdge;
                         idChanged = true;
                         break;
@@ -231,7 +231,8 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
             }
         }
 
-        mutatedGenomesOut.push_back(GenomeBasePtr(copy));
-        //addGenomeToNewGen(copy);
+        mutatedGenomesOut.push_back(GenomeBasePtr(newGenome.get()));
     }
+
+    return mutatedGenomesOut;
 }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <NEAT/GenerationBase.h>
+#include <NEAT/Generation.h>
 #include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 

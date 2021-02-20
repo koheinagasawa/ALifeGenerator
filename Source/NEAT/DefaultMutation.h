@@ -48,6 +48,8 @@ namespace NEAT
             // Maximum weight for a new edge.
             float m_newEdgeMaxWeight = 0.5f;
 
+            float m_mutatedGenomesRate = 0.25f;
+
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;
         };
@@ -62,7 +64,7 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) override;
 
-        virtual auto mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
+        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
 
         MutationParams m_params;
     };

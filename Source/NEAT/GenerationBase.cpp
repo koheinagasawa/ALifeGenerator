@@ -34,12 +34,10 @@ void GenerationBase::createNewGeneration()
     // TODO: Break this function into smaller parts so that we can test it more thoroughly.
     // TODO: Profile each process by adding timers.
 
-    const int numGenomes = getNumGenomes();
-    assert(numGenomes > 1);
-
     std::swap(m_genomes, m_prevGenGenomes);
 
-    m_numGenomes = 0;
+    const int numGenomes = getNumGenomes();
+    assert(numGenomes > 1);
 
     // Allocate buffer of GenomeData if it's not there yet.
     if (!m_genomes)
@@ -53,30 +51,19 @@ void GenerationBase::createNewGeneration()
 
     preUpdateGeneration();
 
-    int numGenomesToAdd = numGenomes - m_numGenomes;
+    int numGenomesToAdd = numGenomes;
+
+    m_numGenomes = 0;
 
     GenomeSelectorPtr selector = createSelector();
 
     using NewGenomePtrsOut = std::vector<GenomeBasePtr>;
 
-    // Select and mutate genomes.
+    for (GeneratorPtr& generator : m_generators)
     {
-        const int numGenomesToMutate = std::min(numGenomesToAdd, int(numGenomes * (1.f - m_params.m_crossOverRate)));
-        NewGenomePtrsOut newGenomes = m_mutationDelegate->mutate(numGenomesToMutate, selector.get());
+        generator->generate(numGenomesToAdd, numGenomes, selector.get());
 
-        for (auto& newGenome : newGenomes)
-        {
-            addGenome(newGenome);
-            numGenomesToAdd--;
-        }
-    }
-
-    // Select and generate new genomes by crossover.
-    {
-        const int numGenomesToCrossover = numGenomesToAdd;
-        NewGenomePtrsOut newGenomes = m_crossOverDelegate->crossOver(numGenomesToCrossover, selector.get());
-
-        for (auto& newGenome : newGenomes)
+        for (auto& newGenome : generator->getGeneratedGenomes())
         {
             addGenome(newGenome);
             numGenomesToAdd--;

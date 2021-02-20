@@ -22,11 +22,29 @@ public:
     virtual float calcFitness(const GenomeBase& genome) const = 0;
 };
 
+class GenomeGenerator
+{
+public:
+    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
+    using GenomeBasePtrs = std::vector<GenomeBasePtr>;
+
+    virtual void generate(int numTotalGenomes, int numRemaningGenomes, class GenomeSelectorBase* genomeSelector) = 0;
+
+    inline int getNumGeneneratedGenomes() const { return (int)m_generatedGenomes.size(); }
+
+    inline auto getGeneratedGenomes() const->const GenomeBasePtrs { return m_generatedGenomes; }
+
+protected:
+    GenomeBasePtrs m_generatedGenomes;
+};
+
 class GenerationBase
 {
 public:
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
+    using GeneratorPtr = std::shared_ptr<GenomeGenerator>;
+    using GeneratorPtrs = std::vector<GeneratorPtr>;
 
     struct GenomeData
     {
@@ -78,8 +96,7 @@ protected:
     // Called inside createNewGeneration().
     void addGenome(GenomeBasePtr genome);
 
-    std::unique_ptr<class MutationDelegate> m_mutationDelegate;
-    std::unique_ptr<class CrossOverDelegate> m_crossOverDelegate;
+    GeneratorPtrs m_generators;
 
     std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
 
@@ -90,14 +107,9 @@ protected:
     GenerationId m_id;
 };
 
-class MutationDelegate
+class MutationDelegate : public GenomeGenerator
 {
 public:
-    using GenomeData = GenerationBase::GenomeData;
-    using GenomeDatas = GenerationBase::GenomeDatas;
-    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
-    using GenomeBasePtrs = std::vector<GenomeBasePtr>;
-
     // Structure to store information about newly added edges by mutate().
     struct MutationOut
     {
@@ -118,21 +130,12 @@ public:
     };
 
     virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
-
-    virtual auto mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
-class CrossOverDelegate
+class CrossOverDelegate : public GenomeGenerator
 {
 public:
-    using GenomeData = GenerationBase::GenomeData;
-    using GenomeDatas = GenerationBase::GenomeDatas;
-    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
-    using GenomeBasePtrs = std::vector<GenomeBasePtr>;
-
     virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
-
-    virtual auto crossOver(int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
 // Abstract class to select a genome.

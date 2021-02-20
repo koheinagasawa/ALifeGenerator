@@ -38,7 +38,7 @@ namespace NEAT
         // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
         virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr override;
 
-        virtual auto crossOver(int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
+        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
 
         CrossOverParams m_params;
     };

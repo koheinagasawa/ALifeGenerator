@@ -174,13 +174,17 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     assert(network->validate());
 }
 
-auto DefaultMutation::mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
+void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
 {
+    using GenomeData = GenerationBase::GenomeData;
+
+    const int numGenomesToMutate = std::min(numRemaningGenomes, int(numTotalGenomes * (1.f - m_params.m_mutatedGenomesRate)));
+
+    m_generatedGenomes.clear();;
+    m_generatedGenomes.reserve(numGenomesToMutate);
+
     std::vector<MutationOut> mutationOuts;
     mutationOuts.resize(numGenomesToMutate);
-
-    GenomeBasePtrs mutatedGenomesOut;
-    mutatedGenomesOut.reserve(numGenomesToMutate);
 
     for (int i = 0; i < numGenomesToMutate; i++)
     {
@@ -225,8 +229,6 @@ auto DefaultMutation::mutate(int numGenomesToMutate, GenomeSelectorBase* genomeS
             }
         }
 
-        mutatedGenomesOut.push_back(GenomeBasePtr(newGenome.get()));
+        m_generatedGenomes.push_back(GenomeBasePtr(newGenome.get()));
     }
-
-    return mutatedGenomesOut;
 }

@@ -71,14 +71,42 @@ void Generation::init(const Cinfo& cinfo)
         m_species.insert({ newSpecies, std::make_shared<Species>(*static_cast<const Genome*>(representative.getGenome())) });
     }
 
+    m_generators.push_back(std::make_shared<BestGenomeSelector>(this, cinfo.m_generationParams.m_minMembersInSpeciesToCopyChampion));
+
     // Create mutate delegate
-    m_mutationDelegate = std::make_unique<DefaultMutation>(cinfo.m_mutationParams);
+    m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
 
     // Create cross over delegate
-    m_crossOverDelegate = std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams);
+    m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
 
     // Calculate initial fitness of genomes.
     calcFitness();
+}
+
+void BestGenomeSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
+{
+    using SpeciesPtr = std::shared_ptr<Species>;
+    using GenomePtr = std::shared_ptr<Genome>;
+
+    // Select genomes which are copied to the next generation unchanged.
+    for (auto& itr : m_generation->getAllSpecies())
+    {
+        const SpeciesPtr& species = itr.second;
+        if (!m_generation->isSpeciesReproducible(itr.first))
+        {
+            continue;
+        }
+
+        if (species->getNumMembers() >= m_minMembersInSpeciesToCopyChampion)
+        {
+            Species::CGenomePtr best = species->getBestGenome();
+            if (best)
+            {
+                GenomePtr copiedGenome = std::make_shared<Genome>(*best);
+                m_generatedGenomes.push_back(copiedGenome);
+            }
+        }
+    }
 }
 
 void Generation::preUpdateGeneration()

@@ -6,208 +6,22 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/Generation.h>
-
-#include <limits>
+#include "DefaultGenomeSelector.h"
 
 using namespace NEAT;
 
-bool Generation::GenomeSelector::setGenomes(const GenomeDatas& genomesIn, const SpeciesList& species)
-{
-    assert(genomesIn.size() > 0);
-
-    m_genomes.reserve(genomesIn.size());
-    m_sumFitness.reserve(genomesIn.size() + 1);
-    float sumFitness = 0;
-    m_sumFitness.push_back(0);
-
-    auto calcFitnessSharingFactor = [&species](SpeciesId speciesId)->float
-    {
-        return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
-    };
-
-    SpeciesId currentSpecies = genomesIn[0].getSpeciesId();
-    float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-    int currentSpeciesStartIndex = 0;
-
-#ifdef _DEBUG
-    std::unordered_set<SpeciesId> speciesIndices;
-    speciesIndices.insert(currentSpecies);
-
-    // Here we are assuming that genomes are sorted by species id.
-    {
-        SpeciesId curId = genomesIn[0].getSpeciesId();
-        for (const GenomeData& g : genomesIn)
-        {
-            if (!g.canReproduce() || g.getFitness() == 0)
-            {
-                continue;
-            }
-
-            SpeciesId id = g.getSpeciesId();
-            if (curId != id)
-            {
-                assert(curId < id);
-                curId = id;
-            }
-        }
-    }
-#endif
-
-    for (const GenomeData& g : genomesIn)
-    {
-        if (!g.canReproduce() || g.getFitness() == 0)
-        {
-            continue;
-        }
-
-        if (currentSpecies != g.getSpeciesId())
-        {
-            m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-            currentSpecies = g.getSpeciesId();
-            fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-            currentSpeciesStartIndex = (int)m_genomes.size();
-#ifdef _DEBUG
-            assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
-#endif
-        }
-
-        m_genomes.push_back(&g);
-
-        assert(g.getFitness() > 0);
-
-        const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
-        sumFitness += adjustedFitness;
-        m_sumFitness.push_back(sumFitness);
-    }
-
-    if (m_genomes.size() == 0)
-    {
-        return false;
-    }
-
-    if (sumFitness == 0.f)
-    {
-        // All genomes have 0 fitness.
-        // Set up homogeneous distribution.
-        for (int i = 0; i <= (int)m_genomes.size(); i++)
-        {
-            m_sumFitness[i] = (float)i;
-        }
-    }
-
-    m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-    assert(m_genomes.size() + 1 == m_sumFitness.size());
-
-    return true;
-}
-
-void Generation::GenomeSelector::selectTwoRandomGenomes(float interSpeciesCrossOverRate, const GenomeData*& g1, const GenomeData*& g2)
-{
-    assert(m_spciecesStartEndIndices.size() > 0);
-
-    g1 = nullptr;
-    g2 = nullptr;
-
-    // Select a random genome.
-    g1 = selectRandomGenome();
-    assert(g1);
-
-    // Get start and end indices of the species of g1.
-    const IndexSet& startEnd = m_spciecesStartEndIndices.at(g1->getSpeciesId());
-
-    if (m_random.randomReal01() < interSpeciesCrossOverRate || (startEnd.m_end - startEnd.m_start) < 2)
-    {
-        // Inter species cross-over. Just select another genome among the entire generation.
-        g2 = g1;
-        while (g1 == g2)
-        {
-            g2 = selectRandomGenome();
-        }
-    }
-    else
-    {
-        // Intra species cross-over. Select another genome within the same species.
-
-        if (startEnd.m_end - startEnd.m_start == 2)
-        {
-            // There are only two genomes in this species.
-            g1 = m_genomes[startEnd.m_start];
-            g2 = m_genomes[startEnd.m_end - 1];
-        }
-        else
-        {
-            // Select g2 among the species.
-            g2 = g1;
-            while (g1 == g2)
-            {
-                g2 = selectRandomGenome(startEnd.m_start, startEnd.m_end);
-            }
-        }
-
-        assert(g1->getSpeciesId() == g2->getSpeciesId());
-    }
-}
-
-auto Generation::GenomeSelector::selectRandomGenome(int start, int end)->const GenomeData*
-{
-    assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
-    assert(start >= 0 && end < (int)m_sumFitness.size() && start < end);
-
-    if (m_sumFitness[start] < m_sumFitness[end])
-    {
-        // std::uniform_real_distribution should return [min, max), but if we call randomReal(m_sumFitness[start], m_sumFitness[end])
-        // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
-        // calculation later.
-        const float v = m_random.randomReal(m_sumFitness[start], std::nexttoward(m_sumFitness[end], -1.f));
-        for (int i = start; i < end; i++)
-        {
-            if (v < m_sumFitness[i + 1])
-            {
-                return m_genomes[i];
-            }
-        }
-
-        assert(0);
-        return nullptr;
-    }
-    else
-    {
-        // Fitness are all the same. Just select one by randomly.
-        return m_genomes[m_random.randomInteger(start, end - 1)];
-    }
-}
-
-
-Generation::GenomeData::GenomeData(GenomePtr genome, GenomeId id)
-    : m_genome(genome)
-    , m_id(id)
-{
-}
-
-void Generation::GenomeData::init(GenomePtr genome, GenomeId id)
-{
-    m_genome = genome;
-    m_id = id;
-    m_fitness = 0.f;
-    m_canReproduce = true;
-}
-
 Generation::Generation(const Cinfo& cinfo)
-    : m_id(GenerationId(0))
-    , m_fitnessCalculator(cinfo.m_fitnessCalculator)
+    : GenerationBase(GenerationId(0), cinfo.m_numGenomes, cinfo.m_fitnessCalculator)
+    , m_params(cinfo.m_generationParams)
 {
-    assert(cinfo.m_numGenomes > 0);
-    assert(cinfo.m_minWeight <= cinfo.m_maxWeight);
-    assert(m_fitnessCalculator);
-
-    PseudoRandom& random = cinfo.m_random ? *cinfo.m_random : PseudoRandom::getInstance();
-
     // Create genomes of the first generation.
     m_genomes = std::make_shared<GenomeDatas>();
     m_genomes->reserve(cinfo.m_numGenomes);
+
+    assert(cinfo.m_minWeight <= cinfo.m_maxWeight);
+
     const Genome archetypeGenome(cinfo.m_genomeCinfo);
+    m_randomGenerator = cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance();
 
     for (int i = 0; i < cinfo.m_numGenomes; i++)
     {
@@ -217,30 +31,20 @@ Generation::Generation(const Cinfo& cinfo)
         const Genome::Network* network = genome->getNetwork();
         for (auto itr : network->getEdges())
         {
-            genome->setEdgeWeight(itr.first, random.randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
+            genome->setEdgeWeight(itr.first, m_randomGenerator->randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
         }
 
         m_genomes->push_back(GenomeData(genome, GenomeId(i)));
     }
-    m_numGenomes = m_genomes->size();
 
-    // Create one species.
-    {
-        const GenomeData& representative = (*m_genomes)[random.randomInteger(0, m_genomes->size() - 1)];
-        SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-        m_species.insert({ newSpecies, std::make_shared<Species>(*representative.m_genome) });
-    }
-
-    // Calculate initial fitness of genomes.
-    calcFitness();
+    init(cinfo);
 }
 
-Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCalculator)
-    : m_id(GenerationId(0))
-    , m_fitnessCalculator(fitnessCalculator)
+Generation::Generation(const Genomes& genomes, const Cinfo& cinfo)
+    : GenerationBase(GenerationId(0), (int)genomes.size(), cinfo.m_fitnessCalculator)
+    , m_params(cinfo.m_generationParams)
 {
-    assert(genomes.size() > 0);
-    assert(m_fitnessCalculator);
+    assert((int)genomes.size() == m_numGenomes);
 
     m_genomes = std::make_shared<GenomeDatas>();
 
@@ -254,270 +58,177 @@ Generation::Generation(const Genomes& genomes, FitnessCalculatorBase* fitnessCal
             id = id.val() + 1;
         }
     }
-    m_numGenomes = m_genomes->size();
 
+    init(cinfo);
+}
+
+void Generation::init(const Cinfo& cinfo)
+{
     // Create one species.
     {
-        PseudoRandom& random = PseudoRandom::getInstance();
-        const GenomeData& representative = (*m_genomes)[random.randomInteger(0, m_genomes->size() - 1)];
+        const GenomeData& representative = (*m_genomes)[m_randomGenerator->randomInteger(0, m_genomes->size() - 1)];
         SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-        m_species.insert({ newSpecies, std::make_shared<Species>(*representative.m_genome) });
+        m_species.insert({ newSpecies, std::make_shared<Species>(*static_cast<const Genome*>(representative.getGenome())) });
     }
+
+    // Create mutate delegate
+    m_mutationDelegate = std::make_unique<DefaultMutation>(cinfo.m_mutationParams);
+
+    // Create cross over delegate
+    m_crossOverDelegate = std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams);
 
     // Calculate initial fitness of genomes.
     calcFitness();
 }
 
-void Generation::createNewGeneration(const CreateNewGenParams& params)
+void Generation::preUpdateGeneration()
 {
-    // TODO: Break this function into smaller parts so that we can test it more thoroughly.
-    // TODO: Profile each process by adding timers.
-
-    PseudoRandom& random = params.m_random ? *params.m_random : PseudoRandom::getInstance();
-
-    const int numGenomes = getNumGenomes();
-    assert(numGenomes > 1);
-
-    int numGenomesToAdd = numGenomes;
-    std::swap(m_genomes, m_prevGenGenomes);
-
-    m_numGenomes = 0;
-
-    // Helper function to add a new genome to the new generation.
-    auto addGenomeToNewGen = [this, &numGenomesToAdd](GenomePtr genome)
-    {
-        addGenome(genome);
-        numGenomesToAdd--;
-    };
-
-    // Allocate buffer of GenomeData if it's not there yet.
-    if (!m_genomes)
-    {
-        m_genomes = std::make_shared<GenomeDatas>();
-    }
-    if (m_genomes->size() != numGenomes)
-    {
-        m_genomes->resize(numGenomes);
-    }
-
     // Select genomes which are copied to the next generation unchanged.
     for (auto& itr : m_species)
     {
         const SpeciesPtr& species = itr.second;
-        if (species->getStagnantGenerationCount() >= params.m_maxStagnantCount)
+        if (species->getStagnantGenerationCount() >= m_params.m_maxStagnantCount)
         {
             continue;
         }
 
-        if (species->getNumMembers() >= params.m_minMembersInSpeciesToCopyChampion)
+        if (species->getNumMembers() >= m_params.m_minMembersInSpeciesToCopyChampion)
         {
-            GenomePtr best = species->getBestGenome();
+            Species::CGenomePtr best = species->getBestGenome();
             if (best)
             {
-                addGenomeToNewGen(best);
+                GenomePtr copiedGenome = std::make_shared<Genome>(*best);
+                addGenome(copiedGenome);
             }
         }
     }
+}
 
-    GenomeSelector selector(random);
-    bool res = selector.setGenomes(*m_prevGenGenomes, m_species);
-
-    if (!res)
-    {
-        // Failed to create GenomeSelector. This means that no genome is reproducible.
-        // Mark all genomes reproducible and try again.
-        for (GenomeData& gd : *m_prevGenGenomes)
-        {
-            gd.m_canReproduce = true;
-        }
-
-        res = selector.setGenomes(*m_prevGenGenomes, m_species);
-
-        assert(res);
-    }
-
-    // Select and mutate genomes.
-    {
-        const int numGenomesToSelect = std::min(numGenomesToAdd, int(numGenomes * (1.f - params.m_crossOverRate)));
-
-        std::vector<Genome::MutationOut> mutationOuts;
-        mutationOuts.resize(numGenomesToSelect);
-
-        for (int i = 0; i < numGenomesToSelect; i++)
-        {
-            // Select a random genome.
-            const GenomeData* gd = selector.selectRandomGenome();
-
-            assert(gd->canReproduce());
-
-            // Copy genome in this generation first.
-            GenomePtr copy = std::make_shared<Genome>(*gd->m_genome);
-
-            // Mutate the genome.
-            Genome::MutationOut& mout = mutationOuts[i];
-            copy->mutate(params.m_mutationParams, mout);
-
-            // Check if there is already a mutation of the same structural change.
-            // If so, assign the same innovation id to it.
-            for (int innov1 = 0; innov1 < mout.m_numEdgesAdded; innov1++)
-            {
-                Genome::MutationOut::NewEdgeInfo& newEdge = mout.m_newEdges[innov1];
-                NodeId inNode = newEdge.m_sourceInNode;
-                NodeId outNode = newEdge.m_sourceOutNode;
-
-                bool idChanged = false;
-                for (int j = 0; j < i; j++)
-                {
-                    const Genome::MutationOut& mout2 = mutationOuts[j];
-                    for (int innov2 = 0; innov2 < mout2.m_numEdgesAdded; innov2++)
-                    {
-                        const Genome::MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
-                        if (newEdge2.m_sourceInNode == inNode && newEdge2.m_sourceOutNode == outNode)
-                        {
-                            copy->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
-                            newEdge.m_newEdge = newEdge2.m_newEdge;
-                            idChanged = true;
-                            break;
-                        }
-                    }
-
-                    if (idChanged)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            addGenomeToNewGen(copy);
-        }
-    }
-
-    // Select and generate new genomes by crossover.
-    {
-        const int numGenomesToCrossover = numGenomesToAdd;
-        for (int i = 0; i < numGenomesToCrossover; i++)
-        {
-            const GenomeData* g1 = nullptr;
-            const GenomeData* g2 = nullptr;
-
-            selector.selectTwoRandomGenomes(params.m_interSpeciesCrossOverRate, g1, g2);
-
-            assert(g1 && g2 && g1->canReproduce() && g2->canReproduce());
-
-            bool isSameFitness = g1->getFitness() == g2->getFitness();
-            GenomePtr newGenome = std::make_shared<Genome>(Genome::crossOver(*g1->m_genome, *g2->m_genome, isSameFitness, params.m_crossOverParams));
-            addGenomeToNewGen(newGenome);
-        }
-    }
-
-    // We should have added all the genomes at this point.
-    assert(m_genomes->size() == m_prevGenGenomes->size());
-
-    // Evaluate all genomes.
-    calcFitness();
-
+void Generation::postUpdateGeneration()
+{
     // Speciation
+
+    // Remove stagnant species first.
     {
-        // Remove stagnant species first.
+        auto itr = m_species.begin();
+        while (itr != m_species.end())
         {
-            auto itr = m_species.begin();
-            while (itr != m_species.end())
+            const SpeciesPtr& s = itr->second;
+            if (s->getStagnantGenerationCount() >= m_params.m_maxStagnantCount)
             {
-                const SpeciesPtr& s = itr->second;
-                if (s->getStagnantGenerationCount() >= params.m_maxStagnantCount)
-                {
-                    itr = m_species.erase(itr);
-                }
-                else
-                {
-                    itr++;
-                }
+                itr = m_species.erase(itr);
+            }
+            else
+            {
+                itr++;
             }
         }
-
-        // Prepare for the new generation of species.
-        for (auto& itr : m_species)
-        {
-            SpeciesPtr& s = itr.second;
-            s->preNewGeneration(&random);
-        }
-
-        // Assign each genome to a species.
-        for (GenomeData& gd : *m_genomes)
-        {
-            // Try to find a species.
-            auto itr = m_species.begin();
-            for (; itr != m_species.end(); itr++)
-            {
-                SpeciesPtr& s = itr->second;
-                if (s->tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams))
-                {
-                    gd.m_speciesId = itr->first;
-                    break;
-                }
-            }
-
-            if (itr == m_species.end())
-            {
-                // No species found. Create a new one for this genome.
-                SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-                gd.m_speciesId = newSpecies;
-                m_species.insert({ newSpecies, std::make_shared<Species>(*gd.m_genome) });
-                m_species[newSpecies]->tryAddGenome(gd.m_genome, gd.m_fitness, params.m_speciationDistanceThreshold, params.m_calcDistParams);
-            }
-        }
-
-        // Remove empty species.
-        {
-            auto itr = m_species.begin();
-            while (itr != m_species.end())
-            {
-                const SpeciesPtr& s = itr->second;
-                if (s->getNumMembers() == 0)
-                {
-                    itr = m_species.erase(itr);
-                }
-                else
-                {
-                    itr++;
-                }
-            }
-        }
-
-        // Finalize new generation of species.
-        for (auto& itr : m_species)
-        {
-            SpeciesPtr& s = itr.second;
-            s->postNewGeneration();
-        }
-
-        // Sort genomes by species id
-        std::sort(m_genomes->begin(), m_genomes->end(), [](const GenomeData& g1, const GenomeData& g2)
-            {
-                return g1.getSpeciesId() != g2.getSpeciesId() ? g1.getSpeciesId() < g2.getSpeciesId() : g1.getFitness() > g2.getFitness();
-            });
     }
 
-    // Mark genomes which shouldn't reproduce anymore.
-    for(GenomeData& gd : *m_genomes)
+    // Prepare for the new generation of species.
+    m_genomesSpecies.clear();
+    for (auto& itr : m_species)
     {
-        gd.m_canReproduce = m_species[gd.getSpeciesId()]->getStagnantGenerationCount() < params.m_maxStagnantCount;
+        SpeciesPtr& s = itr.second;
+        s->preNewGeneration(m_randomGenerator);
     }
 
-    // Update the generation id.
-    m_id = GenerationId(m_id.val() + 1);
+    // Assign each genome to a species.
+    for (GenomeData& gd : *m_genomes)
+    {
+        // Try to find a species.
+        const Genome* genome = static_cast<const Genome*>(gd.getGenome());
+
+        auto itr = m_species.begin();
+        for (; itr != m_species.end(); itr++)
+        {
+            SpeciesPtr& s = itr->second;
+            if (s->tryAddGenome(Species::CGenomePtr(genome), gd.getFitness(), m_params.m_speciationDistanceThreshold, m_params.m_calcDistParams))
+            {
+                m_genomesSpecies.insert({ gd.getId(), itr->first });
+                break;
+            }
+        }
+
+        if (itr == m_species.end())
+        {
+            // No species found. Create a new one for this genome.
+            SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
+            m_genomesSpecies.insert({ gd.getId(), newSpecies });
+            m_species.insert({ newSpecies, std::make_shared<Species>(*genome) });
+            m_species[newSpecies]->tryAddGenome(Species::CGenomePtr(genome), gd.getFitness(), m_params.m_speciationDistanceThreshold, m_params.m_calcDistParams);
+        }
+    }
+
+    // Remove empty species.
+    {
+        auto itr = m_species.begin();
+        while (itr != m_species.end())
+        {
+            const SpeciesPtr& s = itr->second;
+            if (s->getNumMembers() == 0)
+            {
+                itr = m_species.erase(itr);
+            }
+            else
+            {
+                itr++;
+            }
+        }
+    }
+
+    // Finalize new generation of species.
+    for (auto& itr : m_species)
+    {
+        SpeciesPtr& s = itr.second;
+        s->postNewGeneration();
+    }
+
+    // Sort genomes by species id
+    std::sort(m_genomes->begin(), m_genomes->end(), [this](const GenomeData& g1, const GenomeData& g2)
+        {
+            SpeciesId s1 = getSpecies(g1.getId());
+            SpeciesId s2 = getSpecies(g2.getId());
+            return s1 != s2 ? s1 < s2 : g1.getFitness() > g2.getFitness();
+        });
+}
+
+auto Generation::createSelector()->GenomeSelectorPtr
+{
+    std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this, *m_randomGenerator);
+    {
+        selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
+
+        bool res = selector->setGenomes(*m_prevGenGenomes);
+        if (!res)
+        {
+            // Failed to create GenomeSelector. This means that no genome is reproducible.
+            // Mark all genomes reproducible and try again.
+            selector->skipStagnantSpecies(false);
+            res = selector->setGenomes(*m_prevGenGenomes);
+
+            assert(res);
+        }
+    }
+
+    return GenomeSelectorPtr(selector.get());
 }
 
 void Generation::calcFitness()
 {
     for (GenomeData& gd : *m_genomes)
     {
-        gd.m_fitness = m_fitnessCalculator->calcFitness(*gd.m_genome);
+        gd.setFitness(m_fitnessCalculator->calcFitness(*gd.getGenome()));
     }
 }
 
-void Generation::addGenome(GenomePtr genome)
+auto Generation::getSpecies(GenomeId genomeId) const->SpeciesId
 {
-    (*m_genomes)[m_numGenomes].init(genome, GenomeId(m_numGenomes));
-    m_numGenomes++;
+    return m_genomesSpecies.at(genomeId);
 }
+
+bool Generation::isSpeciesReproducible(SpeciesId speciesId) const
+{
+    return m_species.at(speciesId)->getStagnantGenerationCount() < m_maxStagnantCount;
+}
+

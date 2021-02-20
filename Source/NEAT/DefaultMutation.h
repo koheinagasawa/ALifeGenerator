@@ -7,7 +7,6 @@
 #pragma once
 
 #include <NEAT/GenerationBase.h>
-#include <NEAT/Generation.h>
 #include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
@@ -53,6 +52,9 @@ namespace NEAT
             RandomGenerator* m_random = nullptr;
         };
 
+        // Constructor
+        DefaultMutation(const MutationParams& params) : m_params(params) {}
+
         // Mutate this genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Add a new node at a random edge.
@@ -60,7 +62,7 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) override;
 
-        virtual auto mutate(const GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
+        virtual auto mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
 
         MutationParams m_params;
     };

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <NEAT/GenerationBase.h>
+#include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
 namespace NEAT
@@ -29,12 +30,15 @@ namespace NEAT
             RandomGenerator* m_random = nullptr;
         };
 
+        // Constructor
+        DefaultCrossOver(const CrossOverParams& params) : m_params(params) {}
+
         // Cross over two genomes and generate a new one.
         // genome1 has to have higher fitting score.
         // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
         virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr override;
 
-        virtual auto crossOver(const GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
+        virtual auto crossOver(int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs override;
 
         CrossOverParams m_params;
     };

@@ -10,6 +10,7 @@
     <ClCompile Include="DefaultMutation.cpp" />
     <ClCompile Include="DefaultCrossOver.cpp" />
     <ClCompile Include="DefaultGenomeSelector.cpp" />
+    <ClCompile Include="GenerationBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />

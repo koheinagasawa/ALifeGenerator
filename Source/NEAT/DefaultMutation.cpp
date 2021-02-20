@@ -174,24 +174,18 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     assert(network->validate());
 }
 
-auto DefaultMutation::mutate(const GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
+auto DefaultMutation::mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
 {
-    assert(genomeSelector);
-
     std::vector<MutationOut> mutationOuts;
     mutationOuts.resize(numGenomesToMutate);
 
     GenomeBasePtrs mutatedGenomesOut;
     mutatedGenomesOut.reserve(numGenomesToMutate);
 
-    genomeSelector->setGenomes(generation);
-
     for (int i = 0; i < numGenomesToMutate; i++)
     {
         // Select a random genome.
         const GenomeData* gd = genomeSelector->selectGenome();
-
-        //assert(gd->canReproduce());
 
         // Copy genome in this generation first.
         GenomePtr newGenome = std::make_shared<Genome>(*static_cast<const Genome*>(gd->getGenome()));

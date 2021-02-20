@@ -206,23 +206,22 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
-auto DefaultCrossOver::crossOver(const GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
+auto DefaultCrossOver::crossOver(int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
 {
     GenomeBasePtrs generatedGenomesOut;
     generatedGenomesOut.reserve(numGenomesToCrossover);
 
     for (int i = 0; i < numGenomesToCrossover; i++)
     {
-        GenomeData* g1 = nullptr;
-        GenomeData* g2 = nullptr;
+        const GenomeData* g1 = nullptr;
+        const GenomeData* g2 = nullptr;
 
         genomeSelector->selectTwoGenomes(g1, g2);
 
         assert(g1 && g2);
-        //assert(g1 && g2 && g1->canReproduce() && g2->canReproduce());
 
         bool isSameFitness = g1->getFitness() == g2->getFitness();
-        GenomePtr newGenome = std::make_shared<Genome>(crossOver(*g1->getGenome(), *g2->getGenome(), isSameFitness));
+        GenomeBasePtr newGenome = crossOver(*g1->getGenome(), *g2->getGenome(), isSameFitness);
 
         generatedGenomesOut.push_back(GenomeBasePtr(newGenome.get()));
     }

@@ -12,32 +12,38 @@
 #include <Common/PseudoRandom.h>
 #include <NEAT/GenomeBase.h>
 
+DECLARE_ID(GenerationId);
+DECLARE_ID(SpeciesId);
+DECLARE_ID(GenomeId);
+
 class FitnessCalculatorBase
 {
 public:
     virtual float calcFitness(const GenomeBase& genome) const = 0;
 };
 
-class SpeciationDelegate
-{
-public:
-};
-
-DECLARE_ID(GenerationId);
-DECLARE_ID(SpeciesId);
-DECLARE_ID(GenomeId);
-
 class GenerationBase
 {
 public:
+    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
+    using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
 
     struct GenomeData
     {
     public:
+        // Default constructor
+        GenomeData() = default;
 
-        GenomeId getId() const { return m_id; }
-        auto getGenome() const->const GenomeBase* { return m_genome.get(); }
-        float getFitness() const { return m_fitness; }
+        // Constructor with a pointer to the genome and its id.
+        GenomeData(GenomeBasePtr genome, GenomeId id);
+
+        // Initialize by a pointer to the genome and its id.
+        void init(GenomeBasePtr genome, GenomeId id);
+
+        inline GenomeId getId() const { return m_id; }
+        inline auto getGenome() const->const GenomeBase* { return m_genome.get(); }
+        inline float getFitness() const { return m_fitness; }
+        inline void setFitness(float fitness) { m_fitness = fitness; }
 
     protected:
 
@@ -51,21 +57,35 @@ public:
 
     virtual void createNewGeneration();
 
+    // Calculate fitness of all the genomes.
+    void calcFitness();
+
     inline int getNumGenomes() const { return m_numGenomes; }
     inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
 
     inline auto getId() const->GenerationId { return m_id; }
 
 protected:
+    using GenomeSelectorPtr = std::shared_ptr<class GenomeSelectorBase>;
 
-    std::shared_ptr<class MutationDelegate> m_mutationDelegate;
-    std::shared_ptr<class CrossOverDelegate> m_crossOverDelegate;
-    std::shared_ptr<class GenomeSelectorBase> m_genomeSelector;
+    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc);
+
+    virtual void preUpdateGeneration() = 0;
+    virtual void postUpdateGeneration() = 0;
+
+    virtual auto createSelector()->GenomeSelectorPtr = 0;
+
+    // Called inside createNewGeneration().
+    void addGenome(GenomeBasePtr genome);
+
+    std::unique_ptr<class MutationDelegate> m_mutationDelegate;
+    std::unique_ptr<class CrossOverDelegate> m_crossOverDelegate;
 
     std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
 
     GenomeDatasPtr m_genomes;
     GenomeDatasPtr m_prevGenGenomes;
+    PseudoRandom* m_randomGenerator = nullptr;
     int m_numGenomes;
     GenerationId m_id;
 };
@@ -88,20 +108,7 @@ public:
             EdgeId m_newEdge;
         };
 
-        void clear()
-        {
-            for (int i = 0; i < NUM_NEW_EDGES; i++)
-            {
-                m_newEdges[i].m_sourceInNode = NodeId::invalid();
-                m_newEdges[i].m_sourceOutNode = NodeId::invalid();
-                m_newEdges[i].m_newEdge = EdgeId::invalid();
-            }
-
-            m_numNodesAdded = 0;
-            m_numEdgesAdded = 0;
-
-            m_newNode = NodeId::invalid();
-        }
+        void clear();
 
         static constexpr int NUM_NEW_EDGES = 3;
         NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
@@ -112,7 +119,7 @@ public:
 
     virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
 
-    virtual auto mutate(const GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
+    virtual auto mutate(int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
 class CrossOverDelegate
@@ -120,24 +127,31 @@ class CrossOverDelegate
 public:
     using GenomeData = GenerationBase::GenomeData;
     using GenomeDatas = GenerationBase::GenomeDatas;
-    using GenomeBasePtr = std::unique_ptr<GenomeBase>;
+    using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using GenomeBasePtrs = std::vector<GenomeBasePtr>;
 
     virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
 
-    virtual auto crossOver(const GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
+    virtual auto crossOver(int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
+// Abstract class to select a genome.
 class GenomeSelectorBase
 {
 public:
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
 
+    // Constructor
     GenomeSelectorBase(PseudoRandom& random) : m_random(random) {}
 
+    // Set genomes to select and initialize internal data.
     virtual bool setGenomes(const GenomeDatas& generation) = 0;
+
+    // Select a random genome.
     virtual auto selectGenome()->const GenomeData* = 0;
+
+    // Select two random genomes.
     virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) = 0;
 
 protected:

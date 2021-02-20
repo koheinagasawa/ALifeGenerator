@@ -201,10 +201,5 @@ SpeciesId DefaultGenomeSelector::getSpeciesId(const GenomeData& gd) const
 
 bool DefaultGenomeSelector::isGenomeReproducible(const GenomeData& gd) const
 {
-    return m_generation->isReproducible(getSpeciesId(gd));
-}
-
-void DefaultGenomeSelector::setInterSpeciesCrossOverRate(float interSpeciesCrossOverRate)
-{
-    m_interSpeciesCrossOverRate = interSpeciesCrossOverRate;
+    return !m_skipStagnantSpecies || m_generation->isSpeciesReproducible(getSpeciesId(gd));
 }

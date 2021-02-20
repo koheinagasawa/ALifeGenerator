@@ -88,8 +88,8 @@ protected:
 
     GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc);
 
-    virtual void preUpdateGeneration() = 0;
-    virtual void postUpdateGeneration() = 0;
+    virtual void preUpdateGeneration() {}
+    virtual void postUpdateGeneration() {}
 
     virtual auto createSelector()->GenomeSelectorPtr = 0;
 

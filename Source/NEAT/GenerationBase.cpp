@@ -66,8 +66,9 @@ void GenerationBase::createNewGeneration()
         for (auto& newGenome : generator->getGeneratedGenomes())
         {
             addGenome(newGenome);
-            numGenomesToAdd--;
         }
+
+        numGenomesToAdd -= generator->getNumGeneneratedGenomes();
     }
 
     // We should have added all the genomes at this point.

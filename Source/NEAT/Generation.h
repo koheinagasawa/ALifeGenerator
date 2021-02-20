@@ -95,7 +95,6 @@ namespace NEAT
     protected:
         void init(const Cinfo& cinfo);
 
-        virtual void preUpdateGeneration() override;
         virtual void postUpdateGeneration() override;
 
         virtual auto createSelector()->GenomeSelectorPtr override;

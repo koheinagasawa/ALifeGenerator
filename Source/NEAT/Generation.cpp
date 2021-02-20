@@ -109,29 +109,6 @@ void BestGenomeSelector::generate(int numTotalGenomes, int numRemaningGenomes, G
     }
 }
 
-void Generation::preUpdateGeneration()
-{
-    // Select genomes which are copied to the next generation unchanged.
-    for (auto& itr : m_species)
-    {
-        const SpeciesPtr& species = itr.second;
-        if (species->getStagnantGenerationCount() >= m_params.m_maxStagnantCount)
-        {
-            continue;
-        }
-
-        if (species->getNumMembers() >= m_params.m_minMembersInSpeciesToCopyChampion)
-        {
-            Species::CGenomePtr best = species->getBestGenome();
-            if (best)
-            {
-                GenomePtr copiedGenome = std::make_shared<Genome>(*best);
-                addGenome(copiedGenome);
-            }
-        }
-    }
-}
-
 void Generation::postUpdateGeneration()
 {
     // Speciation

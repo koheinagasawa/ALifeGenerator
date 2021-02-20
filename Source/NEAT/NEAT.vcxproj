@@ -162,6 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DefaultCrossOver.h" />
+    <ClInclude Include="DefaultGenomeSelector.h" />
     <ClInclude Include="DefaultMutation.h" />
     <ClInclude Include="Generation.h" />
     <ClInclude Include="GenerationBase.h" />
@@ -175,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DefaultCrossOver.cpp" />
+    <ClCompile Include="DefaultGenomeSelector.cpp" />
     <ClCompile Include="DefaultMutation.cpp" />
     <ClCompile Include="Generation.cpp" />
     <ClCompile Include="Genome.cpp" />

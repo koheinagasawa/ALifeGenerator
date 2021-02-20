@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include <Common/PseudoRandom.h>
 #include <NEAT/GenomeBase.h>
 
 class FitnessCalculatorBase
@@ -34,6 +35,7 @@ public:
     {
     public:
 
+        GenomeId getId() const { return m_id; }
         auto getGenome() const->const GenomeBase* { return m_genome.get(); }
         float getFitness() const { return m_fitness; }
 
@@ -71,6 +73,8 @@ protected:
 class MutationDelegate
 {
 public:
+    using GenomeData = GenerationBase::GenomeData;
+    using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using GenomeBasePtrs = std::vector<GenomeBasePtr>;
 
@@ -108,24 +112,34 @@ public:
 
     virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
 
-    virtual auto mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
+    virtual auto mutate(const GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
 class CrossOverDelegate
 {
 public:
+    using GenomeData = GenerationBase::GenomeData;
+    using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeBasePtr = std::unique_ptr<GenomeBase>;
     using GenomeBasePtrs = std::vector<GenomeBasePtr>;
 
     virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
 
-    virtual auto crossOver(const GenerationBase::GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
+    virtual auto crossOver(const GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs = 0;
 };
 
 class GenomeSelectorBase
 {
 public:
-    virtual void setGenomes(const GenerationBase::GenomeDatas& generation) = 0;
-    virtual auto selectGenome()->GenerationBase::GenomeData* = 0;
-    virtual void selectTwoGenomes(GenerationBase::GenomeData*& genome1, GenerationBase::GenomeData*& genome2) = 0;
+    using GenomeDatas = GenerationBase::GenomeDatas;
+    using GenomeData = GenerationBase::GenomeData;
+
+    GenomeSelectorBase(PseudoRandom& random) : m_random(random) {}
+
+    virtual bool setGenomes(const GenomeDatas& generation) = 0;
+    virtual auto selectGenome()->const GenomeData* = 0;
+    virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) = 0;
+
+protected:
+    PseudoRandom& m_random;
 };

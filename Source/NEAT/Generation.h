@@ -6,12 +6,9 @@
 
 #pragma once
 
+#include <NEAT/GenerationBase.h>
 #include <NEAT/Genome.h>
 #include <NEAT/Species.h>
-
-DECLARE_ID(GenerationId);
-DECLARE_ID(SpeciesId);
-DECLARE_ID(GenomeId);
 
 namespace NEAT
 {

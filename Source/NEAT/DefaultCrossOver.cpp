@@ -206,15 +206,15 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
-auto DefaultCrossOver::crossOver(const GenerationBase::GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
+auto DefaultCrossOver::crossOver(const GenomeDatas& generation, int numGenomesToCrossover, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
 {
     GenomeBasePtrs generatedGenomesOut;
     generatedGenomesOut.reserve(numGenomesToCrossover);
 
     for (int i = 0; i < numGenomesToCrossover; i++)
     {
-        GenerationBase::GenomeData* g1 = nullptr;
-        GenerationBase::GenomeData* g2 = nullptr;
+        GenomeData* g1 = nullptr;
+        GenomeData* g2 = nullptr;
 
         genomeSelector->selectTwoGenomes(g1, g2);
 

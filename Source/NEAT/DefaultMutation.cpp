@@ -174,7 +174,7 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     assert(network->validate());
 }
 
-auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
+auto DefaultMutation::mutate(const GenomeDatas& generation, int numGenomesToMutate, GenomeSelectorBase* genomeSelector)->GenomeBasePtrs
 {
     assert(genomeSelector);
 
@@ -189,7 +189,7 @@ auto DefaultMutation::mutate(const GenerationBase::GenomeDatas& generation, int 
     for (int i = 0; i < numGenomesToMutate; i++)
     {
         // Select a random genome.
-        const GenerationBase::GenomeData* gd = genomeSelector->selectGenome();
+        const GenomeData* gd = genomeSelector->selectGenome();
 
         //assert(gd->canReproduce());
 

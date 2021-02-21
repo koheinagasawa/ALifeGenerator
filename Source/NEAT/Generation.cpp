@@ -6,7 +6,8 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/Generation.h>
-#include "DefaultGenomeSelector.h"
+#include <NEAT/DefaultGenomeSelector.h>
+#include <NEAT/SpeciesChampionSelector.h>
 
 using namespace NEAT;
 
@@ -71,7 +72,7 @@ void Generation::init(const Cinfo& cinfo)
         m_species.insert({ newSpecies, std::make_shared<Species>(*static_cast<const Genome*>(representative.getGenome())) });
     }
 
-    m_generators.push_back(std::make_shared<BestGenomeSelector>(this, cinfo.m_generationParams.m_minMembersInSpeciesToCopyChampion));
+    m_generators.push_back(std::make_shared<SpeciesChampionSelector>(this, cinfo.m_generationParams.m_minMembersInSpeciesToCopyChampion));
 
     // Create mutate delegate
     m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
@@ -81,32 +82,6 @@ void Generation::init(const Cinfo& cinfo)
 
     // Calculate initial fitness of genomes.
     calcFitness();
-}
-
-void BestGenomeSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
-{
-    using SpeciesPtr = std::shared_ptr<Species>;
-    using GenomePtr = std::shared_ptr<Genome>;
-
-    // Select genomes which are copied to the next generation unchanged.
-    for (auto& itr : m_generation->getAllSpecies())
-    {
-        const SpeciesPtr& species = itr.second;
-        if (!m_generation->isSpeciesReproducible(itr.first))
-        {
-            continue;
-        }
-
-        if (species->getNumMembers() >= m_minMembersInSpeciesToCopyChampion)
-        {
-            Species::CGenomePtr best = species->getBestGenome();
-            if (best)
-            {
-                GenomePtr copiedGenome = std::make_shared<Genome>(*best);
-                m_generatedGenomes.push_back(copiedGenome);
-            }
-        }
-    }
 }
 
 void Generation::postUpdateGeneration()
@@ -202,8 +177,6 @@ auto Generation::createSelector()->GenomeSelectorPtr
 {
     std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this, *m_randomGenerator);
     {
-        selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
-
         bool res = selector->setGenomes(*m_prevGenGenomes);
         if (!res)
         {
@@ -211,7 +184,6 @@ auto Generation::createSelector()->GenomeSelectorPtr
             // Mark all genomes reproducible and try again.
             selector->skipStagnantSpecies(false);
             res = selector->setGenomes(*m_prevGenGenomes);
-
             assert(res);
         }
     }
@@ -234,6 +206,6 @@ auto Generation::getSpecies(GenomeId genomeId) const->SpeciesId
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const
 {
-    return m_species.at(speciesId)->getStagnantGenerationCount() < m_maxStagnantCount;
+    return m_species.at(speciesId)->getStagnantGenerationCount() < m_params.m_maxStagnantCount;
 }
 

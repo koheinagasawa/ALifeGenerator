@@ -6,7 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/DefaultCrossOver.h>
-#include <NEAT/Genome.h>
+#include <NEAT/DefaultGenomeSelector.h>
 
 using namespace NEAT;
 
@@ -209,6 +209,9 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
 {
     using GenomeData = GenerationBase::GenomeData;
+
+    DefaultGenomeSelector* selector = static_cast<DefaultGenomeSelector*>(genomeSelector);
+    selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
 
     const int numGenomesToCrossover = numRemaningGenomes;
 

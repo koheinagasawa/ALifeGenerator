@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <NEAT/GenerationBase.h>
-#include <NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
+#include <NEAT/Genome.h>
+#include <NEAT/MutationDelegate.h>
 
 namespace NEAT
 {

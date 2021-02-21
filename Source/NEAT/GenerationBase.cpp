@@ -96,18 +96,3 @@ void GenerationBase::addGenome(GenomeBasePtr genome)
     (*m_genomes)[m_numGenomes].init(genome, GenomeId(m_numGenomes));
     m_numGenomes++;
 }
-
-void MutationDelegate::MutationOut::clear()
-{
-    for (int i = 0; i < NUM_NEW_EDGES; i++)
-    {
-        m_newEdges[i].m_sourceInNode = NodeId::invalid();
-        m_newEdges[i].m_sourceOutNode = NodeId::invalid();
-        m_newEdges[i].m_newEdge = EdgeId::invalid();
-    }
-
-    m_numNodesAdded = 0;
-    m_numEdgesAdded = 0;
-
-    m_newNode = NodeId::invalid();
-}

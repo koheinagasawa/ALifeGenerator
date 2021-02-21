@@ -32,12 +32,6 @@ namespace NEAT
             // Species who is stagnant more than this count is not allowed to reproduce.
             uint16_t m_maxStagnantCount = 5;
 
-            // Rate of the number of genomes to generate by cross over.
-            float m_crossOverRate = 0.75f;
-
-            // Rate of interspecies crossover.
-            float m_interSpeciesCrossOverRate = 0.001f;
-
             // Parameters used for distance calculation of two genomes.
             Genome::CalcDistParams m_calcDistParams;
 
@@ -103,23 +97,5 @@ namespace NEAT
         std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;
         UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
         GenerationParams m_params;
-        uint16_t m_maxStagnantCount = 5;
-    };
-
-    class BestGenomeSelector : public GenomeGenerator
-    {
-    public:
-        BestGenomeSelector(const Generation* g, float minMembersInSpeciesToCopyChampion)
-            : m_generation(g)
-        , m_minMembersInSpeciesToCopyChampion(minMembersInSpeciesToCopyChampion)
-        {
-        }
-
-        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
-
-    protected:
-        const Generation* m_generation;
-
-        float m_minMembersInSpeciesToCopyChampion;
     };
 }

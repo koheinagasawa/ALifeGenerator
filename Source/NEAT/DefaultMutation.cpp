@@ -1,12 +1,13 @@
 /*
-* DefaultMutation.h
+* DefaultMutation.cpp
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
 #include <NEAT/Neat.h>
 #include <NEAT/DefaultMutation.h>
-#include <NEAT/Genome.h>
+#include <NEAT/GenerationBase.h>
+#include <NEAT/GenomeSelectorBase.h>
 
 using namespace NEAT;
 

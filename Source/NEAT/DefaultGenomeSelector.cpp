@@ -9,7 +9,6 @@
 
 using namespace NEAT;
 
-
 DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, PseudoRandom& random)
     : GenomeSelectorBase(random)
     , m_generation(generation)

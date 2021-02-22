@@ -13,6 +13,7 @@
     <ClCompile Include="GenerationBase.cpp" />
     <ClCompile Include="SpeciesChampionSelector.cpp" />
     <ClCompile Include="MutationDelegate.cpp" />
+    <ClCompile Include="HomogeneousGenomeSelector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNetwork.h" />
@@ -32,5 +33,6 @@
     <ClInclude Include="GenomeSelectorBase.h" />
     <ClInclude Include="MutationDelegate.h" />
     <ClInclude Include="CrossOverDelegate.h" />
+    <ClInclude Include="HomogeneousGenomeSelector.h" />
   </ItemGroup>
 </Project>

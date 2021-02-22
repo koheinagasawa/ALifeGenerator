@@ -12,6 +12,7 @@
 
 namespace NEAT
 {
+    // Default mutater class for NEAT.
     class DefaultMutation : public MutationDelegate
     {
     public:
@@ -64,8 +65,11 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) override;
 
+        // Generate a set of new genomes by using genomeSelector.
+        // genomeSelector has to be already configured and available to select existing genomes.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
 
+        // The parameter.
         MutationParams m_params;
     };
 }

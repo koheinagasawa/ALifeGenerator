@@ -9,7 +9,7 @@
 #include <Common/PseudoRandom.h>
 #include <NEAT/GenerationBase.h>
 
-// Abstract class to select a genome.
+// Abstract class to select genomes.
 class GenomeSelectorBase
 {
 public:
@@ -20,7 +20,7 @@ public:
     GenomeSelectorBase(PseudoRandom& random) : m_random(random) {}
 
     // Set genomes to select and initialize internal data.
-    virtual bool setGenomes(const GenomeDatas& generation) = 0;
+    virtual bool setGenomes(const GenomeDatas& genomes) = 0;
 
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* = 0;

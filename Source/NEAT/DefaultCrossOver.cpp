@@ -33,8 +33,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     const Network::EdgeIds& innovations1 = genome1.getInnovations();
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
 
-    // Create a new genome and arrays to store nodes and edges for it.
-    //Genome newGenome(genome1);
+    // Create arrays to store innovations, nodes and edges for the new genome.
     Network::EdgeIds innovations;
     Network::Nodes newGnomeNodes;
     Network::Edges newGenomeEdges;
@@ -52,7 +51,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     // Inherit edges
     {
         // Helper function to add an inherit edge.
-        auto addEdge = [&disjointEnableEdges, &enabledEdges, &newGenomeEdges, &innovations, &random, this](const EdgeId edgeId, const Network* networkA, const Network* networkB, bool disjoint)
+        auto addEdge = [&disjointEnableEdges, &enabledEdges, &newGenomeEdges, &innovations, &random, this](const EdgeId edgeId, const Network* networkA, const Network* networkB, bool sameFitnessDisjoint)
         {
             // Copy the edge
             const Network::Edge& edgeA = networkA->getEdges().at(edgeId);
@@ -60,8 +59,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             edge.setEnabled(true);
 
             // Disable the edge at a certain probability if either parent's edge is already disable
-            bool disabled = !edgeA.isEnabled() || (networkB && !networkB->isEdgeEnabled(edgeId));
-            if (disabled && !disjoint)
+            const bool disabled = !edgeA.isEnabled() || (networkB && !networkB->isEdgeEnabled(edgeId));
+            if (disabled)
             {
                 if (random.randomReal01() < m_params.m_disablingEdgeRate)
                 {
@@ -69,11 +68,14 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 }
                 else
                 {
-                    enabledEdges.push_back(edgeId);
+                    if (!sameFitnessDisjoint)
+                    {
+                        enabledEdges.push_back(edgeId);
+                    }
                 }
             }
 
-            if (disjoint && edge.isEnabled())
+            if (sameFitnessDisjoint && edge.isEnabled())
             {
                 disjointEnableEdges.push_back(edgeId);
             }
@@ -90,13 +92,12 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         {
             const EdgeId cur1 = innovations1[curIdx1];
             const EdgeId cur2 = innovations2[curIdx2];
-            bool isDisjoint;
 
             if (cur1 == cur2)
             {
                 assert(network1->getInNode(cur1) == network2->getInNode(cur2));
                 assert(network1->getOutNode(cur1) == network2->getOutNode(cur2));
-                isDisjoint = false;
+                const bool isDisjoint = false;
 
                 // Randomly select an edge from either genome1 or genome2 for matching edges.
                 if (random.randomReal01() < m_params.m_matchingEdgeSelectionRate)
@@ -113,8 +114,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             else if (cur1 < cur2)
             {
                 // Always take disjoint edges from more fit genome.
-                isDisjoint = sameFittingScore;
-                addEdge(cur1, network1, nullptr, isDisjoint);
+                addEdge(cur1, network1, nullptr, sameFittingScore);
                 curIdx1++;
             }
             else
@@ -122,8 +122,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 // Don't take disjoint edges from less fit genome unless the two genomes have the same fitness.
                 if (sameFittingScore)
                 {
-                    isDisjoint = true;
-                    addEdge(cur2, network2, nullptr, isDisjoint);
+                    addEdge(cur2, network2, nullptr, sameFittingScore);
                 }
                 curIdx2++;
             }
@@ -132,22 +131,22 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         // Add all remaining excess edges
         if (!sameFittingScore)
         {
-            const bool isDisjoint = false;
+            const bool isSameFitnessDisjoint = false;
             while (curIdx1 < innovations1.size())
             {
-                addEdge(innovations1[curIdx1++], network1, nullptr, isDisjoint);
+                addEdge(innovations1[curIdx1++], network1, nullptr, isSameFitnessDisjoint);
             }
         }
         else
         {
-            const bool isDisjoint = true;
+            const bool isSameFitnessDisjoint = true;
             while (curIdx1 < innovations1.size())
             {
-                addEdge(innovations1[curIdx1++], network1, nullptr, isDisjoint);
+                addEdge(innovations1[curIdx1++], network1, nullptr, isSameFitnessDisjoint);
             }
             while (curIdx2 < innovations2.size())
             {
-                addEdge(innovations2[curIdx2++], network2, nullptr, isDisjoint);
+                addEdge(innovations2[curIdx2++], network2, nullptr, isSameFitnessDisjoint);
             }
         }
     }
@@ -203,6 +202,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         network->setEdgeEnabled(edge, false);
     }
 
+    // Create a new genome.
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
@@ -210,23 +210,27 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
 {
     using GenomeData = GenerationBase::GenomeData;
 
+    // Set up the selector.
     DefaultGenomeSelector* selector = static_cast<DefaultGenomeSelector*>(genomeSelector);
     selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
 
     const int numGenomesToCrossover = numRemaningGenomes;
 
+    // Clear new genomes output.
     m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numGenomesToCrossover);
 
+    // Perform cross-over.
     for (int i = 0; i < numGenomesToCrossover; i++)
     {
         const GenomeData* g1 = nullptr;
         const GenomeData* g2 = nullptr;
 
+        // Select two genomes.
         genomeSelector->selectTwoGenomes(g1, g2);
-
         assert(g1 && g2);
 
+        // Cross-over.
         bool isSameFitness = g1->getFitness() == g2->getFitness();
         GenomeBasePtr newGenome = crossOver(*g1->getGenome(), *g2->getGenome(), isSameFitness);
 

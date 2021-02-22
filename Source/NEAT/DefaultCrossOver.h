@@ -12,12 +12,13 @@
 
 namespace NEAT
 {
+    // Default cross-over class for NEAT
     class DefaultCrossOver : public CrossOverDelegate
     {
     public:
         using GenomePtr = std::shared_ptr<Genome>;
 
-        // Parameters used for crossOver().
+        // Parameters used for performing cross-over.
         struct CrossOverParams
         {
             // Probability of disabling inherited edge when either parent's edge is disabled.
@@ -41,8 +42,11 @@ namespace NEAT
         // Set sameFittingScore true if the fitting scores of genome1 and genome2 is the same.
         virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr override;
 
+        // Generate a set of new genomes by using genomeSelector.
+        // genomeSelector has to be already configured and available to select existing genomes.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
 
+        // The parameter.
         CrossOverParams m_params;
     };
 }

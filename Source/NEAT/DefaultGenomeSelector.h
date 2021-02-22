@@ -19,7 +19,7 @@ namespace NEAT
         DefaultGenomeSelector(const Generation* generation, PseudoRandom& random);
 
         // Set genomes to select and initialize internal data.
-        virtual bool setGenomes(const GenomeDatas& generation) override;
+        virtual bool setGenomes(const GenomeDatas& genomes) override;
 
         // Select a random genome.
         virtual auto selectGenome()->const GenomeData* override;
@@ -32,26 +32,30 @@ namespace NEAT
         inline void skipStagnantSpecies(bool enable) { m_skipStagnantSpecies = enable; }
 
     protected:
-
         // Select a random genome between start and end (not including end) in m_genomes array.
         auto selectGenome(int start, int end)->const GenomeData*;
 
+        // Returns SpeciesId of the given genome.
         SpeciesId getSpeciesId(const GenomeData& gd) const;
 
+        // Returns true if the species of the given genome is reproducible.
         bool isGenomeReproducible(const GenomeData& gd) const;
 
+        // Start and end index of genomes in m_genomes array for each species.
         struct IndexSet
         {
             int m_start, m_end;
         };
 
-        const Generation* m_generation;
+        const Generation* m_generation; // The generation.
+        std::vector<const GenomeData*> m_genomes; // The genomes in the generation.
+        std::vector<float> m_sumFitness; // Sum values of genomes' fitness.
+        std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices; // Intermediate data used internally.
 
-        std::vector<const GenomeData*> m_genomes;
-        std::vector<float> m_sumFitness;
-        std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices;
-
+        // Probability to select two genomes from different species when selectTwoGenomes() is called.
         float m_interSpeciesCrossOverRate = 0.001f;
+
+        // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;
     };
 }

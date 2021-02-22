@@ -8,6 +8,7 @@
 #include <NEAT/Generation.h>
 #include <NEAT/DefaultGenomeSelector.h>
 #include <NEAT/SpeciesChampionSelector.h>
+#include "HomogeneousGenomeSelector.h"
 
 using namespace NEAT;
 
@@ -176,19 +177,24 @@ void Generation::postUpdateGeneration()
 auto Generation::createSelector()->GenomeSelectorPtr
 {
     std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this, *m_randomGenerator);
+    bool res = selector->setGenomes(*m_prevGenGenomes);
+    if (!res)
     {
-        bool res = selector->setGenomes(*m_prevGenGenomes);
-        if (!res)
-        {
-            // Failed to create GenomeSelector. This means that no genome is reproducible.
-            // Mark all genomes reproducible and try again.
-            selector->skipStagnantSpecies(false);
-            res = selector->setGenomes(*m_prevGenGenomes);
-            assert(res);
-        }
+        // Failed to create GenomeSelector. This might mean that no genome is reproducible.
+        // Mark all genomes reproducible and try again.
+        selector->skipStagnantSpecies(false);
+        res = selector->setGenomes(*m_prevGenGenomes);
     }
 
-    return GenomeSelectorPtr(selector.get());
+    if (res)
+    {
+        return GenomeSelectorPtr(selector.get());
+    }
+
+    // It failed again, this must mean all genomes have zero fitness.
+    // Create homogeneous selector instead.
+    WARN("All genomes have zero fitness. Use a homogeneous selector.");
+    return std::make_unique<HomogeneousGenomeSelector>(*m_randomGenerator);
 }
 
 void Generation::calcFitness()

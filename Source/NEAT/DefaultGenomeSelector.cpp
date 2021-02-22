@@ -13,7 +13,6 @@ DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, Pseud
     : GenomeSelectorBase(random)
     , m_generation(generation)
 {
-
 }
 
 bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
@@ -22,27 +21,8 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
     assert(genomesIn.size() > 0);
     assert(genomesIn.size() == m_generation->getNumGenomes());
 
-    m_genomes.reserve(genomesIn.size());
-    m_sumFitness.reserve(genomesIn.size() + 1);
-    float sumFitness = 0;
-    m_sumFitness.push_back(0);
-
-    const Generation::SpeciesList& species = m_generation->getAllSpecies();
-
-    auto calcFitnessSharingFactor = [&species](SpeciesId speciesId)->float
-    {
-        return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
-    };
-
-    SpeciesId currentSpecies = getSpeciesId(genomesIn[0]);
-    float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-    int currentSpeciesStartIndex = 0;
-
 #ifdef _DEBUG
-    std::unordered_set<SpeciesId> speciesIndices;
-    speciesIndices.insert(currentSpecies);
-
-    // Here we are assuming that genomes are sorted by species id.
+    // Make sure that genomes are sorted by species id.
     {
         SpeciesId curId = getSpeciesId(genomesIn[0]);
         for (const GenomeData& g : genomesIn)
@@ -62,6 +42,29 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
     }
 #endif
 
+    m_genomes.clear();
+    m_sumFitness.clear();
+    m_spciecesStartEndIndices.clear();
+    m_genomes.reserve(genomesIn.size());
+    m_sumFitness.reserve(genomesIn.size() + 1);
+    float sumFitness = 0;
+    m_sumFitness.push_back(0);
+
+    const Generation::SpeciesList& species = m_generation->getAllSpecies();
+    m_spciecesStartEndIndices.reserve(species.size());
+
+    // Helper functions to calculate factor for fitness sharing.
+    // Genome's fitness is going to be normalized by the number of members in its species.
+    auto calcFitnessSharingFactor = [&species](SpeciesId speciesId)->float
+    {
+        return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
+    };
+
+    SpeciesId currentSpecies = getSpeciesId(genomesIn[0]);
+    float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
+    int currentSpeciesStartIndex = 0;
+
+    // Calculate adjusted fitness for each genome and sum up those fitnesses.
     for (const GenomeData& g : genomesIn)
     {
         if (!isGenomeReproducible(g) || g.getFitness() == 0)
@@ -69,40 +72,27 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
             continue;
         }
 
+        assert(g.getFitness() > 0);
+
         if (currentSpecies != getSpeciesId(g))
         {
+            // This genome is in a new species.
             m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
             currentSpecies = getSpeciesId(g);
             fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
             currentSpeciesStartIndex = (int)m_genomes.size();
-#ifdef _DEBUG
-            assert(speciesIndices.find(currentSpecies) == speciesIndices.end());
-#endif
         }
 
         m_genomes.push_back(&g);
-
-        assert(g.getFitness() > 0);
-
-        const float adjustedFitness = g.getFitness() * fitnessSharingFactor;
-        sumFitness += adjustedFitness;
+        sumFitness += g.getFitness() * fitnessSharingFactor;
         m_sumFitness.push_back(sumFitness);
     }
 
     if (m_genomes.size() == 0)
     {
+        // There was no genomes which can be reproducible or has positive fitness.
         return false;
-    }
-
-    if (sumFitness == 0.f)
-    {
-        // All genomes have 0 fitness.
-        // Set up homogeneous distribution.
-        for (int i = 0; i <= (int)m_genomes.size(); i++)
-        {
-            m_sumFitness[i] = (float)i;
-        }
     }
 
     m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });

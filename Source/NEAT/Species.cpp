@@ -14,6 +14,14 @@ Species::Species(const Genome& initialRepresentative)
 {
 }
 
+Species::Species(CGenomePtr initialMember, float fitness)
+    : m_representative(*initialMember.get())
+    , m_bestGenome(initialMember)
+    , m_bestFitness(fitness)
+{
+    m_members.push_back(initialMember);
+}
+
 void Species::preNewGeneration(PseudoRandom* randomIn)
 {
     // Select a new representative

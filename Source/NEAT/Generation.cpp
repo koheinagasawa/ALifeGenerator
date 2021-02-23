@@ -8,7 +8,7 @@
 #include <NEAT/Generation.h>
 #include <NEAT/DefaultGenomeSelector.h>
 #include <NEAT/SpeciesChampionSelector.h>
-#include "HomogeneousGenomeSelector.h"
+#include "UniformGenomeSelector.h"
 
 using namespace NEAT;
 
@@ -82,7 +82,7 @@ void Generation::init(const Cinfo& cinfo)
     // Create mutate delegate.
     m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
 
-    // Create cross over delegate.
+    // Create cross-over delegate.
     m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
 
     // Calculate initial fitness of genomes.
@@ -138,10 +138,10 @@ void Generation::postUpdateGeneration()
         if (itr == m_species.end())
         {
             // No species found. Create a new one for this genome.
-            SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-            m_genomesSpecies.insert({ gd.getId(), newSpecies });
-            m_species.insert({ newSpecies, std::make_shared<Species>(*genome) });
-            m_species[newSpecies]->tryAddGenome(Species::CGenomePtr(genome), gd.getFitness(), m_params.m_speciationDistanceThreshold, m_params.m_calcDistParams);
+            SpeciesId newSpeciesId = m_speciesIdGenerator.getNewId();
+            m_genomesSpecies.insert({ gd.getId(), newSpeciesId });
+            SpeciesPtr newSpecies = std::make_shared<Species>(Species::CGenomePtr(genome), gd.getFitness());
+            m_species.insert({ newSpeciesId, newSpecies });
         }
     }
 
@@ -180,8 +180,12 @@ void Generation::postUpdateGeneration()
 
 auto Generation::createSelector()->GenomeSelectorPtr
 {
+    // Create a DefaultGenomeSelector.
     std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this, *m_randomGenerator);
+
+    // Try to set genomes.
     bool res = selector->setGenomes(*m_prevGenGenomes);
+
     if (!res)
     {
         // Failed to create GenomeSelector. This might mean that no genome is reproducible.
@@ -196,17 +200,9 @@ auto Generation::createSelector()->GenomeSelectorPtr
     }
 
     // It failed again, this must mean all genomes have zero fitness.
-    // Create homogeneous selector instead.
-    WARN("All genomes have zero fitness. Use a homogeneous selector.");
-    return std::make_unique<HomogeneousGenomeSelector>(*m_randomGenerator);
-}
-
-void Generation::calcFitness()
-{
-    for (GenomeData& gd : *m_genomes)
-    {
-        gd.setFitness(m_fitnessCalculator->calcFitness(*gd.getGenome()));
-    }
+    // Create uniform selector instead.
+    WARN("All genomes have zero fitness. Use a uniform selector.");
+    return std::make_unique<UniformGenomeSelector>(*m_randomGenerator);
 }
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const

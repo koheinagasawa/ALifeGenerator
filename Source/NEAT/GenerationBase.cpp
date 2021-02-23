@@ -32,7 +32,6 @@ GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr f
 
 void GenerationBase::evolveGeneration()
 {
-    // TODO: Break this function into smaller parts so that we can test it more thoroughly.
     // TODO: Profile each process by adding timers.
 
     std::swap(m_genomes, m_prevGenGenomes);
@@ -53,13 +52,12 @@ void GenerationBase::evolveGeneration()
     preUpdateGeneration();
 
     int numGenomesToAdd = numGenomes;
-
     m_numGenomes = 0;
 
+    // Create a genome selector
     GenomeSelectorPtr selector = createSelector();
 
-    using NewGenomePtrsOut = std::vector<GenomeBasePtr>;
-
+    // Create genomes for new generations by applying each genome generators.
     for (GeneratorPtr& generator : m_generators)
     {
         generator->generate(numGenomesToAdd, numGenomes, selector.get());
@@ -86,6 +84,8 @@ void GenerationBase::evolveGeneration()
 
 void GenerationBase::calcFitness()
 {
+    assert(m_fitnessCalculator);
+
     for (GenomeData& gd : *m_genomes)
     {
         gd.setFitness(m_fitnessCalculator->calcFitness(*gd.getGenome()));

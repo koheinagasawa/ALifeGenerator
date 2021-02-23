@@ -13,6 +13,7 @@
 class GenomeSelector
 {
 public:
+    // Type declarations.
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
 

@@ -39,6 +39,8 @@ void GenomeBase::operator= (const GenomeBase& other)
 {
     m_inputNodes = other.m_inputNodes;
     m_defaultActivation = other.m_defaultActivation;
+
+    // Copy the network
     m_network = std::make_shared<Network>(*other.m_network.get());
 }
 

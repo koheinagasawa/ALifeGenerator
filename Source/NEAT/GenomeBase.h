@@ -89,7 +89,7 @@ public:
     // Edge interface
     //
 
-    // Set weight of edge.
+    // Get weight of edge.
     inline float getEdgeWeight(EdgeId edgeId) const { return m_network->getWeight(edgeId); }
 
     // Set weight of edge.
@@ -105,13 +105,21 @@ public:
     // values has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
     void setInputNodeValues(const std::vector<float>& values) const;
 
+    //
+    // Activation interface
+    //
+
     // Set activation of node.
     inline void setActivation(NodeId nodeId, const Activation* activation) { m_network->accessNode(nodeId).m_activation = activation; }
 
     // Set activation of all nodes except input nodes.
     void setActivationAll(const Activation* activation);
 
+    // Get the default activation.
     inline auto getDefaultActivation() const->const Activation* { return m_defaultActivation; }
+
+    // Set the default activation.
+    inline void setDefaultActivation(const Activation* activation) { m_defaultActivation = activation; }
 
     //
     // Evaluation

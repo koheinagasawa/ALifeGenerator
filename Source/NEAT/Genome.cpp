@@ -23,16 +23,22 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create nodes
     nodes.reserve(numNodes);
-    m_inputNodes.resize(cinfo.m_numInputNodes);
+    m_inputNodes.reserve(cinfo.m_numInputNodes);
+    outputNodes.reserve(cinfo.m_numOutputNodes);
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
-        nodes.insert({ i, Node(Node::Type::INPUT) });
-        m_inputNodes[i] = m_innovIdCounter.getNewNodeId();
+        // Create input nodes.
+        NodeId id = m_innovIdCounter.getNewNodeId();
+        nodes.insert({ id, Node(Node::Type::INPUT) });
+        m_inputNodes.push_back(id);
     }
     for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
     {
-        nodes.insert({ i, Node(Node::Type::OUTPUT) });
-        m_innovIdCounter.getNewNodeId();
+        // Create output nodes.
+        NodeId id = m_innovIdCounter.getNewNodeId();
+        nodes.insert({ id, Node(Node::Type::OUTPUT) });
+        nodes[id].setActivation(m_defaultActivation);
+        outputNodes.push_back(id);
     }
 
     // Create fully connected edges between input nodes and output nodes.
@@ -52,24 +58,8 @@ Genome::Genome(const Cinfo& cinfo)
         }
     }
 
-    // Store output node ids.
-    outputNodes.reserve(cinfo.m_numOutputNodes);
-    for (int i = 0; i < cinfo.m_numOutputNodes; i++)
-    {
-        outputNodes.push_back(NodeId(cinfo.m_numInputNodes + i));
-    }
-
     // Create the network
     m_network = std::make_shared<Network>(nodes, edges, outputNodes);
-
-    // Set activation of output nodes
-    if (m_defaultActivation)
-    {
-        for (NodeId nodeId : m_network->getOutputNodes())
-        {
-            m_network->accessNode(nodeId).setActivation(m_defaultActivation);
-        }
-    }
 }
 
 Genome::Genome(const Genome& other)
@@ -116,15 +106,20 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
 void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge)
 {
     assert(m_network->hasEdge(edgeId));
+
+    // Create new ids.
     newNode = m_innovIdCounter.getNewNodeId();
     newIncomingEdge = m_innovIdCounter.getNewInnovationId();
     newOutgoingEdge = m_innovIdCounter.getNewInnovationId();
+
+    // Add a node.
     bool result = m_network->addNodeAt(edgeId, newNode, newIncomingEdge, newOutgoingEdge);
     assert(result);
 
     // Set activation and mark it as a hidden node
     setNodeTypeAndActivation(newNode, Node::Type::HIDDEN, m_defaultActivation);
 
+    // Record the innovations.
     m_innovations.push_back(newIncomingEdge);
     m_innovations.push_back(newOutgoingEdge);
 }
@@ -132,8 +127,11 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
 EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
 {
     assert(!m_network->isConnected(inNode, outNode));
+
+    // Create a new id.
     const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
 
+    // Add an edge.
     bool result = m_network->addEdgeAt(inNode, outNode, newEdge, weight);
 
     if (!result)
@@ -143,6 +141,9 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
         result = m_network->addEdgeAt(outNode, inNode, newEdge, weight);
         assert(result);
     }
+
+    // Record the innovation.
+    m_innovations.push_back(newEdge);
 
     return newEdge;
 }
@@ -267,7 +268,7 @@ bool Genome::validate() const
         prev = cur;
     }
 
-    // Make sure that input nodes are inconsistent
+    // Make sure that input nodes are consistent
     {
         int numInputNodes = 0;
         for (auto itr : m_network->getNodes())

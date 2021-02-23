@@ -6,11 +6,7 @@
 
 #pragma once
 
-#include <memory>
-#include <functional>
-
 #include <NEAT/GenomeBase.h>
-#include <Common/PseudoRandom.h>
 #include <Common/UniqueIdCounter.h>
 
 namespace NEAT
@@ -38,7 +34,7 @@ namespace NEAT
     class Genome : public GenomeBase
     {
     public:
-        // Structure used for constructor.
+        // Struct used for constructor.
         struct Cinfo
         {
             // The number of input nodes.
@@ -55,7 +51,7 @@ namespace NEAT
             const Activation* m_defaultActivation = nullptr;
         };
 
-        // Parameters used for distance calculation
+        // Parameters used to calculation distance between two genomes.
         struct CalcDistParams
         {
             // Factor for the number of disjoint edges.
@@ -72,7 +68,7 @@ namespace NEAT
         // all input nodes and output nodes are fully connected.
         Genome(const Cinfo& cinfo);
 
-        // Constructor which should be used by CrossOverDelegate.
+        // Constructor with existing network and an offspring genome. This should be used by CrossOverDelegate.
         Genome(const Genome& other, NetworkPtr network, const Network::EdgeIds& innovations);
 
         // Copy constructor and operator
@@ -83,8 +79,10 @@ namespace NEAT
         // Network modification
         //
 
+        // Add a new node by dividing the edge at edgeId.
         void addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge);
 
+        // Add a new edge between inNode and outNode with weight.
         EdgeId addEdgeAt(NodeId inNode, NodeId outNode, float weight);
 
         //

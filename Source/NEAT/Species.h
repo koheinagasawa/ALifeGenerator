@@ -18,8 +18,11 @@ namespace NEAT
     public:
         using CGenomePtr = std::shared_ptr<const Genome>;
 
-        // Constructors
+        // Constructor with representative.
         Species(const Genome& initialRepresentative);
+
+        // Constructor with the first member.
+        Species(CGenomePtr initialMember, float fitness);
 
         // This should be called before creating a new generation.
         // This function will select a new representative genome for this species and clear all existing members.

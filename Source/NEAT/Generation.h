@@ -78,9 +78,6 @@ namespace NEAT
         // Constructor by a collection of Genomes.
         Generation(const Genomes& genomes, const Cinfo& cinfo);
 
-        // Calculate fitness of all the genomes.
-        void calcFitness();
-
         // Returns the list of all genomes. Genomes are sorted by SpeciesId.
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
 

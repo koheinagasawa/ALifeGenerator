@@ -69,7 +69,7 @@ namespace NEAT
             GenerationParams m_generationParams;
 
             // Random generator.
-            PseudoRandom* m_random = nullptr;
+            RandomGenerator* m_random = nullptr;
         };
 
         // Constructor by Cinfo.

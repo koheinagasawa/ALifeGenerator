@@ -21,7 +21,7 @@ public:
     virtual void generate(int numTotalGenomes, int numRemaningGenomes, class GenomeSelector* genomeSelector) = 0;
 
     // Returns the number of newly generated genomes.
-    inline int getNumGeneneratedGenomes() const { return (int)m_generatedGenomes.size(); }
+    inline int getNumGeneratedGenomes() const { return (int)m_generatedGenomes.size(); }
 
     // Return the set of newly generated genomes.
     inline auto getGeneratedGenomes() const->const GenomeBasePtrs { return m_generatedGenomes; }

@@ -181,7 +181,7 @@ void Generation::postUpdateGeneration()
 auto Generation::createSelector()->GenomeSelectorPtr
 {
     // Create a DefaultGenomeSelector.
-    std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this, *m_randomGenerator);
+    std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this);
 
     // Try to set genomes.
     bool res = selector->setGenomes(*m_prevGenGenomes);
@@ -202,7 +202,7 @@ auto Generation::createSelector()->GenomeSelectorPtr
     // It failed again, this must mean all genomes have zero fitness.
     // Create uniform selector instead.
     WARN("All genomes have zero fitness. Use a uniform selector.");
-    return std::make_unique<UniformGenomeSelector>(*m_randomGenerator);
+    return std::make_unique<UniformGenomeSelector>();
 }
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const

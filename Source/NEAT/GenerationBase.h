@@ -80,7 +80,7 @@ protected:
     using FitnessCalculatorPtr = std::shared_ptr<FitnessCalculatorBase>;
 
     // Constructor
-    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, PseudoRandom* randomGenerator);
+    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator);
 
     // Called before/after generation of genomes inside evolveGeneration().
     virtual void preUpdateGeneration() {}
@@ -96,7 +96,7 @@ protected:
     FitnessCalculatorPtr m_fitnessCalculator;   // The fitness calculator.
     GenomeDatasPtr m_genomes;                   // Genomes in the current generation.
     GenomeDatasPtr m_prevGenGenomes;            // Genomes in the previous generation.
-    PseudoRandom* m_randomGenerator = nullptr;
+    RandomGenerator* m_randomGenerator = nullptr;
     int m_numGenomes;
     GenerationId m_id;
 };

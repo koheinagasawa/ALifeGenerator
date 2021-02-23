@@ -126,7 +126,10 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
 
 EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
 {
-    assert(!m_network->isConnected(inNode, outNode));
+    if (m_network->isConnected(inNode, outNode))
+    {
+        return EdgeId::invalid();
+    }
 
     // Create a new id.
     const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
@@ -146,6 +149,30 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
     m_innovations.push_back(newEdge);
 
     return newEdge;
+}
+
+void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
+{
+    assert(m_network->hasNode(originalId) && !m_network->hasNode(newId));
+
+    const bool isInputNode = m_network->getNode(originalId).getNodeType() == Node::Type::INPUT;
+
+    m_network->replaceNodeId(originalId, newId);
+
+    // Update the input node list.
+    if (isInputNode)
+    {
+        for (int i = 0; i < (int)m_inputNodes.size(); i++)
+        {
+            if (m_inputNodes[i] == originalId)
+            {
+                m_inputNodes[i] = newId;
+                break;
+            }
+        }
+    }
+
+    assert(validate());
 }
 
 void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)

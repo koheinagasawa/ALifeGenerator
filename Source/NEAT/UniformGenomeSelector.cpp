@@ -7,8 +7,9 @@
 #include <NEAT/Neat.h>
 #include <NEAT/UniformGenomeSelector.h>
 
-UniformGenomeSelector::UniformGenomeSelector(PseudoRandom& random)
-    : GenomeSelector(random)
+UniformGenomeSelector::UniformGenomeSelector(PseudoRandom* random)
+    : GenomeSelector()
+    , m_random(random ? *random : PseudoRandom::getInstance())
 {
 }
 

@@ -20,7 +20,7 @@ void GenerationBase::GenomeData::init(GenomeBasePtr genome, GenomeId id)
     m_fitness = 0.f;
 }
 
-GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, PseudoRandom* randomGenerator)
+GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator)
     : m_fitnessCalculator(fitnessCalc)
     , m_randomGenerator(randomGenerator)
     , m_numGenomes(numGenomes)
@@ -67,7 +67,7 @@ void GenerationBase::evolveGeneration()
             addGenome(newGenome);
         }
 
-        numGenomesToAdd -= generator->getNumGeneneratedGenomes();
+        numGenomesToAdd -= generator->getNumGeneratedGenomes();
     }
 
     // We should have added all the genomes at this point.

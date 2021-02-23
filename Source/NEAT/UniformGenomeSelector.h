@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Common/PseudoRandom.h>
 #include <NEAT/GenomeSelector.h>
 
 // Genome selector which selects randomly and uniformly.
@@ -13,7 +14,7 @@ class UniformGenomeSelector : public GenomeSelector
 {
 public:
     // Constructor
-    UniformGenomeSelector(PseudoRandom& random);
+    UniformGenomeSelector(PseudoRandom* random = nullptr);
 
     // Set genomes to select and initialize internal data.
     virtual bool setGenomes(const GenomeDatas& genomes) override;
@@ -26,4 +27,5 @@ public:
 
 protected:
     const GenomeDatas* m_genomes = nullptr;
+    PseudoRandom& m_random;
 };

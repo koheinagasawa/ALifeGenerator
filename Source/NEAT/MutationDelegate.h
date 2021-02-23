@@ -22,15 +22,23 @@ public:
             EdgeId m_newEdge;
         };
 
+        struct NewNodeInfo
+        {
+            NodeId m_newNode;
+            EdgeId m_previousEdgeId;
+            EdgeId m_newIncomingEdgeId;
+            EdgeId m_newOutgoingEdgeId;
+        };
+
         void clear();
 
         static constexpr int MAX_NUM_NEW_EDGES = 3;
-        NewEdgeInfo m_newEdges[MAX_NUM_NEW_EDGES]; // Info of newly added edges.
-        NodeId m_newNode = NodeId::invalid();  // Newly added node.
+        NewEdgeInfo m_newEdges[MAX_NUM_NEW_EDGES];  // Info of newly added edges.
+        NewNodeInfo m_newNode;                      // Info of newly added node.
         int m_numNodesAdded;
         int m_numEdgesAdded;
     };
 
-    // Create a new genome by mutating genomeIn. There are three ways of mutation.
-    virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
+    // Mutate a single genome. There are three ways of mutation.
+    virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) = 0;
 };

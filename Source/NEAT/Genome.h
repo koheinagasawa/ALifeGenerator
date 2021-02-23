@@ -92,8 +92,12 @@ namespace NEAT
         // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
         inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
 
+        // Reassign node id to an existing node.
+        // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
+        void reassignNodeId(const NodeId originalId, const NodeId newId);
+
         // Reassign innovation id to an existing edge.
-        // This functionality is used when there is the same structural mutation in more than one genomes in the same generation.
+        // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
         void reassignInnovation(const EdgeId originalId, const EdgeId newId);
 
         // Calculate and return distance between two genomes

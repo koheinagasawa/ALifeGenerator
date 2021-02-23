@@ -41,7 +41,7 @@ TEST(Species, AddGenomeToSpecies)
 
     // Mutate the genome
     DefaultMutation::MutationOut mutOut;
-    mutator.mutate(genome1, mutOut);
+    mutator.mutate(genome1.get(), mutOut);
 
     Genome::CalcDistParams calcDistParams;
     calcDistParams.m_disjointFactor = 1.0f;
@@ -111,7 +111,7 @@ TEST(Species, CreateSpeciesWithExistingGenome)
 
     // Mutate the genome
     DefaultMutation::MutationOut mutOut;
-    mutator.mutate(genome1, mutOut);
+    mutator.mutate(genome1.get(), mutOut);
 
     Genome::CalcDistParams calcDistParams;
     calcDistParams.m_disjointFactor = 1.0f;

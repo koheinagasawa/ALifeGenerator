@@ -11,7 +11,7 @@
 
 using namespace NEAT;
 
-void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
+void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 {
     mutationOut.clear();
 
@@ -23,7 +23,7 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     assert(m_params.m_addEdgeMutationRate >= 0 && m_params.m_addEdgeMutationRate <= 1);
     assert(m_params.m_newEdgeMinWeight <= m_params.m_newEdgeMaxWeight);
 
-    Genome::NetworkPtr network = genomeIn->accessNetwork();
+    Genome::NetworkPtr network = genomeInOut->accessNetwork();
     assert(network->validate());
 
     RandomGenerator* random = m_params.m_random ? m_params.m_random : &PseudoRandom::getInstance();
@@ -140,7 +140,7 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
         newEdgeInfo.m_newEdge = newEdge;
     };
 
-    Genome* genome = static_cast<Genome*>(genomeIn.get());
+    Genome* genome = static_cast<Genome*>(genomeInOut);
 
     // 2. Add a node at a random edge
     if (!edgeCandidates.empty())
@@ -155,7 +155,10 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
         newEdgeAdded(newOutgoingEdge);
 
         mutationOut.m_numNodesAdded++;
-        mutationOut.m_newNode = newNode;
+        mutationOut.m_newNode.m_newNode = newNode;
+        mutationOut.m_newNode.m_previousEdgeId = edgeToAddNode;
+        mutationOut.m_newNode.m_newIncomingEdgeId = newIncomingEdge;
+        mutationOut.m_newNode.m_newOutgoingEdgeId = newOutgoingEdge;
         mutationOut.m_numEdgesAdded += 2;
     }
 
@@ -179,7 +182,7 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
 {
     using GenomeData = GenerationBase::GenomeData;
 
-    const int numGenomesToMutate = std::min(numRemaningGenomes, int(numTotalGenomes * (1.f - m_params.m_mutatedGenomesRate)));
+    const int numGenomesToMutate = std::min(numRemaningGenomes, int(numTotalGenomes * m_params.m_mutatedGenomesRate));
 
     m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numGenomesToMutate);
@@ -197,10 +200,12 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
 
         // Mutate the genome.
         MutationOut& mout = mutationOuts[i];
-        mutate(newGenome, mout);
+        mutate(newGenome.get(), mout);
 
         // Check if there is already a mutation of the same structural change.
         // If so, assign the same innovation id to it.
+
+        // Check all the newly added edges.
         for (int innov1 = 0; innov1 < mout.m_numEdgesAdded; innov1++)
         {
             MutationOut::NewEdgeInfo& newEdge = mout.m_newEdges[innov1];
@@ -225,11 +230,38 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
 
                 if (idChanged)
                 {
+                    assert(newGenome->validate());
                     break;
                 }
             }
         }
 
-        m_generatedGenomes.push_back(GenomeBasePtr(newGenome.get()));
+
+        // Check the newly added node.
+        if (mout.m_numNodesAdded > 0)
+        {
+            MutationOut::NewNodeInfo& newNode = mout.m_newNode;
+            EdgeId prevEdge = newNode.m_previousEdgeId;
+            for (int j = 0; j < i; j++)
+            {
+                const MutationOut& mout2 = mutationOuts[j];
+                const MutationOut::NewNodeInfo& newNode2 = mout2.m_newNode;
+
+                if (mout2.m_numNodesAdded > 0 && mout2.m_newNode.m_previousEdgeId == prevEdge)
+                {
+                    newGenome->reassignNodeId(newNode.m_newNode, newNode2.m_newNode);
+                    newGenome->reassignInnovation(newNode.m_newIncomingEdgeId, newNode2.m_newIncomingEdgeId);
+                    newGenome->reassignInnovation(newNode.m_newOutgoingEdgeId, newNode2.m_newOutgoingEdgeId);
+                    newNode.m_newNode = newNode2.m_newNode;
+                    newNode.m_newIncomingEdgeId = newNode2.m_newIncomingEdgeId;
+                    newNode.m_newOutgoingEdgeId = newNode2.m_newOutgoingEdgeId;
+
+                    assert(newGenome->validate());
+                    break;
+                }
+            }
+        }
+
+        m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase, Genome>(newGenome));
     }
 }

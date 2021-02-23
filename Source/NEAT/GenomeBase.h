@@ -70,6 +70,7 @@ public:
     // Type declarations.
     using Network = MutableNetwork<Node>;
     using NetworkPtr = std::shared_ptr<Network>;
+    using Edge = Network::Edge;
 
     // Constructor
     GenomeBase(const Activation* defaultActivation);

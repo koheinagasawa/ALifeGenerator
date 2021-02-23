@@ -16,8 +16,11 @@ void MutationDelegate::MutationOut::clear()
         m_newEdges[i].m_newEdge = EdgeId::invalid();
     }
 
+    m_newNode.m_newNode = NodeId::invalid();
+    m_newNode.m_previousEdgeId = EdgeId::invalid();
+    m_newNode.m_newIncomingEdgeId = EdgeId::invalid();
+    m_newNode.m_newOutgoingEdgeId = EdgeId::invalid();
+
     m_numNodesAdded = 0;
     m_numEdgesAdded = 0;
-
-    m_newNode = NodeId::invalid();
 }

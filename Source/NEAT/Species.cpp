@@ -22,7 +22,7 @@ Species::Species(CGenomePtr initialMember, float fitness)
     m_members.push_back(initialMember);
 }
 
-void Species::preNewGeneration(PseudoRandom* randomIn)
+void Species::preNewGeneration(RandomGenerator* randomIn)
 {
     // Select a new representative
     if(getNumMembers() > 0)

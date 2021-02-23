@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Common/PseudoRandom.h>
 #include <NEAT/GenomeSelector.h>
 #include <NEAT/Generation.h>
 
@@ -16,7 +17,7 @@ namespace NEAT
     {
     public:
         // Constructor
-        DefaultGenomeSelector(const Generation* generation, PseudoRandom& random);
+        DefaultGenomeSelector(const Generation* generation, PseudoRandom* random = nullptr);
 
         // Set genomes to select and initialize internal data.
         virtual bool setGenomes(const GenomeDatas& genomes) override;
@@ -57,5 +58,8 @@ namespace NEAT
 
         // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;
+
+        // Random generator.
+        PseudoRandom& m_random;
     };
 }

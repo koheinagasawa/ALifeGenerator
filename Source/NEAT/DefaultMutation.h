@@ -49,21 +49,23 @@ namespace NEAT
             // Maximum weight for a new edge.
             float m_newEdgeMaxWeight = 0.5f;
 
+            // The ratio of genomes to mutate among the total population of a generation.
             float m_mutatedGenomesRate = 0.25f;
 
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;
         };
 
-        // Constructor
+        // Constructors
+        DefaultMutation() = default;
         DefaultMutation(const MutationParams& params) : m_params(params) {}
 
-        // Create a new genome by mutating genomeIn. There are three ways of mutation.
+        // Mutate a single genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Add a new node at a random edge.
         // 3. Connect random two nodes by a new edge.
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
-        virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) override;
+        virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) override;
 
         // Generate a set of new genomes by using genomeSelector.
         // genomeSelector has to be already configured and available to select existing genomes.

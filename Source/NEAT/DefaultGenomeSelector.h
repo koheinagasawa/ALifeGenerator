@@ -6,13 +6,13 @@
 
 #pragma once
 
-#include <NEAT/GenomeSelectorBase.h>
+#include <NEAT/GenomeSelector.h>
 #include <NEAT/Generation.h>
 
 namespace NEAT
 {
     // Helper class to select a random genome by taking fitness into account.
-    class DefaultGenomeSelector : public GenomeSelectorBase
+    class DefaultGenomeSelector : public GenomeSelector
     {
     public:
         // Constructor

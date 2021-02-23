@@ -18,7 +18,7 @@ public:
 
     // Generate a set of new genomes by using genomeSelector.
     // genomeSelector has to be already configured and available to select existing genomes.
-    virtual void generate(int numTotalGenomes, int numRemaningGenomes, class GenomeSelectorBase* genomeSelector) = 0;
+    virtual void generate(int numTotalGenomes, int numRemaningGenomes, class GenomeSelector* genomeSelector) = 0;
 
     // Returns the number of newly generated genomes.
     inline int getNumGeneneratedGenomes() const { return (int)m_generatedGenomes.size(); }

@@ -6,9 +6,6 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include <Common/PseudoRandom.h>
 #include <NEAT/GenomeBase.h>
 #include <NEAT/GenomeGenerator.h>
@@ -17,20 +14,24 @@ DECLARE_ID(GenerationId);
 DECLARE_ID(SpeciesId);
 DECLARE_ID(GenomeId);
 
+// Base class to calculate fitness of a genome.
 class FitnessCalculatorBase
 {
 public:
     virtual float calcFitness(const GenomeBase& genome) const = 0;
 };
 
+// Base class of generation used for generic algorithms.
 class GenerationBase
 {
 public:
+    // Type declarations.
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
     using GeneratorPtr = std::shared_ptr<GenomeGenerator>;
     using GeneratorPtrs = std::vector<GeneratorPtr>;
 
+    // Struct holding a genome and its fitness.
     struct GenomeData
     {
     public:
@@ -50,43 +51,51 @@ public:
 
     protected:
 
-        std::shared_ptr<GenomeBase> m_genome;
+        std::shared_ptr<GenomeBase> m_genome;   // The genome.
+        float m_fitness = 0.f;                  // Genome's fitness.
         GenomeId m_id;
-        float m_fitness = 0.f;
     };
 
+    // Type declarations.
     using GenomeDatas = std::vector<GenomeData>;
     using GenomeDatasPtr = std::shared_ptr<GenomeDatas>;
 
-    virtual void createNewGeneration();
+    // Destructor to make it abstract class.
+    virtual ~GenerationBase() = 0 {}
+
+    // Proceed and evolve this generation into a new generation.
+    // New set of genomes will be generated from the current set of genomes. GenerationId will be incremented.
+    virtual void evolveGeneration();
 
     // Calculate fitness of all the genomes.
     void calcFitness();
 
     inline int getNumGenomes() const { return m_numGenomes; }
     inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
-
     inline auto getId() const->GenerationId { return m_id; }
 
 protected:
-    using GenomeSelectorPtr = std::shared_ptr<class GenomeSelectorBase>;
+    // Type declarations.
+    using GenomeSelectorPtr = std::shared_ptr<class GenomeSelector>;
+    using FitnessCalculatorPtr = std::shared_ptr<FitnessCalculatorBase>;
 
-    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc);
+    // Constructor
+    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, PseudoRandom* randomGenerator);
 
+    // Called before/after generation of genomes inside evolveGeneration().
     virtual void preUpdateGeneration() {}
     virtual void postUpdateGeneration() {}
 
+    // Returns GenomeSelector. This GenomeSelector is used to pass GenomeGenerators in when we evolve a new generation.
     virtual auto createSelector()->GenomeSelectorPtr = 0;
 
     // Called inside createNewGeneration().
     void addGenome(GenomeBasePtr genome);
 
-    GeneratorPtrs m_generators;
-
-    std::shared_ptr<FitnessCalculatorBase> m_fitnessCalculator;
-
-    GenomeDatasPtr m_genomes;
-    GenomeDatasPtr m_prevGenGenomes;
+    GeneratorPtrs m_generators;                 // Genome generators used to evolve generation.
+    FitnessCalculatorPtr m_fitnessCalculator;   // The fitness calculator.
+    GenomeDatasPtr m_genomes;                   // Genomes in the current generation.
+    GenomeDatasPtr m_prevGenGenomes;            // Genomes in the previous generation.
     PseudoRandom* m_randomGenerator = nullptr;
     int m_numGenomes;
     GenerationId m_id;

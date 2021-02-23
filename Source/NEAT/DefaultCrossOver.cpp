@@ -206,7 +206,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
-void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
+void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
     using GenomeData = GenerationBase::GenomeData;
 

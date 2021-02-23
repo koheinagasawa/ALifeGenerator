@@ -7,7 +7,7 @@
 #include <NEAT/Neat.h>
 #include <NEAT/DefaultMutation.h>
 #include <NEAT/GenerationBase.h>
-#include <NEAT/GenomeSelectorBase.h>
+#include <NEAT/GenomeSelector.h>
 
 using namespace NEAT;
 
@@ -175,7 +175,7 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     assert(network->validate());
 }
 
-void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
+void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
     using GenomeData = GenerationBase::GenomeData;
 

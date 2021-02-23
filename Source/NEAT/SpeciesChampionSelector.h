@@ -15,7 +15,7 @@ namespace NEAT
     public:
         SpeciesChampionSelector(const Generation* g, float minMembersInSpeciesToCopyChampion);
 
-        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
+        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
     protected:
         const Generation* m_generation;

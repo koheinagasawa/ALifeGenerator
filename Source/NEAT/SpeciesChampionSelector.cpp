@@ -15,7 +15,7 @@ SpeciesChampionSelector::SpeciesChampionSelector(const Generation* g, float minM
 {
 }
 
-void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector)
+void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
     using SpeciesPtr = std::shared_ptr<Species>;
     using GenomePtr = std::shared_ptr<Genome>;

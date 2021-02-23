@@ -13,20 +13,21 @@
 using namespace NEAT;
 
 Generation::Generation(const Cinfo& cinfo)
-    : GenerationBase(GenerationId(0), cinfo.m_numGenomes, cinfo.m_fitnessCalculator)
+    : GenerationBase(GenerationId(0), cinfo.m_numGenomes, cinfo.m_fitnessCalculator, cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
     , m_params(cinfo.m_generationParams)
 {
-    // Create genomes of the first generation.
+    // Allocate a buffer for genomes of the first generation.
     m_genomes = std::make_shared<GenomeDatas>();
     m_genomes->reserve(cinfo.m_numGenomes);
 
     assert(cinfo.m_minWeight <= cinfo.m_maxWeight);
 
+    // Create one genome which is used as an archetype for other genomes.
     const Genome archetypeGenome(cinfo.m_genomeCinfo);
-    m_randomGenerator = cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance();
 
     for (int i = 0; i < cinfo.m_numGenomes; i++)
     {
+        // Create a genome.
         GenomePtr genome = std::make_shared<Genome>(archetypeGenome);
 
         // Randomize edge weights.
@@ -36,6 +37,7 @@ Generation::Generation(const Cinfo& cinfo)
             genome->setEdgeWeight(itr.first, m_randomGenerator->randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
         }
 
+        // Add the genome.
         m_genomes->push_back(GenomeData(genome, GenomeId(i)));
     }
 
@@ -43,42 +45,44 @@ Generation::Generation(const Cinfo& cinfo)
 }
 
 Generation::Generation(const Genomes& genomes, const Cinfo& cinfo)
-    : GenerationBase(GenerationId(0), (int)genomes.size(), cinfo.m_fitnessCalculator)
+    : GenerationBase(GenerationId(0), (int)genomes.size(), cinfo.m_fitnessCalculator, cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
     , m_params(cinfo.m_generationParams)
 {
     assert((int)genomes.size() == m_numGenomes);
 
+    // Allocate a buffer for genomes of the first generation.
     m_genomes = std::make_shared<GenomeDatas>();
+    m_genomes->reserve(genomes.size());
 
     // Create GenomeData for each given genome.
+    GenomeId id(0);
+    for (const GenomePtr& genome : genomes)
     {
-        m_genomes->reserve(genomes.size());
-        GenomeId id(0);
-        for (const GenomePtr& genome : genomes)
-        {
-            m_genomes->push_back(GenomeData(genome, id));
-            id = id.val() + 1;
-        }
+        m_genomes->push_back(GenomeData(genome, id));
+        id = id.val() + 1;
     }
 
     init(cinfo);
 }
-
 void Generation::init(const Cinfo& cinfo)
 {
     // Create one species.
     {
+        // Select a genome randomly and use it as representative of the species.
         const GenomeData& representative = (*m_genomes)[m_randomGenerator->randomInteger(0, m_genomes->size() - 1)];
         SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
         m_species.insert({ newSpecies, std::make_shared<Species>(*static_cast<const Genome*>(representative.getGenome())) });
     }
 
-    m_generators.push_back(std::make_shared<SpeciesChampionSelector>(this, cinfo.m_generationParams.m_minMembersInSpeciesToCopyChampion));
+    m_generators.reserve(3);
 
-    // Create mutate delegate
+    // Create champion selector.
+    m_generators.push_back(std::make_shared<SpeciesChampionSelector>(this, cinfo.m_minMembersInSpeciesToCopyChampion));
+
+    // Create mutate delegate.
     m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
 
-    // Create cross over delegate
+    // Create cross over delegate.
     m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
 
     // Calculate initial fitness of genomes.
@@ -203,11 +207,6 @@ void Generation::calcFitness()
     {
         gd.setFitness(m_fitnessCalculator->calcFitness(*gd.getGenome()));
     }
-}
-
-auto Generation::getSpecies(GenomeId genomeId) const->SpeciesId
-{
-    return m_genomesSpecies.at(genomeId);
 }
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const

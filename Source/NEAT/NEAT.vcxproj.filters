@@ -30,9 +30,9 @@
     <ClInclude Include="DefaultGenomeSelector.h" />
     <ClInclude Include="SpeciesChampionSelector.h" />
     <ClInclude Include="GenomeGenerator.h" />
-    <ClInclude Include="GenomeSelectorBase.h" />
     <ClInclude Include="MutationDelegate.h" />
     <ClInclude Include="CrossOverDelegate.h" />
     <ClInclude Include="HomogeneousGenomeSelector.h" />
+    <ClInclude Include="GenomeSelector.h" />
   </ItemGroup>
 </Project>

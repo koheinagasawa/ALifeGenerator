@@ -8,7 +8,7 @@
 #include <NEAT/HomogeneousGenomeSelector.h>
 
 HomogeneousGenomeSelector::HomogeneousGenomeSelector(PseudoRandom& random)
-    : GenomeSelectorBase(random)
+    : GenomeSelector(random)
 {
 }
 

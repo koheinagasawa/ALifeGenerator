@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <NEAT/GenomeSelectorBase.h>
+#include <NEAT/GenomeSelector.h>
 
 // Genome selector which selects randomly and uniformly.
-class HomogeneousGenomeSelector : public GenomeSelectorBase
+class HomogeneousGenomeSelector : public GenomeSelector
 {
 public:
     // Constructor

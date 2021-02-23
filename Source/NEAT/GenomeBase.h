@@ -8,10 +8,10 @@
 
 #include <memory>
 #include <functional>
-#include <vector>
 
 #include <NEAT/MutableNetwork.h>
 
+// Base class of genome used for genetic algorithms.
 class GenomeBase
 {
 public:
@@ -32,7 +32,7 @@ public:
     struct Node : public NodeBase
     {
     public:
-        // Type of Node
+        // Type of Node.
         enum class Type
         {
             INPUT,
@@ -48,16 +48,16 @@ public:
         // Constructor with node type.
         Node(Type type);
 
-        // Copy constructor
+        // Copy constructor.
         Node(const Node& other) = default;
 
         virtual float getValue() const override;
         virtual void setValue(float value) override;
 
-        Type getNodeType() const { return m_type; }
+        inline void setActivation(const Activation* activation) { m_activation = activation; }
+        inline auto getActivationName() const->const std::string& { return m_activation->m_name; }
 
-        void setActivation(const Activation* activation) { m_activation = activation; }
-        const std::string& getActivationName() const { return m_activation->m_name; }
+        inline Type getNodeType() const { return m_type; }
 
     protected:
         float m_value = 0.f;
@@ -67,14 +67,14 @@ public:
         friend class GenomeBase;
     };
 
-    // Type declaration
+    // Type declarations.
     using Network = MutableNetwork<Node>;
     using NetworkPtr = std::shared_ptr<Network>;
 
     // Constructor
     GenomeBase(const Activation* defaultActivation);
 
-    // Copy constructor and operator
+    // Copy constructor and operator.
     GenomeBase(const GenomeBase& other);
     void operator= (const GenomeBase& other);
 
@@ -129,5 +129,5 @@ protected:
 
     NetworkPtr m_network;                   // The network.
     Network::NodeIds m_inputNodes;          // A list of input nodes.
-    const Activation* m_defaultActivation;
+    const Activation* m_defaultActivation;  // Activation assigned to new Node by default.
 };

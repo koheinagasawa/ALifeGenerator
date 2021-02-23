@@ -170,7 +170,7 @@
     <ClInclude Include="Genome.h" />
     <ClInclude Include="GenomeBase.h" />
     <ClInclude Include="GenomeGenerator.h" />
-    <ClInclude Include="GenomeSelectorBase.h" />
+    <ClInclude Include="GenomeSelector.h" />
     <ClInclude Include="HomogeneousGenomeSelector.h" />
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="MutationDelegate.h" />

@@ -10,14 +10,14 @@
 #include <NEAT/GenerationBase.h>
 
 // Abstract class to select genomes.
-class GenomeSelectorBase
+class GenomeSelector
 {
 public:
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
 
     // Constructor
-    GenomeSelectorBase(PseudoRandom& random) : m_random(random) {}
+    GenomeSelector(PseudoRandom& random) : m_random(random) {}
 
     // Set genomes to select and initialize internal data.
     virtual bool setGenomes(const GenomeDatas& genomes) = 0;

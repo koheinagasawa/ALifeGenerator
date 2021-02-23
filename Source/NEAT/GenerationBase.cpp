@@ -20,8 +20,9 @@ void GenerationBase::GenomeData::init(GenomeBasePtr genome, GenomeId id)
     m_fitness = 0.f;
 }
 
-GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc)
+GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, PseudoRandom* randomGenerator)
     : m_fitnessCalculator(fitnessCalc)
+    , m_randomGenerator(randomGenerator)
     , m_numGenomes(numGenomes)
     , m_id(id)
 {
@@ -29,7 +30,7 @@ GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr f
     assert(m_fitnessCalculator);
 }
 
-void GenerationBase::createNewGeneration()
+void GenerationBase::evolveGeneration()
 {
     // TODO: Break this function into smaller parts so that we can test it more thoroughly.
     // TODO: Profile each process by adding timers.

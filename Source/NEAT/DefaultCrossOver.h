@@ -44,7 +44,7 @@ namespace NEAT
 
         // Generate a set of new genomes by using genomeSelector.
         // genomeSelector has to be already configured and available to select existing genomes.
-        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelectorBase* genomeSelector) override;
+        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
         // The parameter.
         CrossOverParams m_params;

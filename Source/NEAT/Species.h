@@ -42,6 +42,8 @@ namespace NEAT
 
         inline int getStagnantGenerationCount() const { return m_stagnantCount; }
 
+        inline auto getMembers() const->const std::vector<CGenomePtr>& { return m_members; }
+
     protected:
         std::vector<CGenomePtr> m_members;  // The members of this Species.
         Genome m_representative;            // The representative of this Species.

@@ -7,6 +7,7 @@
 #include <UnitTest/UnitTestPch.h>
 
 #include <NEAT/Species.h>
+#include <NEAT/DefaultMutation.h>
 
 TEST(Species, AddGenomeToSpecies)
 {
@@ -31,14 +32,16 @@ TEST(Species, AddGenomeToSpecies)
     // Create a genome to add the species
     GenomePtr genome1 = std::make_shared<Genome>(initGenome);
 
-    Genome::MutationParams mutParams;
+    DefaultMutation::MutationParams mutParams;
     mutParams.m_weightMutationRate = 0.0f;
     mutParams.m_addEdgeMutationRate = 0.0f;
     mutParams.m_addNodeMutationRate = 1.0f;
 
+    DefaultMutation mutator(mutParams);
+
     // Mutate the genome
-    Genome::MutationOut mutOut;
-    genome1->mutate(mutParams, mutOut);
+    DefaultMutation::MutationOut mutOut;
+    mutator.mutate(genome1, mutOut);
 
     Genome::CalcDistParams calcDistParams;
     calcDistParams.m_disjointFactor = 1.0f;
@@ -55,6 +58,7 @@ TEST(Species, AddGenomeToSpecies)
     EXPECT_EQ(species.getNumMembers(), 1);
 
     species.postNewGeneration();
+    EXPECT_EQ(species.getBestGenome(), genome1);
     EXPECT_EQ(species.getStagnantGenerationCount(), 0);
 
     // Clear members of the current generation.
@@ -69,6 +73,55 @@ TEST(Species, AddGenomeToSpecies)
     EXPECT_EQ(species.getNumMembers(), 1);
     species.postNewGeneration();
 
+    EXPECT_EQ(species.getBestGenome(), genome1);
     EXPECT_EQ(species.getStagnantGenerationCount(), 0);
 }
 
+TEST(Species, CreateSpeciesWithExistingGenome)
+{
+    using namespace NEAT;
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    using GenomePtr = std::shared_ptr<Genome>;
+
+    // Create a genome.
+    GenomePtr initGenome = std::make_shared<Genome>(cinfo);
+
+    // Create a species
+    Species species(initGenome, 1.0f);
+
+    EXPECT_EQ(species.getNumMembers(), 1);
+    EXPECT_EQ(species.getBestGenome(), initGenome);
+    EXPECT_EQ(species.getStagnantGenerationCount(), 0);
+
+    // Create a genome to add the species
+    GenomePtr genome1 = std::make_shared<Genome>(*initGenome.get());
+
+    DefaultMutation::MutationParams mutParams;
+    mutParams.m_weightMutationRate = 0.0f;
+    mutParams.m_addEdgeMutationRate = 0.0f;
+    mutParams.m_addNodeMutationRate = 1.0f;
+
+    DefaultMutation mutator(mutParams);
+
+    // Mutate the genome
+    DefaultMutation::MutationOut mutOut;
+    mutator.mutate(genome1, mutOut);
+
+    Genome::CalcDistParams calcDistParams;
+    calcDistParams.m_disjointFactor = 1.0f;
+    calcDistParams.m_weightFactor = 1.0f;
+
+    // Try to add the genome to the species
+    EXPECT_TRUE(species.tryAddGenome(genome1, 0.5f, 5.f, calcDistParams));
+    EXPECT_EQ(species.getNumMembers(), 2);
+
+    species.postNewGeneration();
+    EXPECT_EQ(species.getStagnantGenerationCount(), 0);
+    EXPECT_EQ(species.getBestGenome(), initGenome);
+}

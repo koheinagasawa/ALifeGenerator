@@ -12,7 +12,7 @@
 
 namespace NEAT
 {
-    // Default mutater class for NEAT.
+    // Default mutator class for NEAT.
     class DefaultMutation : public MutationDelegate
     {
     public:

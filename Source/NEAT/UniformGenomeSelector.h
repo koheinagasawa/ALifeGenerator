@@ -1,5 +1,5 @@
 /*
-* HomogeneousGenomeSelector.h
+* UniformGenomeSelector.h
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
@@ -9,11 +9,11 @@
 #include <NEAT/GenomeSelector.h>
 
 // Genome selector which selects randomly and uniformly.
-class HomogeneousGenomeSelector : public GenomeSelector
+class UniformGenomeSelector : public GenomeSelector
 {
 public:
     // Constructor
-    HomogeneousGenomeSelector(PseudoRandom& random);
+    UniformGenomeSelector(PseudoRandom& random);
 
     // Set genomes to select and initialize internal data.
     virtual bool setGenomes(const GenomeDatas& genomes) override;

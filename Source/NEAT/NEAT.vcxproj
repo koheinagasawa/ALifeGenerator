@@ -171,7 +171,7 @@
     <ClInclude Include="GenomeBase.h" />
     <ClInclude Include="GenomeGenerator.h" />
     <ClInclude Include="GenomeSelector.h" />
-    <ClInclude Include="HomogeneousGenomeSelector.h" />
+    <ClInclude Include="UniformGenomeSelector.h" />
     <ClInclude Include="MutableNetwork.h" />
     <ClInclude Include="MutationDelegate.h" />
     <ClInclude Include="Neat.h" />
@@ -188,7 +188,7 @@
     <ClCompile Include="GenerationBase.cpp" />
     <ClCompile Include="Genome.cpp" />
     <ClCompile Include="GenomeBase.cpp" />
-    <ClCompile Include="HomogeneousGenomeSelector.cpp" />
+    <ClCompile Include="UniformGenomeSelector.cpp" />
     <ClCompile Include="MutableNetwork.cpp" />
     <ClCompile Include="MutationDelegate.cpp" />
     <ClCompile Include="Neat.cpp" />

@@ -196,7 +196,7 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
         const GenomeData* gd = genomeSelector->selectGenome();
 
         // Copy genome in this generation first.
-        GenomePtr newGenome = std::make_shared<Genome>(*static_cast<const Genome*>(gd->getGenome()));
+        GenomePtr newGenome = std::make_shared<Genome>(*std::static_pointer_cast<const Genome>(gd->getGenome()));
 
         // Mutate the genome.
         MutationOut& mout = mutationOuts[i];
@@ -262,6 +262,6 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
             }
         }
 
-        m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase, Genome>(newGenome));
+        m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase>(newGenome));
     }
 }

@@ -206,7 +206,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
-void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
+void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
     using GenomeData = GenerationBase::GenomeData;
 
@@ -214,6 +214,7 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
     DefaultGenomeSelector* selector = static_cast<DefaultGenomeSelector*>(genomeSelector);
     selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
 
+    // [todo] Do not always generate all the remaining genomes and add a parameter to decide calculate the number of genomes to generate.
     const int numGenomesToCrossover = numRemaningGenomes;
 
     // Clear new genomes output.
@@ -234,6 +235,6 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
         bool isSameFitness = g1->getFitness() == g2->getFitness();
         GenomeBasePtr newGenome = crossOver(*g1->getGenome(), *g2->getGenome(), isSameFitness);
 
-        m_generatedGenomes.push_back(GenomeBasePtr(newGenome.get()));
+        m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase>(newGenome));
     }
 }

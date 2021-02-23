@@ -33,11 +33,12 @@ GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr f
 void GenerationBase::evolveGeneration()
 {
     // TODO: Profile each process by adding timers.
-
-    std::swap(m_genomes, m_prevGenGenomes);
-
+    assert(m_genomes);
+    assert(m_generators.size() > 0);
     const int numGenomes = getNumGenomes();
     assert(numGenomes > 1);
+
+    std::swap(m_genomes, m_prevGenGenomes);
 
     // Allocate buffer of GenomeData if it's not there yet.
     if (!m_genomes)
@@ -60,7 +61,9 @@ void GenerationBase::evolveGeneration()
     // Create genomes for new generations by applying each genome generators.
     for (GeneratorPtr& generator : m_generators)
     {
-        generator->generate(numGenomesToAdd, numGenomes, selector.get());
+        // [todo] Add a way to notify generator that if it's the last generator in this generation
+        //        so that it can generate all the remaining genomes.
+        generator->generate(numGenomes, numGenomesToAdd, selector.get());
 
         for (auto& newGenome : generator->getGeneratedGenomes())
         {

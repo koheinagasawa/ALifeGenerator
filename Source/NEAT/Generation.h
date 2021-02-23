@@ -88,7 +88,7 @@ namespace NEAT
         inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return m_species.find(id) != m_species.end() ? m_species.at(id) : nullptr; }
 
         // Returns SpeciesId of the genome.
-        inline auto getSpecies(GenomeId genomeId) const->SpeciesId { return m_genomesSpecies.at(genomeId); }
+        inline auto getSpecies(GenomeId genomeId) const->SpeciesId { return m_genomesSpecies.find(genomeId) != m_genomesSpecies.end() ? m_genomesSpecies.at(genomeId) : SpeciesId::invalid(); }
 
         // Returns true if the species can reproduce descendants to the next generation.
         bool isSpeciesReproducible(SpeciesId speciesId) const;
@@ -100,7 +100,10 @@ namespace NEAT
 
         virtual auto createSelector()->GenomeSelectorPtr override;
 
+    public:
         GenerationParams m_params;                                  // The parameters for this generation.
+
+    protected:
         SpeciesList m_species;                                      // The list of Species.
         std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;   // A map between genome and species.
         UniqueIdCounter<SpeciesId> m_speciesIdGenerator;

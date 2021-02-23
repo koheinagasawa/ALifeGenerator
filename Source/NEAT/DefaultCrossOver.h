@@ -34,7 +34,8 @@ namespace NEAT
             RandomGenerator* m_random = nullptr;
         };
 
-        // Constructor
+        // Constructors
+        DefaultCrossOver() = default;
         DefaultCrossOver(const CrossOverParams& params) : m_params(params) {}
 
         // Cross over two genomes and generate a new one.

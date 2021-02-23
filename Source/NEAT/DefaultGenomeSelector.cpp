@@ -20,7 +20,6 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
 {
     assert(m_generation);
     assert(genomesIn.size() > 0);
-    assert(genomesIn.size() == m_generation->getNumGenomes());
 
 #ifdef _DEBUG
     // Make sure that genomes are sorted by species id.
@@ -191,5 +190,10 @@ SpeciesId DefaultGenomeSelector::getSpeciesId(const GenomeData& gd) const
 
 bool DefaultGenomeSelector::isGenomeReproducible(const GenomeData& gd) const
 {
-    return !m_skipStagnantSpecies || m_generation->isSpeciesReproducible(getSpeciesId(gd));
+    if (!m_skipStagnantSpecies)
+    {
+        return true;
+    }
+    SpeciesId speciesId = getSpeciesId(gd);
+    return !speciesId.isValid() || m_generation->isSpeciesReproducible(speciesId);
 }

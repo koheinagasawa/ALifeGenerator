@@ -52,6 +52,7 @@
     <ClInclude Include="UnitTestPch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DefaultCrossOverTest.cpp" />
     <ClCompile Include="DefaultMutationTest.cpp" />
     <ClCompile Include="GenerationTest.cpp" />
     <ClCompile Include="GenomeBaseTest.cpp" />

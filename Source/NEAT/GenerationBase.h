@@ -27,6 +27,7 @@ class GenerationBase
 public:
     // Type declarations.
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
+    using CGenomeBasePtr = std::shared_ptr<const GenomeBase>;
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
     using GeneratorPtr = std::shared_ptr<GenomeGenerator>;
     using GeneratorPtrs = std::vector<GeneratorPtr>;
@@ -45,14 +46,14 @@ public:
         void init(GenomeBasePtr genome, GenomeId id);
 
         inline GenomeId getId() const { return m_id; }
-        inline auto getGenome() const->const GenomeBase* { return m_genome.get(); }
+        inline auto getGenome() const->const CGenomeBasePtr { return m_genome; }
         inline float getFitness() const { return m_fitness; }
         inline void setFitness(float fitness) { m_fitness = fitness; }
 
     protected:
 
-        std::shared_ptr<GenomeBase> m_genome;   // The genome.
-        float m_fitness = 0.f;                  // Genome's fitness.
+        GenomeBasePtr m_genome; // The genome.
+        float m_fitness = 0.f;  // Genome's fitness.
         GenomeId m_id;
     };
 

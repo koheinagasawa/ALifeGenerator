@@ -71,7 +71,7 @@ void Generation::init(const Cinfo& cinfo)
         // Select a genome randomly and use it as representative of the species.
         const GenomeData& representative = (*m_genomes)[m_randomGenerator->randomInteger(0, m_genomes->size() - 1)];
         SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-        m_species.insert({ newSpecies, std::make_shared<Species>(*static_cast<const Genome*>(representative.getGenome())) });
+        m_species.insert({ newSpecies, std::make_shared<Species>(*std::static_pointer_cast<const Genome>(representative.getGenome())) });
     }
 
     m_generators.reserve(3);
@@ -118,17 +118,19 @@ void Generation::postUpdateGeneration()
         s->preNewGeneration(m_randomGenerator);
     }
 
+    using CGenomePtr = std::shared_ptr<const Genome>;
+
     // Assign each genome to a species.
-    for (GenomeData& gd : *m_genomes)
+    for (const GenomeData& gd : *m_genomes)
     {
         // Try to find a species.
-        const Genome* genome = static_cast<const Genome*>(gd.getGenome());
+        const CGenomePtr genome = std::static_pointer_cast<const Genome>(gd.getGenome());
 
         auto itr = m_species.begin();
         for (; itr != m_species.end(); itr++)
         {
             SpeciesPtr& s = itr->second;
-            if (s->tryAddGenome(Species::CGenomePtr(genome), gd.getFitness(), m_params.m_speciationDistanceThreshold, m_params.m_calcDistParams))
+            if (s->tryAddGenome(genome, gd.getFitness(), m_params.m_speciationDistanceThreshold, m_params.m_calcDistParams))
             {
                 m_genomesSpecies.insert({ gd.getId(), itr->first });
                 break;
@@ -140,7 +142,7 @@ void Generation::postUpdateGeneration()
             // No species found. Create a new one for this genome.
             SpeciesId newSpeciesId = m_speciesIdGenerator.getNewId();
             m_genomesSpecies.insert({ gd.getId(), newSpeciesId });
-            SpeciesPtr newSpecies = std::make_shared<Species>(Species::CGenomePtr(genome), gd.getFitness());
+            SpeciesPtr newSpecies = std::make_shared<Species>(genome, gd.getFitness());
             m_species.insert({ newSpeciesId, newSpecies });
         }
     }
@@ -196,13 +198,13 @@ auto Generation::createSelector()->GenomeSelectorPtr
 
     if (res)
     {
-        return GenomeSelectorPtr(selector.get());
+        return std::static_pointer_cast<GenomeSelector>(selector);
     }
 
     // It failed again, this must mean all genomes have zero fitness.
     // Create uniform selector instead.
     WARN("All genomes have zero fitness. Use a uniform selector.");
-    return std::make_unique<UniformGenomeSelector>();
+    return std::static_pointer_cast<GenomeSelector>(std::make_shared<UniformGenomeSelector>());
 }
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const

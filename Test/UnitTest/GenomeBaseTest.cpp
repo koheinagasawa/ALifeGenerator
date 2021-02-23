@@ -39,7 +39,7 @@ namespace
     };
 }
 
-TEST(Genome, GenomeBasicOperations)
+TEST(GenomeBase, GenomeBasicOperations)
 {
     using Network = MyGenome::Network;
     using Nodes = Network::Nodes;

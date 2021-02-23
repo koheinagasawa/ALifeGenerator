@@ -34,7 +34,7 @@ namespace
 
             if (inEdges1.size() != inEdges2.size()) return false;
 
-            for (int i = 0; i < inEdges1.size(); i++)
+            for (int i = 0; i < (int)inEdges1.size(); i++)
             {
                 if (inEdges1[i] != inEdges2[i]) return false;
             }

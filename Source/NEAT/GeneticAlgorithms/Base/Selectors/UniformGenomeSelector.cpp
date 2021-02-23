@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/UniformGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/UniformGenomeSelector.h>
 
 UniformGenomeSelector::UniformGenomeSelector(PseudoRandom* random)
     : GenomeSelector()

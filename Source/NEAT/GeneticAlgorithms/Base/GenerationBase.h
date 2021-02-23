@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Common/PseudoRandom.h>
-#include <NEAT/GenomeBase.h>
-#include <NEAT/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 
 DECLARE_ID(GenerationId);
 DECLARE_ID(SpeciesId);

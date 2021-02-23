@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 
 // GenomeGenerator which creates a new genome by mutating existing one.
 class MutationDelegate : public GenomeGenerator

@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/SpeciesChampionSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
 
 using namespace NEAT;
 

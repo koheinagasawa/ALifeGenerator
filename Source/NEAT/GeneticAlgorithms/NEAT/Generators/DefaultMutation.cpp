@@ -5,9 +5,9 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/DefaultMutation.h>
-#include <NEAT/GenerationBase.h>
-#include <NEAT/GenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 using namespace NEAT;
 

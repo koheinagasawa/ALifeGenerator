@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Common/PseudoRandom.h>
-#include <NEAT/GenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 // Genome selector which selects randomly and uniformly.
 class UniformGenomeSelector : public GenomeSelector

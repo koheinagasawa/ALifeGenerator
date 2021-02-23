@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GenomeBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 
 // Base class which generates a set of new genomes from existing genomes.
 class GenomeGenerator

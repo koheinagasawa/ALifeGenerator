@@ -24,6 +24,7 @@
     <ProjectGuid>{a8b98bd3-4244-4e79-bb1b-a5bf836f21d4}</ProjectGuid>
     <RootNamespace>NEAT</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>NEAT</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -161,39 +162,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CrossOverDelegate.h" />
-    <ClInclude Include="DefaultCrossOver.h" />
-    <ClInclude Include="DefaultGenomeSelector.h" />
-    <ClInclude Include="DefaultMutation.h" />
-    <ClInclude Include="Generation.h" />
-    <ClInclude Include="GenerationBase.h" />
-    <ClInclude Include="Genome.h" />
-    <ClInclude Include="GenomeBase.h" />
-    <ClInclude Include="GenomeGenerator.h" />
-    <ClInclude Include="GenomeSelector.h" />
-    <ClInclude Include="UniformGenomeSelector.h" />
-    <ClInclude Include="MutableNetwork.h" />
-    <ClInclude Include="MutationDelegate.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeGenerator.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\MutationDelegate.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\GenomeBase.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Selectors\GenomeSelector.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generation.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Genome.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
     <ClInclude Include="NeatBase.h" />
-    <ClInclude Include="NeuralNetwork.h" />
-    <ClInclude Include="Species.h" />
-    <ClInclude Include="SpeciesChampionSelector.h" />
+    <ClInclude Include="NeuralNetwork\MutableNetwork.h" />
+    <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DefaultCrossOver.cpp" />
-    <ClCompile Include="DefaultGenomeSelector.cpp" />
-    <ClCompile Include="DefaultMutation.cpp" />
-    <ClCompile Include="Generation.cpp" />
-    <ClCompile Include="GenerationBase.cpp" />
-    <ClCompile Include="Genome.cpp" />
-    <ClCompile Include="GenomeBase.cpp" />
-    <ClCompile Include="UniformGenomeSelector.cpp" />
-    <ClCompile Include="MutableNetwork.cpp" />
-    <ClCompile Include="MutationDelegate.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\Generators\MutationDelegate.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generation.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Genome.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Species.cpp" />
     <ClCompile Include="Neat.cpp" />
-    <ClCompile Include="Species.cpp" />
-    <ClCompile Include="SpeciesChampionSelector.cpp" />
+    <ClCompile Include="NeuralNetwork\MutableNetwork.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

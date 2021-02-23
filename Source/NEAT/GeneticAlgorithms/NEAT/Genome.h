@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GenomeBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 #include <Common/UniqueIdCounter.h>
 
 namespace NEAT

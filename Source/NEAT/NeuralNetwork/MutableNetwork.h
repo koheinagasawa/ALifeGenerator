@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/NeuralNetwork.h>
+#include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
 // Edge which can be turned on and off without losing previous weight value.
 struct SwitchableEdge : public EdgeBase

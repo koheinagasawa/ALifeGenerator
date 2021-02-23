@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/NeuralNetwork.h>
+#include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
 // Basic node class.
 struct Node : public NodeBase

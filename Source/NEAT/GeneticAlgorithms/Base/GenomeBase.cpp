@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/GenomeBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 
 GenomeBase::Node::Node(Type type)
     : m_type(type)

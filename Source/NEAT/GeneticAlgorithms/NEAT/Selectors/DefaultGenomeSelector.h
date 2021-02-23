@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Common/PseudoRandom.h>
-#include <NEAT/GenomeSelector.h>
-#include <NEAT/Generation.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
 
 namespace NEAT
 {

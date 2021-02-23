@@ -6,8 +6,8 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/DefaultMutation.h>
-#include <NEAT/GenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 namespace
 {

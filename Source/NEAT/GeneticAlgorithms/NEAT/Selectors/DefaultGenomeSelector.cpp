@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
 
 using namespace NEAT;
 

@@ -6,8 +6,8 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/Genome.h>
-#include "NEAT/DefaultMutation.h"
+#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
 
 TEST(Genome, CreateGenome)
 {

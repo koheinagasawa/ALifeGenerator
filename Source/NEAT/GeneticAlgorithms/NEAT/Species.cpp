@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/Species.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Species.h>
 
 using namespace NEAT;
 

@@ -5,10 +5,10 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/Generation.h>
-#include <NEAT/DefaultGenomeSelector.h>
-#include <NEAT/SpeciesChampionSelector.h>
-#include "UniformGenomeSelector.h"
+#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/UniformGenomeSelector.h>
 
 using namespace NEAT;
 

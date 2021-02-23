@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/Genome.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
 

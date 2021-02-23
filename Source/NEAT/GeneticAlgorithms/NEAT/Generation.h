@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <NEAT/GenerationBase.h>
-#include <NEAT/Genome.h>
-#include <NEAT/Species.h>
-#include <NEAT/DefaultMutation.h>
-#include <NEAT/DefaultCrossOver.h>
+#include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Species.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
 
 namespace NEAT
 {

@@ -9,7 +9,7 @@
 #include <memory>
 #include <functional>
 
-#include <NEAT/MutableNetwork.h>
+#include <NEAT/NeuralNetwork/MutableNetwork.h>
 
 // Base class of genome used for genetic algorithms.
 class GenomeBase

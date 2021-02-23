@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GenomeBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 
 namespace
 {

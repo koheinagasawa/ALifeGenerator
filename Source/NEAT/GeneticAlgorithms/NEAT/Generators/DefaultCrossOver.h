@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Common/PseudoRandom.h>
-#include <NEAT/Genome.h>
-#include <NEAT/CrossOverDelegate.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/CrossOverDelegate.h>
 
 namespace NEAT
 {

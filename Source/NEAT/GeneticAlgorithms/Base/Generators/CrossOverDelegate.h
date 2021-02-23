@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 
 // GenomeGenerator which creates one new genome by doing cross-over two existing genomes.
 class CrossOverDelegate : public GenomeGenerator

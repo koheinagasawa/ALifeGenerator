@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/MutableNetwork.h>
+#include <NEAT/NeuralNetwork/MutableNetwork.h>
 
 // Basic node class.
 struct Node : public NodeBase

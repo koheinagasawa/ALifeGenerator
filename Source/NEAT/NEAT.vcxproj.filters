@@ -1,38 +1,120 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="MutableNetwork.cpp" />
-    <ClCompile Include="Genome.cpp" />
     <ClCompile Include="Neat.cpp" />
-    <ClCompile Include="Species.cpp" />
-    <ClCompile Include="Generation.cpp" />
-    <ClCompile Include="GenomeBase.cpp" />
-    <ClCompile Include="DefaultMutation.cpp" />
-    <ClCompile Include="DefaultCrossOver.cpp" />
-    <ClCompile Include="DefaultGenomeSelector.cpp" />
-    <ClCompile Include="GenerationBase.cpp" />
-    <ClCompile Include="SpeciesChampionSelector.cpp" />
-    <ClCompile Include="MutationDelegate.cpp" />
-    <ClCompile Include="UniformGenomeSelector.cpp" />
+    <ClCompile Include="NeuralNetwork\MutableNetwork.cpp">
+      <Filter>NeuralNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp">
+      <Filter>GeneticAlgorithms\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp">
+      <Filter>GeneticAlgorithms\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\Generators\MutationDelegate.cpp">
+      <Filter>GeneticAlgorithms\Base\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.cpp">
+      <Filter>GeneticAlgorithms\Base\Selectors</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generation.cpp">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Genome.cpp">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Species.cpp">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.cpp">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.cpp">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.cpp">
+      <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NeuralNetwork.h" />
-    <ClInclude Include="MutableNetwork.h" />
-    <ClInclude Include="Genome.h" />
     <ClInclude Include="Neat.h" />
-    <ClInclude Include="Species.h" />
-    <ClInclude Include="Generation.h" />
     <ClInclude Include="NeatBase.h" />
-    <ClInclude Include="GenerationBase.h" />
-    <ClInclude Include="GenomeBase.h" />
-    <ClInclude Include="DefaultMutation.h" />
-    <ClInclude Include="DefaultCrossOver.h" />
-    <ClInclude Include="DefaultGenomeSelector.h" />
-    <ClInclude Include="SpeciesChampionSelector.h" />
-    <ClInclude Include="GenomeGenerator.h" />
-    <ClInclude Include="MutationDelegate.h" />
-    <ClInclude Include="CrossOverDelegate.h" />
-    <ClInclude Include="GenomeSelector.h" />
-    <ClInclude Include="UniformGenomeSelector.h" />
+    <ClInclude Include="NeuralNetwork\MutableNetwork.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\NeuralNetwork.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h">
+      <Filter>GeneticAlgorithms\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\GenomeBase.h">
+      <Filter>GeneticAlgorithms\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h">
+      <Filter>GeneticAlgorithms\Base\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeGenerator.h">
+      <Filter>GeneticAlgorithms\Base\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\MutationDelegate.h">
+      <Filter>GeneticAlgorithms\Base\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Selectors\GenomeSelector.h">
+      <Filter>GeneticAlgorithms\Base\Selectors</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.h">
+      <Filter>GeneticAlgorithms\Base\Selectors</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generation.h">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Genome.h">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Species.h">
+      <Filter>GeneticAlgorithms\NEAT</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.h">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.h">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h">
+      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.h">
+      <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GeneticAlgorithms">
+      <UniqueIdentifier>{94086c75-0246-4dc3-96f0-0820dc8d37db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NeuralNetwork">
+      <UniqueIdentifier>{da7a08ff-68bc-4975-b861-5bb4b83a8f2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\NEAT">
+      <UniqueIdentifier>{226d2146-d6b0-42ee-a90f-9ad802b6d1e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\Base">
+      <UniqueIdentifier>{31a6690c-6963-4065-9e59-9c91cc2b4500}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\Base\Generators">
+      <UniqueIdentifier>{6dcba27a-2fd1-401e-8c09-8a714d921f31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\Base\Selectors">
+      <UniqueIdentifier>{77dae229-65c4-433a-8ef0-ebf527b7c10a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\NEAT\Generators">
+      <UniqueIdentifier>{dd8dddfb-513c-49e6-ba76-1fb0e035f8bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\NEAT\Selectors">
+      <UniqueIdentifier>{e96f56ae-73ba-4028-bd42-46551b9020ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

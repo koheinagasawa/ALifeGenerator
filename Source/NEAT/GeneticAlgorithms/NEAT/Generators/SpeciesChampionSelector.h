@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/Generation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
 
 namespace NEAT
 {

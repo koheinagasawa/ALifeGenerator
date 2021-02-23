@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/GenerationBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
 
 GenerationBase::GenomeData::GenomeData(GenomeBasePtr genome, GenomeId id)
     : m_genome(genome)

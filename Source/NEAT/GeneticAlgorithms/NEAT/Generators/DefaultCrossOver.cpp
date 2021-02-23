@@ -5,8 +5,8 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/DefaultCrossOver.h>
-#include <NEAT/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
 
 using namespace NEAT;
 

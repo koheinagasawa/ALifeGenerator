@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/MutableNetwork.h>
+#include <NEAT/NeuralNetwork/MutableNetwork.h>
 
 SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight, bool enabled)
     : m_inNode(inNode)

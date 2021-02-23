@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GenerationBase.h>
+#include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
 
 // Abstract class to select genomes.
 class GenomeSelector

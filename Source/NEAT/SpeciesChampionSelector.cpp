@@ -34,6 +34,7 @@ void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenom
             Species::CGenomePtr best = species->getBestGenome();
             if (best)
             {
+                // Copy the champion.
                 GenomePtr copiedGenome = std::make_shared<Genome>(*best);
                 m_generatedGenomes.push_back(copiedGenome);
             }

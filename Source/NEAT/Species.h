@@ -43,11 +43,11 @@ namespace NEAT
         inline int getStagnantGenerationCount() const { return m_stagnantCount; }
 
     protected:
-        std::vector<CGenomePtr> m_members; // The members of this Species.
-        Genome m_representative; // The representative of this Species.
-        CGenomePtr m_bestGenome; // The best genome in this Species in the current generation.
-        int m_stagnantCount = 0; // The number of consecutive generations where there was no improvement on fitness.
-        float m_bestFitness = 0.f; // The best fitness in this Species of the current generation.
-        float m_previousBestFitness = 0.f; // The best fitness in this Species of the previous generation.
+        std::vector<CGenomePtr> m_members;  // The members of this Species.
+        Genome m_representative;            // The representative of this Species.
+        CGenomePtr m_bestGenome;            // The best genome in this Species in the current generation.
+        int m_stagnantCount = 0;            // The number of consecutive generations where there was no improvement on fitness.
+        float m_bestFitness = 0.f;          // The best fitness in this Species of the current generation.
+        float m_previousBestFitness = 0.f;  // The best fitness in this Species of the previous generation.
     };
 }

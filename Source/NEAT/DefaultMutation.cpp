@@ -131,7 +131,7 @@ void DefaultMutation::mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut)
     // Function to assign innovation id to newly added edge and store its info in mutationOut.
     auto newEdgeAdded = [&mutationOut, network, &numNewEdges](EdgeId newEdge)
     {
-        assert(numNewEdges < MutationOut::NUM_NEW_EDGES);
+        assert(numNewEdges < MutationOut::MAX_NUM_NEW_EDGES);
 
         // Store information of newly added edge.
         MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];

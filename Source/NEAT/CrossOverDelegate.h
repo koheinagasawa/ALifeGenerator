@@ -12,5 +12,7 @@
 class CrossOverDelegate : public GenomeGenerator
 {
 public:
+    // Create a new genome by performing cross-over between genome1 and genome2.
+    // sameFitness must be set true when genome1 and genome2 have the same fitness.
     virtual auto crossOver(const GenomeBase& genome1, const GenomeBase& genome2, bool sameFitness)->GenomeBasePtr = 0;
 };

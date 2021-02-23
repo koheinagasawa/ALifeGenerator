@@ -8,10 +8,11 @@
 
 #include <NEAT/GenomeGenerator.h>
 
+// GenomeGenerator which creates a new genome by mutating existing one.
 class MutationDelegate : public GenomeGenerator
 {
 public:
-    // Structure to store information about newly added edges by mutate().
+    // Struct to store information about newly added node and edges by mutate().
     struct MutationOut
     {
         struct NewEdgeInfo
@@ -23,12 +24,13 @@ public:
 
         void clear();
 
-        static constexpr int NUM_NEW_EDGES = 3;
-        NewEdgeInfo m_newEdges[NUM_NEW_EDGES];
-        NodeId m_newNode = NodeId::invalid();
+        static constexpr int MAX_NUM_NEW_EDGES = 3;
+        NewEdgeInfo m_newEdges[MAX_NUM_NEW_EDGES]; // Info of newly added edges.
+        NodeId m_newNode = NodeId::invalid();  // Newly added node.
         int m_numNodesAdded;
         int m_numEdgesAdded;
     };
 
+    // Create a new genome by mutating genomeIn. There are three ways of mutation.
     virtual void mutate(GenomeBasePtr genomeIn, MutationOut& mutationOut) = 0;
 };

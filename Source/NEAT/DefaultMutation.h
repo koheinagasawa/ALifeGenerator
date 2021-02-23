@@ -58,7 +58,7 @@ namespace NEAT
         // Constructor
         DefaultMutation(const MutationParams& params) : m_params(params) {}
 
-        // Mutate this genome. There are three ways of mutation.
+        // Create a new genome by mutating genomeIn. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Add a new node at a random edge.
         // 3. Connect random two nodes by a new edge.

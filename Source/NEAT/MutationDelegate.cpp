@@ -9,7 +9,7 @@
 
 void MutationDelegate::MutationOut::clear()
 {
-    for (int i = 0; i < NUM_NEW_EDGES; i++)
+    for (int i = 0; i < MAX_NUM_NEW_EDGES; i++)
     {
         m_newEdges[i].m_sourceInNode = NodeId::invalid();
         m_newEdges[i].m_sourceOutNode = NodeId::invalid();

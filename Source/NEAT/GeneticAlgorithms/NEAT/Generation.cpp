@@ -183,7 +183,7 @@ void Generation::postUpdateGeneration()
 auto Generation::createSelector()->GenomeSelectorPtr
 {
     // Create a DefaultGenomeSelector.
-    std::shared_ptr<DefaultGenomeSelector> selector = std::make_unique<DefaultGenomeSelector>(this);
+    std::shared_ptr<DefaultGenomeSelector> selector = std::make_shared<DefaultGenomeSelector>(this);
     if(selector->getNumGenomes() > 0)
     {
         return std::static_pointer_cast<GenomeSelector>(selector);

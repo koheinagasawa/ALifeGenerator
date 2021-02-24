@@ -97,7 +97,7 @@ DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, Pseud
     {
         // There was no genomes which can be reproducible or has positive fitness.
         // Try again without skipping stagnant species.
-        skipStagnantSpecies(false);
+        m_skipStagnantSpecies = false;
         addGenomes();
 
         if (m_genomes.size() == 0)

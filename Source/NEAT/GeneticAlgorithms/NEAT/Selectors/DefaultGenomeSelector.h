@@ -27,8 +27,6 @@ namespace NEAT
 
         inline void setInterSpeciesCrossOverRate(float interSpeciesCrossOverRate) { m_interSpeciesCrossOverRate = interSpeciesCrossOverRate; }
 
-        inline void skipStagnantSpecies(bool enable) { m_skipStagnantSpecies = enable; }
-
         // Returns the number of genomes which could be selected by this selector.
         inline int getNumGenomes() const { return (int)m_genomes.size(); }
 

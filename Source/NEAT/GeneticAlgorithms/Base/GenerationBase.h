@@ -74,6 +74,7 @@ public:
     inline int getNumGenomes() const { return m_numGenomes; }
     inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
     inline auto getId() const->GenerationId { return m_id; }
+    inline auto getGenomeData() const->const GenomeDatas& { return *m_genomes; }
 
 protected:
     // Type declarations.

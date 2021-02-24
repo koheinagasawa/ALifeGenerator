@@ -14,10 +14,7 @@ class UniformGenomeSelector : public GenomeSelector
 {
 public:
     // Constructor
-    UniformGenomeSelector(PseudoRandom* random = nullptr);
-
-    // Set genomes to select and initialize internal data.
-    virtual bool setGenomes(const GenomeDatas& genomes) override;
+    UniformGenomeSelector(const GenomeDatas& genomes, PseudoRandom* random = nullptr);
 
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* override;

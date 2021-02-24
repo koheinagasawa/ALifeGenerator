@@ -19,9 +19,6 @@ namespace NEAT
         // Constructor
         DefaultGenomeSelector(const Generation* generation, PseudoRandom* random = nullptr);
 
-        // Set genomes to select and initialize internal data.
-        virtual bool setGenomes(const GenomeDatas& genomes) override;
-
         // Select a random genome.
         virtual auto selectGenome()->const GenomeData* override;
 
@@ -31,6 +28,9 @@ namespace NEAT
         inline void setInterSpeciesCrossOverRate(float interSpeciesCrossOverRate) { m_interSpeciesCrossOverRate = interSpeciesCrossOverRate; }
 
         inline void skipStagnantSpecies(bool enable) { m_skipStagnantSpecies = enable; }
+
+        // Returns the number of genomes which could be selected by this selector.
+        inline int getNumGenomes() const { return (int)m_genomes.size(); }
 
     protected:
         // Select a random genome between start and end (not including end) in m_genomes array.

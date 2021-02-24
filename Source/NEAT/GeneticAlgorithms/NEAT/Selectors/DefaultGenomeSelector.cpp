@@ -14,18 +14,17 @@ DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, Pseud
     , m_generation(generation)
     , m_random(random ? *random : PseudoRandom::getInstance())
 {
-}
-
-bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
-{
     assert(m_generation);
-    assert(genomesIn.size() > 0);
+
+    const GenomeDatas& genomeData = m_generation->getGenomeData();
+    const int numGenomes = (int)genomeData.size();
+    assert(numGenomes > 0);
 
 #ifdef _DEBUG
     // Make sure that genomes are sorted by species id.
     {
-        SpeciesId curId = getSpeciesId(genomesIn[0]);
-        for (const GenomeData& g : genomesIn)
+        SpeciesId curId = getSpeciesId(genomeData[0]);
+        for (const GenomeData& g : genomeData)
         {
             if (!isGenomeReproducible(g) || g.getFitness() == 0)
             {
@@ -45,8 +44,8 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
     m_genomes.clear();
     m_sumFitness.clear();
     m_spciecesStartEndIndices.clear();
-    m_genomes.reserve(genomesIn.size());
-    m_sumFitness.reserve(genomesIn.size() + 1);
+    m_genomes.reserve(numGenomes);
+    m_sumFitness.reserve(numGenomes + 1);
     float sumFitness = 0;
     m_sumFitness.push_back(0);
 
@@ -60,46 +59,56 @@ bool DefaultGenomeSelector::setGenomes(const GenomeDatas& genomesIn)
         return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
     };
 
-    SpeciesId currentSpecies = getSpeciesId(genomesIn[0]);
+    SpeciesId currentSpecies = getSpeciesId(genomeData[0]);
     float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
     int currentSpeciesStartIndex = 0;
 
-    // Calculate adjusted fitness for each genome and sum up those fitnesses.
-    for (const GenomeData& g : genomesIn)
+    auto addGenomes = [&]()
     {
-        if (!isGenomeReproducible(g) || g.getFitness() == 0)
+        // Calculate adjusted fitness for each genome and sum up those fitnesses.
+        for (const GenomeData& g : genomeData)
         {
-            continue;
+            if (!isGenomeReproducible(g) || g.getFitness() == 0)
+            {
+                continue;
+            }
+
+            assert(g.getFitness() > 0);
+
+            if (currentSpecies != getSpeciesId(g))
+            {
+                // This genome is in a new species.
+                m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
+
+                currentSpecies = getSpeciesId(g);
+                fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
+                currentSpeciesStartIndex = (int)m_genomes.size();
+            }
+
+            m_genomes.push_back(&g);
+            sumFitness += g.getFitness() * fitnessSharingFactor;
+            m_sumFitness.push_back(sumFitness);
         }
+    };
 
-        assert(g.getFitness() > 0);
-
-        if (currentSpecies != getSpeciesId(g))
-        {
-            // This genome is in a new species.
-            m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-            currentSpecies = getSpeciesId(g);
-            fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-            currentSpeciesStartIndex = (int)m_genomes.size();
-        }
-
-        m_genomes.push_back(&g);
-        sumFitness += g.getFitness() * fitnessSharingFactor;
-        m_sumFitness.push_back(sumFitness);
-    }
+    addGenomes();
 
     if (m_genomes.size() == 0)
     {
         // There was no genomes which can be reproducible or has positive fitness.
-        return false;
+        // Try again without skipping stagnant species.
+        skipStagnantSpecies(false);
+        addGenomes();
+
+        if (m_genomes.size() == 0)
+        {
+            WARN("Failed to setup DefaultGenomeSelector because all genomes have zero fitness.");
+        }
     }
 
     m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
 
     assert(m_genomes.size() + 1 == m_sumFitness.size());
-
-    return true;
 }
 
 auto DefaultGenomeSelector::selectGenome()->const GenomeData* 

@@ -7,16 +7,11 @@
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/UniformGenomeSelector.h>
 
-UniformGenomeSelector::UniformGenomeSelector(PseudoRandom* random)
+UniformGenomeSelector::UniformGenomeSelector(const GenomeDatas& genomes, PseudoRandom* random)
     : GenomeSelector()
+    , m_genomes(&genomes)
     , m_random(random ? *random : PseudoRandom::getInstance())
 {
-}
-
-bool UniformGenomeSelector::setGenomes(const GenomeDatas& genomes)
-{
-    m_genomes = &genomes;
-    return true;
 }
 
 auto UniformGenomeSelector::selectGenome()->const GenomeData*

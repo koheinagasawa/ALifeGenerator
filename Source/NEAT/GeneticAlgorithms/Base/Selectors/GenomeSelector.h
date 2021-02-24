@@ -16,9 +16,6 @@ public:
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
 
-    // Set genomes to select and initialize internal data.
-    virtual bool setGenomes(const GenomeDatas& genomes) = 0;
-
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* = 0;
 

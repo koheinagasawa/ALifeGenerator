@@ -38,6 +38,11 @@ void GenerationBase::evolveGeneration()
     const int numGenomes = getNumGenomes();
     assert(numGenomes > 1);
 
+    preUpdateGeneration();
+
+    // Create a genome selector
+    GenomeSelectorPtr selector = createSelector();
+
     std::swap(m_genomes, m_prevGenGenomes);
 
     // Allocate buffer of GenomeData if it's not there yet.
@@ -50,13 +55,8 @@ void GenerationBase::evolveGeneration()
         m_genomes->resize(numGenomes);
     }
 
-    preUpdateGeneration();
-
     int numGenomesToAdd = numGenomes;
     m_numGenomes = 0;
-
-    // Create a genome selector
-    GenomeSelectorPtr selector = createSelector();
 
     // Create genomes for new generations by applying each genome generators.
     for (GeneratorPtr& generator : m_generators)

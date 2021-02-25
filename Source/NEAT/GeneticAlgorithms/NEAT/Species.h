@@ -44,6 +44,10 @@ namespace NEAT
 
         inline auto getMembers() const->const std::vector<CGenomePtr>& { return m_members; }
 
+        inline void setReproducible(bool enable) { m_reproducible = enable; }
+
+        inline bool isReproducible() const { return m_reproducible; }
+
     protected:
         std::vector<CGenomePtr> m_members;  // The members of this Species.
         Genome m_representative;            // The representative of this Species.
@@ -51,5 +55,6 @@ namespace NEAT
         int m_stagnantCount = 0;            // The number of consecutive generations where there was no improvement on fitness.
         float m_bestFitness = 0.f;          // The best fitness in this Species of the current generation.
         float m_previousBestFitness = 0.f;  // The best fitness in this Species of the previous generation.
+        bool m_reproducible = true;       // True if this species can reproduce descendants in the next generation.
     };
 }

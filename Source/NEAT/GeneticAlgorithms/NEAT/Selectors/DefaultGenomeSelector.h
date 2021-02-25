@@ -8,7 +8,7 @@
 
 #include <Common/PseudoRandom.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Species.h>
 
 namespace NEAT
 {
@@ -16,8 +16,14 @@ namespace NEAT
     class DefaultGenomeSelector : public GenomeSelector
     {
     public:
+        // Type declarations.
+        using SpeciesPtr = std::shared_ptr<Species>;
+        using SpeciesList = std::unordered_map<SpeciesId, SpeciesPtr>;
+        using GenomeSpeciesMap = std::unordered_map<GenomeId, SpeciesId>;
+        using GenomeDataPtrs = std::vector<const GenomeData*>;
+
         // Constructor
-        DefaultGenomeSelector(const Generation* generation, PseudoRandom* random = nullptr);
+        DefaultGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random = nullptr);
 
         // Select a random genome.
         virtual auto selectGenome()->const GenomeData* override;
@@ -46,10 +52,11 @@ namespace NEAT
             int m_start, m_end;
         };
 
-        const Generation* m_generation; // The generation.
-        std::vector<const GenomeData*> m_genomes; // The genomes in the generation.
+        GenomeDataPtrs m_genomes; // The genomes in the generation.
         std::vector<float> m_sumFitness; // Sum values of genomes' fitness.
         std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices; // Intermediate data used internally.
+        const SpeciesList& m_species;
+        const GenomeSpeciesMap& m_genomeSpeciesMap;
 
         // Probability to select two genomes from different species when selectTwoGenomes() is called.
         float m_interSpeciesCrossOverRate = 0.001f;

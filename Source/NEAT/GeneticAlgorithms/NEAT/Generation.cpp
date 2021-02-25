@@ -169,6 +169,9 @@ void Generation::postUpdateGeneration()
     {
         SpeciesPtr& s = itr.second;
         s->postNewGeneration();
+
+        bool reproducible = s->getStagnantGenerationCount() < m_params.m_maxStagnantCount;
+        s->setReproducible(reproducible);
     }
 
     // Sort genomes by species id
@@ -183,7 +186,7 @@ void Generation::postUpdateGeneration()
 auto Generation::createSelector()->GenomeSelectorPtr
 {
     // Create a DefaultGenomeSelector.
-    std::shared_ptr<DefaultGenomeSelector> selector = std::make_shared<DefaultGenomeSelector>(this);
+    std::shared_ptr<DefaultGenomeSelector> selector = std::make_shared<DefaultGenomeSelector>(*m_genomes, m_species, m_genomesSpecies);
     if(selector->getNumGenomes() > 0)
     {
         return std::static_pointer_cast<GenomeSelector>(selector);
@@ -197,6 +200,6 @@ auto Generation::createSelector()->GenomeSelectorPtr
 
 bool Generation::isSpeciesReproducible(SpeciesId speciesId) const
 {
-    return m_species.at(speciesId)->getStagnantGenerationCount() < m_params.m_maxStagnantCount;
+    return m_species.at(speciesId)->isReproducible();
 }
 

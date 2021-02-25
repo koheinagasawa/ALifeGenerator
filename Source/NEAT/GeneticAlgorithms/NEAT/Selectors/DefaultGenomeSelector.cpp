@@ -9,14 +9,12 @@
 
 using namespace NEAT;
 
-DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, PseudoRandom* random)
+DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random)
     : GenomeSelector()
-    , m_generation(generation)
+    , m_species(species)
+    , m_genomeSpeciesMap(genomeSpeciesMap)
     , m_random(random ? *random : PseudoRandom::getInstance())
 {
-    assert(m_generation);
-
-    const GenomeDatas& genomeData = m_generation->getGenomeData();
     const int numGenomes = (int)genomeData.size();
     assert(numGenomes > 0);
 
@@ -49,7 +47,6 @@ DefaultGenomeSelector::DefaultGenomeSelector(const Generation* generation, Pseud
     float sumFitness = 0;
     m_sumFitness.push_back(0);
 
-    const Generation::SpeciesList& species = m_generation->getAllSpecies();
     m_spciecesStartEndIndices.reserve(species.size());
 
     // Helper functions to calculate factor for fitness sharing.
@@ -194,7 +191,7 @@ auto DefaultGenomeSelector::selectGenome(int start, int end)->const GenomeData*
 
 SpeciesId DefaultGenomeSelector::getSpeciesId(const GenomeData& gd) const
 {
-    return m_generation->getSpecies(gd.getId());
+    return m_genomeSpeciesMap.find(gd.getId()) != m_genomeSpeciesMap.end() ? m_genomeSpeciesMap.at(gd.getId()) : SpeciesId::invalid();
 }
 
 bool DefaultGenomeSelector::isGenomeReproducible(const GenomeData& gd) const
@@ -204,5 +201,5 @@ bool DefaultGenomeSelector::isGenomeReproducible(const GenomeData& gd) const
         return true;
     }
     SpeciesId speciesId = getSpeciesId(gd);
-    return !speciesId.isValid() || m_generation->isSpeciesReproducible(speciesId);
+    return !speciesId.isValid() || m_species.at(speciesId)->isReproducible();
 }

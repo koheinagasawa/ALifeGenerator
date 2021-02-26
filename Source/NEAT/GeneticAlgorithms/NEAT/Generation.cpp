@@ -189,6 +189,7 @@ auto Generation::createSelector()->GenomeSelectorPtr
     std::shared_ptr<DefaultGenomeSelector> selector = std::make_shared<DefaultGenomeSelector>(*m_genomes, m_species, m_genomesSpecies);
     if(selector->getNumGenomes() > 0)
     {
+        selector->setInterSpeciesCrossOverRate(m_params.m_interSpeciesCrossOverRate);
         return std::static_pointer_cast<GenomeSelector>(selector);
     }
 

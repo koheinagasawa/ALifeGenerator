@@ -27,9 +27,6 @@ namespace NEAT
             // Probability of selecting inherit edge from genome1 for matching edges.
             float m_matchingEdgeSelectionRate = 0.5f;
 
-            // Rate of interspecies crossover.
-            float m_interSpeciesCrossOverRate = 0.001f;
-
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;
         };

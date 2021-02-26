@@ -31,6 +31,9 @@ namespace NEAT
             // Species who is stagnant more than this count is not allowed to reproduce.
             uint16_t m_maxStagnantCount = 5;
 
+            // Rate of interspecies crossover.
+            float m_interSpeciesCrossOverRate = 0.001f;
+
             // Parameters used for distance calculation of two genomes.
             Genome::CalcDistParams m_calcDistParams;
 

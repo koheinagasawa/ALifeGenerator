@@ -227,8 +227,21 @@ void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes,
         genomeSelector->selectTwoGenomes(g1, g2);
         assert(g1 && g2);
 
+        bool isSameFitness = false;
+
+        // Swap g1 and g2 so that g1 has higher fitness
+        const float fitness1 = g1->getFitness();
+        const float fitness2 = g2->getFitness();
+        if (fitness1 < fitness2)
+        {
+            std::swap(g1, g2);
+        }
+        else if (fitness1 == fitness2)
+        {
+            isSameFitness = true;
+        }
+
         // Cross-over.
-        bool isSameFitness = g1->getFitness() == g2->getFitness();
         GenomeBasePtr newGenome = crossOver(*g1->getGenome(), *g2->getGenome(), isSameFitness);
 
         m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase>(newGenome));

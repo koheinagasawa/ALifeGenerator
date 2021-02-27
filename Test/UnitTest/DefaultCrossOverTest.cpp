@@ -8,6 +8,7 @@
 
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 TEST(DefaultCrossOver, GenerateSingleGenome)
 {
@@ -122,6 +123,68 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
 
 TEST(DefaultCrossOver, GenerateGeneration)
 {
-    // [todo]
-    EXPECT_TRUE(false);
+    using namespace NEAT;
+
+    // Custom selector class to select genome incrementally.
+    class MyGenomeSelector : public GenomeSelector
+    {
+    public:
+        MyGenomeSelector(const GenomeDatas& genomes) : m_genomes(genomes) {}
+        virtual auto selectGenome()->const GenomeData* override { assert(0); return nullptr; }
+        virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) override
+        {
+            genome1 = &m_genomes[m_index++];
+            genome2 = &m_genomes[m_index++];
+        }
+    protected:
+        const GenomeDatas& m_genomes;
+        int m_index = 0;
+    };
+
+    InnovationCounter innovCounter;
+    Genome::Cinfo cinfo;
+    cinfo.m_numInputNodes = 2;
+    cinfo.m_numOutputNodes = 2;
+    cinfo.m_innovIdCounter = &innovCounter;
+
+    // Create two genomes.
+    using GenomePtr = std::shared_ptr<Genome>;
+    GenomePtr genome1 = std::make_shared<Genome>(cinfo);
+    GenomePtr genome2 = std::make_shared<Genome>(*genome1);
+    GenomePtr genome3 = std::make_shared<Genome>(*genome1);
+    GenomePtr genome4 = std::make_shared<Genome>(*genome1);
+
+    // Mutate genomes several times first
+    DefaultMutation mutator;
+    mutator.m_params.m_weightMutationRate = 1.0f;
+    mutator.m_params.m_addEdgeMutationRate = 1.0f;
+    mutator.m_params.m_addNodeMutationRate = 1.0f;
+
+    DefaultMutation::MutationOut mutateOut;
+    mutator.mutate(genome2.get(), mutateOut);
+    mutator.mutate(genome3.get(), mutateOut);
+    mutator.mutate(genome3.get(), mutateOut);
+    mutator.mutate(genome4.get(), mutateOut);
+    mutator.mutate(genome4.get(), mutateOut);
+    mutator.mutate(genome4.get(), mutateOut);
+
+    // Create an array of GenomeData
+    using GenomeData = GenerationBase::GenomeData;
+    std::vector<GenomeData> genomes;
+    genomes.push_back(GenomeData(genome1, GenomeId(0)));
+    genomes.push_back(GenomeData(genome2, GenomeId(1)));
+    genomes.push_back(GenomeData(genome3, GenomeId(2)));
+    genomes.push_back(GenomeData(genome4, GenomeId(3)));
+
+    genomes[1].setFitness(1.0f);
+    genomes[2].setFitness(1.0f);
+
+    MyGenomeSelector selector(genomes);
+
+    DefaultCrossOver crossOver;
+    crossOver.generate(2, 2, &selector);
+
+    EXPECT_EQ(crossOver.getNumGeneratedGenomes(), 2);
+    EXPECT_EQ(crossOver.getGeneratedGenomes()[0]->getNetwork()->getNumEdges(), genome2->getNetwork()->getNumEdges());
+    EXPECT_EQ(crossOver.getGeneratedGenomes()[1]->getNetwork()->getNumEdges(), genome3->getNetwork()->getNumEdges());
 }

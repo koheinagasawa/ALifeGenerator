@@ -270,12 +270,12 @@ TEST(DefaultMutation, MutateGeneration)
     class MyGenomeSelector : public GenomeSelector
     {
     public:
-        virtual bool setGenomes(const GenomeDatas& genomes) { m_genomes = &genomes; m_index = 0; return true; }
-        virtual auto selectGenome()->const GenomeData* { return &(*m_genomes)[m_index++]; }
-        virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) { assert(0); }
+        MyGenomeSelector(const GenomeDatas& genomes) : m_genomes(genomes) {}
+        virtual auto selectGenome()->const GenomeData* override { return &m_genomes[m_index++]; }
+        virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) override { assert(0); }
     protected:
-        const GenomeDatas* m_genomes;
-        int m_index;
+        const GenomeDatas& m_genomes;
+        int m_index = 0;
     };
 
     // Custom random generator which always selects the minimum integer.
@@ -370,8 +370,7 @@ TEST(DefaultMutation, MutateGeneration)
     genomes.push_back(GenomeData(genome2, GenomeId(1)));
 
     // Set up the custom selector.
-    MyGenomeSelector selector;
-    selector.setGenomes(genomes);
+    MyGenomeSelector selector(genomes);
 
     EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
     EXPECT_EQ(mutator.getGeneratedGenomes().size(), 0);

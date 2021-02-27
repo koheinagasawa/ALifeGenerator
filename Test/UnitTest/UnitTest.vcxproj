@@ -53,12 +53,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DefaultCrossOverTest.cpp" />
+    <ClCompile Include="DefaultGenomeSelectorTest.cpp" />
     <ClCompile Include="DefaultMutationTest.cpp" />
     <ClCompile Include="GenerationTest.cpp" />
     <ClCompile Include="GenomeBaseTest.cpp" />
     <ClCompile Include="GenomeTest.cpp" />
     <ClCompile Include="MutableNetworkTest.cpp" />
     <ClCompile Include="NeuralNetworkTest.cpp" />
+    <ClCompile Include="SpeciesChampionSelectorTest.cpp" />
     <ClCompile Include="SpeciesTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -6,7 +6,8 @@
 
 #pragma once
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Species.h>
 
 namespace NEAT
 {
@@ -14,13 +15,18 @@ namespace NEAT
     class SpeciesChampionSelector : public GenomeGenerator
     {
     public:
-        SpeciesChampionSelector(const Generation* g, float minMembersInSpeciesToCopyChampion);
+        using SpeciesPtr = std::shared_ptr<Species>;
+        using SpeciesList = std::unordered_map<SpeciesId, SpeciesPtr>;
+
+        SpeciesChampionSelector(float minMembersInSpeciesToCopyChampion);
+
+        inline void updateSpecies(const SpeciesList& species) { m_species = &species; }
 
         // Generate new genomes by copying the champion in major species without modifying them.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
     protected:
-        const Generation* m_generation; // The generation.
+        const SpeciesList* m_species; // The Species.
 
         // Minimum numbers of members in a species to copy its champion.
         float m_minMembersInSpeciesToCopyChampion;

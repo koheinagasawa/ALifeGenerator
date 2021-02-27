@@ -9,22 +9,20 @@
 
 using namespace NEAT;
 
-SpeciesChampionSelector::SpeciesChampionSelector(const Generation* g, float minMembersInSpeciesToCopyChampion)
-    : m_generation(g)
-    , m_minMembersInSpeciesToCopyChampion(minMembersInSpeciesToCopyChampion)
+SpeciesChampionSelector::SpeciesChampionSelector(float minMembersInSpeciesToCopyChampion)
+    : m_minMembersInSpeciesToCopyChampion(minMembersInSpeciesToCopyChampion)
 {
 }
 
 void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* /*genomeSelector*/)
 {
-    using SpeciesPtr = std::shared_ptr<Species>;
     using GenomePtr = std::shared_ptr<Genome>;
 
     // Select genomes which are copied to the next generation unchanged.
-    for (auto& itr : m_generation->getAllSpecies())
+    for (const auto& itr : *m_species)
     {
         const SpeciesPtr& species = itr.second;
-        if (!m_generation->isSpeciesReproducible(itr.first))
+        if (!species->isReproducible())
         {
             continue;
         }

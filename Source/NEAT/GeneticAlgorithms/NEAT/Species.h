@@ -9,6 +9,7 @@
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <Common/PseudoRandom.h>
 
+DECLARE_ID(SpeciesId);
 
 namespace NEAT
 {

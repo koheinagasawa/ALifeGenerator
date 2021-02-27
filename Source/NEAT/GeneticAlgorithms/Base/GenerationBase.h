@@ -11,7 +11,6 @@
 #include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 
 DECLARE_ID(GenerationId);
-DECLARE_ID(SpeciesId);
 DECLARE_ID(GenomeId);
 
 // Base class to calculate fitness of a genome.

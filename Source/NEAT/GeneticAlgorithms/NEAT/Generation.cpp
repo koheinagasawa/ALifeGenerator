@@ -77,7 +77,8 @@ void Generation::init(const Cinfo& cinfo)
     m_generators.reserve(3);
 
     // Create champion selector.
-    m_generators.push_back(std::make_shared<SpeciesChampionSelector>(this, cinfo.m_minMembersInSpeciesToCopyChampion));
+    m_speciesChampionSelectorGenerator = std::make_shared<SpeciesChampionSelector>(cinfo.m_minMembersInSpeciesToCopyChampion);
+    m_generators.push_back(m_speciesChampionSelectorGenerator);
 
     // Create mutate delegate.
     m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
@@ -87,6 +88,12 @@ void Generation::init(const Cinfo& cinfo)
 
     // Calculate initial fitness of genomes.
     calcFitness();
+}
+
+void Generation::preUpdateGeneration()
+{
+    // Update species in the champion selector.
+    m_speciesChampionSelectorGenerator->updateSpecies(getAllSpecies());
 }
 
 void Generation::postUpdateGeneration()

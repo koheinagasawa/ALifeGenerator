@@ -99,6 +99,7 @@ namespace NEAT
     protected:
         void init(const Cinfo& cinfo);
 
+        virtual void preUpdateGeneration() override;
         virtual void postUpdateGeneration() override;
 
         virtual auto createSelector()->GenomeSelectorPtr override;
@@ -110,5 +111,6 @@ namespace NEAT
         SpeciesList m_species;                                      // The list of Species.
         std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;   // A map between genome and species.
         UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
+        std::shared_ptr<class SpeciesChampionSelector> m_speciesChampionSelectorGenerator; // Generator to select species champion.
     };
 }

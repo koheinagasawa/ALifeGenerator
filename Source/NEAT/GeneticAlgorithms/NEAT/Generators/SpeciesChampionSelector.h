@@ -26,7 +26,7 @@ namespace NEAT
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
     protected:
-        const SpeciesList* m_species; // The Species.
+        const SpeciesList* m_species = nullptr; // The Species.
 
         // Minimum numbers of members in a species to copy its champion.
         float m_minMembersInSpeciesToCopyChampion;

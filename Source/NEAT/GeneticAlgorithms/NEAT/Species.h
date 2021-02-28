@@ -39,6 +39,8 @@ namespace NEAT
 
         inline auto getBestGenome() const->CGenomePtr { return m_bestGenome; }
 
+        inline float getBestFitness() const { return m_bestFitness; }
+
         inline int getNumMembers() const { return m_members.size(); }
 
         inline int getStagnantGenerationCount() const { return m_stagnantCount; }

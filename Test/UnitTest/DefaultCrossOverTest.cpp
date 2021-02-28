@@ -182,6 +182,12 @@ TEST(DefaultCrossOver, GenerateGeneration)
     MyGenomeSelector selector(genomes);
 
     DefaultCrossOver crossOver;
+
+    // Generate no genome.
+    crossOver.generate(2, 0, &selector);
+    EXPECT_EQ(crossOver.getNumGeneratedGenomes(), 0);
+
+    // Generate genomes.
     crossOver.generate(2, 2, &selector);
 
     EXPECT_EQ(crossOver.getNumGeneratedGenomes(), 2);

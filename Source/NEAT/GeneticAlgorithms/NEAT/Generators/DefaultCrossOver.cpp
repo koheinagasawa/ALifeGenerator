@@ -217,6 +217,11 @@ void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes,
     m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numGenomesToCrossover);
 
+    if (numGenomesToCrossover <= 0)
+    {
+        return;
+    }
+
     // Perform cross-over.
     for (int i = 0; i < numGenomesToCrossover; i++)
     {

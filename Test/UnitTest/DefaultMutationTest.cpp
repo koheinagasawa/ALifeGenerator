@@ -377,6 +377,10 @@ TEST(DefaultMutation, MutateGeneration)
 
     mutator.m_params.m_mutatedGenomesRate = 1.0f;
 
+    // Generate no genome
+    mutator.generate(2, 0, &selector);
+    EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
+
     // Generate new genomes by mutation
     mutator.generate(2, 2, &selector);
 

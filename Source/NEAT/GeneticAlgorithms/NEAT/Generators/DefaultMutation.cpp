@@ -180,12 +180,19 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
 void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
+    assert(numTotalGenomes >= numRemaningGenomes);
+
     using GenomeData = GenerationBase::GenomeData;
 
     const int numGenomesToMutate = std::min(numRemaningGenomes, int(numTotalGenomes * m_params.m_mutatedGenomesRate));
 
     m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numGenomesToMutate);
+
+    if (numGenomesToMutate <= 0)
+    {
+        return;
+    }
 
     std::vector<MutationOut> mutationOuts;
     mutationOuts.resize(numGenomesToMutate);

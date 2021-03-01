@@ -93,9 +93,13 @@ DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, cons
     if (m_genomes.size() == 0)
     {
         // There was no genomes which can be reproducible or has positive fitness.
-        // Try again without skipping stagnant species.
-        m_skipStagnantSpecies = false;
-        addGenomes();
+
+        if (m_species.size() > 0)
+        {
+            // Try again without skipping stagnant species.
+            m_skipStagnantSpecies = false;
+            addGenomes();
+        }
 
         if (m_genomes.size() == 0)
         {
@@ -119,6 +123,11 @@ void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const Genome
 
     g1 = nullptr;
     g2 = nullptr;
+
+    if (m_genomes.size() < 2)
+    {
+        return;
+    }
 
     // Select a random genome.
     g1 = selectGenome();

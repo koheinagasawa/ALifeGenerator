@@ -13,6 +13,8 @@ namespace
 {
     using namespace NEAT;
 
+    // Helper function to compare two genomes' structure.
+    // Returns true if the two genomes have the same structure.
     bool compareGenome(const Genome& g1, const Genome& g2)
     {
         const Genome::Network* net1 = g1.getNetwork();
@@ -55,6 +57,8 @@ namespace
         return true;
     }
 
+    // Helper function to compare two genomes' structure and edge's weights and states.
+    // Returns true if the two genomes have the same structure, weights and states.
     bool compareGenomeWithWeightsAndStates(const Genome& g1, const Genome& g2)
     {
         if (!compareGenome(g1, g2)) return false;
@@ -82,16 +86,15 @@ TEST(DefaultMutation, MutateSingleGenome)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
+    Genome::Activation activation = [](float value) { return value * 2.f; };
+    activation.m_name = "MyActivation";
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    Genome::Activation activation = [](float value) { return value * 2.f; };
-    activation.m_name = "MyActivation";
     cinfo.m_defaultActivation = &activation;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
@@ -220,6 +223,7 @@ TEST(DefaultMutation, MutateSingleGenome)
 
         EXPECT_TRUE(genome.validate());
 
+        // Check the edge mutation was done expectedly.
         for (auto& itr : edges)
         {
             if (network->isEdgeEnabled(itr.first))
@@ -266,6 +270,10 @@ TEST(DefaultMutation, MutateSingleGenome)
 
 TEST(DefaultMutation, MutateGeneration)
 {
+    using namespace NEAT;
+    using GenomePtr = std::shared_ptr<Genome>;
+    using GenomeData = GenerationBase::GenomeData;
+
     // Custom selector class to select genome incrementally.
     class MyGenomeSelector : public GenomeSelector
     {
@@ -286,22 +294,18 @@ TEST(DefaultMutation, MutateGeneration)
         virtual int randomInteger(int min, int max) override { return min; }
     };
 
-    using namespace NEAT;
-
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
+    Genome::Activation activation = [](float value) { return value * 2.f; };
+    activation.m_name = "MyActivation";
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    Genome::Activation activation = [](float value) { return value * 2.f; };
-    activation.m_name = "MyActivation";
     cinfo.m_defaultActivation = &activation;
-
-    using GenomePtr = std::shared_ptr<Genome>;
-
-    // Create a genome.
     GenomePtr genome1 = std::make_shared<Genome>(cinfo);
 
+    // Verify the initial condition of the genome.
     {
         const Genome::Network* network = genome1->getNetwork();
 
@@ -321,7 +325,7 @@ TEST(DefaultMutation, MutateGeneration)
         }
     }
 
-    // Let add node/edge mutation happen all the time
+    // Let add node/edge mutation happen all the time.
     MyRandom random;
     DefaultMutation mutator;
     mutator.m_params.m_weightMutationRate = 0.0f;
@@ -358,30 +362,28 @@ TEST(DefaultMutation, MutateGeneration)
         EXPECT_EQ(network->getOutputNodes().size(), 2);
     }
 
-    // Copy the genome
+    // Create one more genome by copying genome1.
     GenomePtr genome2 = std::make_shared<Genome>(*genome1);
     EXPECT_TRUE(genome2->validate());
     EXPECT_TRUE(compareGenomeWithWeightsAndStates(*genome1, *genome2));
 
-    // Create an array of GenomeData
-    using GenomeData = GenerationBase::GenomeData;
+    // Create an array of GenomeData.
     std::vector<GenomeData> genomes;
     genomes.push_back(GenomeData(genome1, GenomeId(0)));
     genomes.push_back(GenomeData(genome2, GenomeId(1)));
 
     // Set up the custom selector.
     MyGenomeSelector selector(genomes);
+    mutator.m_params.m_mutatedGenomesRate = 1.0f;
 
     EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
     EXPECT_EQ(mutator.getGeneratedGenomes().size(), 0);
 
-    mutator.m_params.m_mutatedGenomesRate = 1.0f;
-
-    // Generate no genome
+    // Generate no genome.
     mutator.generate(2, 0, &selector);
     EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
 
-    // Generate new genomes by mutation
+    // Generate two new genomes by mutation.
     mutator.generate(2, 2, &selector);
 
     // The exact same mutation should have happened for both descendants of genome1 and genome2.
@@ -400,6 +402,7 @@ TEST(DefaultMutation, MutateGeneration)
     }
 
     // Compare the two newly generated genomes.
+    // The two new genomes should have the identical structure but edge weights should be different.
     {
         const Genome* newGenome1 = static_cast<const Genome*>(mutator.getGeneratedGenomes()[0].get());
         const Genome* newGenome2 = static_cast<const Genome*>(mutator.getGeneratedGenomes()[1].get());
@@ -408,6 +411,7 @@ TEST(DefaultMutation, MutateGeneration)
     }
 
     // Change the parameter and call generate again.
+    // No genomes should be generated.
     mutator.m_params.m_mutatedGenomesRate = 0.0f;
     mutator.generate(2, 2, &selector);
     EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);

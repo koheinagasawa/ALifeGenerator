@@ -12,6 +12,7 @@ namespace
 {
     using namespace NEAT;
 
+    // Custom fitness calculator.
     class MyFitnessCalculator : public FitnessCalculatorBase
     {
     public:
@@ -34,6 +35,7 @@ TEST(Generation, CreateGeneration)
 {
     using namespace NEAT;
 
+    // Create a generation with 100 population.
     InnovationCounter innovCounter;
     Generation::Cinfo cinfo;
     cinfo.m_numGenomes = 100;
@@ -63,6 +65,7 @@ TEST(Generation, IncrementGeneration)
 {
     using namespace NEAT;
 
+    // Create a generation with 20 population.
     InnovationCounter innovCounter;
     Genome::Activation activation = [](float value) { return value; };
 
@@ -79,40 +82,50 @@ TEST(Generation, IncrementGeneration)
     }
 
     Generation generation(cinfo);
+
+    // Evolve the generation several times.
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+
+    // Make sure that all the genomes were assigned to a species.
     for (int i = 0; i < generation.getNumGenomes(); i++)
     {
         const Generation::GenomeData& gd = generation.getGenomes()[i];
         EXPECT_TRUE(gd.getGenome());
         EXPECT_NE(generation.getSpecies(gd.getId()), SpeciesId::invalid());
     }
+
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 1);
 
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 2);
 
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 3);
 
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 4);
 
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 5);
 
     generation.evolveGeneration();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 6);
 }

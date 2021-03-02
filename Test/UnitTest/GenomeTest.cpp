@@ -13,17 +13,17 @@ TEST(Genome, CreateGenome)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
 
+    // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
     EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -40,9 +40,14 @@ TEST(Genome, CreateGenome)
 
     const Genome::Network* network2 = genome.getNetwork();
 
+    // Check that genome2 is identical with genome1.
     EXPECT_TRUE(genome2.validate());
     EXPECT_EQ(genome2.getInputNodes().size(), 2);
     EXPECT_EQ(network2->getNumNodes(), 4);
+    EXPECT_EQ(network2->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network2->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network2->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network2->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network2->getNumEdges(), 4);
     EXPECT_EQ(network2->getOutputNodes().size(), 2);
     EXPECT_EQ(genome2.getInnovations().size(), 4);
@@ -60,17 +65,17 @@ TEST(Genome, ModifyGenome)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
 
+    // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
     EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -121,17 +126,17 @@ TEST(Genome, ReassignInnovation)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
 
+    // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
     EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -143,6 +148,7 @@ TEST(Genome, ReassignInnovation)
     EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
+    // Reassign innovation id of an edge.
     EdgeId originalEdge(0);
     EdgeId newEdge(4);
     NodeId outNode1(2);
@@ -159,17 +165,17 @@ TEST(Genome, ReassignNodeId)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
 
+    // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
     EXPECT_EQ(genome.getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
@@ -181,6 +187,7 @@ TEST(Genome, ReassignNodeId)
     EXPECT_EQ(network->getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
+    // Reassign NodeId of a node.
     NodeId originalNode(0);
     NodeId newNode(4);
     EdgeId edge(0);
@@ -199,6 +206,7 @@ TEST(Genome, EvaluateGenome)
 {
     using namespace NEAT;
 
+    // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
@@ -206,8 +214,6 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_innovIdCounter = &innovCounter;
     Genome::Activation activation = [](float value) { return value * 2.f; };
     cinfo.m_defaultActivation = &activation;
-
-    // Create a genome.
     Genome genome(cinfo);
 
     const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
@@ -218,6 +224,7 @@ TEST(Genome, EvaluateGenome)
     inputs.push_back(2.f);
     genome.evaluate(inputs);
 
+    // Check the node values are expected.
     for (NodeId nodeId : outputNodes)
     {
         EXPECT_EQ(genome.getNetwork()->getNode(nodeId).getValue(), 6.f);
@@ -233,6 +240,7 @@ TEST(Genome, EvaluateGenome)
     // Evaluate the network again.
     genome.evaluate();
 
+    // Check the node values are expected.
     EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[0]).getValue(), 0.f);
     EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[1]).getValue(), 1.f);
 }
@@ -241,18 +249,16 @@ TEST(Genome, CalcGenomesDistance)
 {
     using namespace NEAT;
 
+    // Create two genomes.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-
-    // Create two genomes.
     Genome genome1(cinfo);
-    // We reset the counter once here so that genome1 and genome2 have the same initial innovations.
-    innovCounter.reset();
-    Genome genome2(cinfo);
+    Genome genome2(genome1);
 
+    // Set edge weights.
     {
         int count = 0;
         for (auto& itr : genome1.getNetwork()->getEdges())
@@ -265,34 +271,38 @@ TEST(Genome, CalcGenomesDistance)
         }
     }
 
-    DefaultMutation mutator;
-    mutator.m_params.m_weightMutationRate = 0.0f;
-    mutator.m_params.m_addEdgeMutationRate = 0.0f;
-    mutator.m_params.m_addNodeMutationRate = 1.0f;
+    // Mutate the genomes several times.
+    {
+        DefaultMutation mutator;
+        mutator.m_params.m_weightMutationRate = 0.0f;
+        mutator.m_params.m_addEdgeMutationRate = 0.0f;
+        mutator.m_params.m_addNodeMutationRate = 1.0f;
 
-    DefaultMutation::MutationOut mutOut;
+        DefaultMutation::MutationOut mutOut;
 
-    mutator.mutate(&genome1, mutOut);
-    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
-    EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
-    mutator.m_params.m_addEdgeMutationRate = 1.0f;
-    mutator.mutate(&genome1, mutOut);
-    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
-    EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
+        mutator.mutate(&genome1, mutOut);
+        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
+        mutator.m_params.m_addEdgeMutationRate = 1.0f;
+        mutator.mutate(&genome1, mutOut);
+        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
 
-    EXPECT_TRUE(genome1.validate());
-    EXPECT_EQ(genome1.getNetwork()->getNumNodes(), 6);
-    EXPECT_EQ(genome1.getNetwork()->getNumEdges(), 9);
+        EXPECT_TRUE(genome1.validate());
+        EXPECT_EQ(genome1.getNetwork()->getNumNodes(), 6);
+        EXPECT_EQ(genome1.getNetwork()->getNumEdges(), 9);
 
-    mutator.m_params.m_addEdgeMutationRate = 0.0f;
-    mutator.mutate(&genome2, mutOut);
-    EXPECT_EQ(mutOut.m_numNodesAdded, 1);
-    EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
+        mutator.m_params.m_addEdgeMutationRate = 0.0f;
+        mutator.mutate(&genome2, mutOut);
+        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
 
-    EXPECT_TRUE(genome2.validate());
-    EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
-    EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
+        EXPECT_TRUE(genome2.validate());
+        EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
+        EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
+    }
 
+    // Calculate the distance of the two genomes.
     Genome::CalcDistParams params;
     params.m_disjointFactor = 0.5f;
     params.m_weightFactor = 0.25f;

@@ -136,7 +136,7 @@ void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const Genome
     // Get start and end indices of the species of g1.
     const IndexSet& startEnd = m_spciecesStartEndIndices.at(getSpeciesId(*g1));
 
-    if (m_random.randomReal01() < m_interSpeciesCrossOverRate || (startEnd.m_end - startEnd.m_start) < 2)
+    if (m_random.randomReal01() < m_interSpeciesSelection || (startEnd.m_end - startEnd.m_start) < 2)
     {
         // Inter species cross-over. Just select another genome among the entire generation.
         g2 = g1;

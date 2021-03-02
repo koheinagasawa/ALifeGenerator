@@ -58,7 +58,7 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
 
     edges.insert({ EdgeId(0), Edge(inNode, outNode) });
 
-    // No output node
+    // Network with no output node
     {
         NN nn(nodes, edges, outputNodes);
         EXPECT_FALSE(nn.validate());
@@ -97,6 +97,7 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
 
 TEST(NeuralNetwork, CreateMinimumNetwork)
 {
+    // Set up node and edges.
     NodeId inNode(0);
     NodeId outNode(1);
 
@@ -112,6 +113,7 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
+    // Create a network.
     NN nn(nodes, edges, outputNodes);
 
     EXPECT_TRUE(nn.validate());
@@ -139,6 +141,7 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
 
 TEST(NeuralNetwork, GetSetNodeValues)
 {
+    // Set up node and edges.
     NodeId inNode(0);
     NodeId outNode(1);
 
@@ -154,6 +157,7 @@ TEST(NeuralNetwork, GetSetNodeValues)
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
+    // Create a network.
     NN nn(nodes, edges, outputNodes);
 
     EXPECT_TRUE(nn.validate());
@@ -166,6 +170,7 @@ TEST(NeuralNetwork, GetSetNodeValues)
 
 TEST(NeuralNetwork, GetSetEdgeWeights)
 {
+    // Set up node and edges.
     NodeId inNode(0);
     NodeId outNode(1);
 
@@ -183,6 +188,7 @@ TEST(NeuralNetwork, GetSetEdgeWeights)
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
+    // Create a network.
     NN nn(nodes, edges, outputNodes);
 
     EXPECT_TRUE(nn.validate());
@@ -194,6 +200,7 @@ TEST(NeuralNetwork, GetSetEdgeWeights)
 
 TEST(NeuralNetwork, EvaluateSimpleNetwork)
 {
+    // Set up node and edges.
     NodeId inNode1(0);
     NodeId inNode2(1);
     NodeId outNode(2);
@@ -223,6 +230,7 @@ TEST(NeuralNetwork, EvaluateSimpleNetwork)
     NN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
+    // Create a network.
     NN nn(nodes, edges, outputNodes);
 
     EXPECT_EQ(nn.getNumNodes(), 3);

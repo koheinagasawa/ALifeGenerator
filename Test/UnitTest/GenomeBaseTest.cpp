@@ -12,6 +12,7 @@ namespace
 {
     GenomeBase::Activation s_activation = [](float value) { return value * 2.f; };
 
+    // Custom implementation of Genome.
     class MyGenome : public GenomeBase
     {
     public:
@@ -51,6 +52,7 @@ TEST(GenomeBase, GenomeBasicOperations)
     // Create a genome.
     MyGenome genome;
 
+    // Set up nodes and edges.
     Nodes nodes;
     Edges edges;
     {

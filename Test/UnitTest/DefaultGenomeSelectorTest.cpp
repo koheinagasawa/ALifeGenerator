@@ -19,7 +19,7 @@ namespace
         {
             float v = min + m_val;
             m_val += 1.f;
-            return v;
+            return std::min(max, v);
         }
 
         virtual float randomReal01() override
@@ -101,20 +101,69 @@ TEST(DefaultGenomeSelector, CreateSelector)
         MyRandom random;
         random.reset();
         DefaultGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
-        selector.setInterSpeciesCrossOverRate(1.0f);
         EXPECT_EQ(selector.getNumGenomes(), 5);
         EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+
+        random.reset();
+
         const GenomeData* g1 = nullptr;
         const GenomeData* g2 = nullptr;
-        random.reset();
+
+        selector.setInterSpeciesCrossOverRate(1.0f);
         selector.selectTwoGenomes(g1, g2);
         EXPECT_EQ(g1, &genomes[0]);
         EXPECT_EQ(g2, &genomes[1]);
 
-        selector.setInterSpeciesCrossOverRate(0.0f);
         random.reset();
+
+        selector.setInterSpeciesCrossOverRate(0.0f);
         selector.selectTwoGenomes(g1, g2);
         EXPECT_EQ(g1, &genomes[0]);
         EXPECT_EQ(g2, &genomes[1]);
+    }
+
+    // Create a map
+    genomeSpeciesMap.insert({ GenomeId(0), SpeciesId(0) });
+    genomeSpeciesMap.insert({ GenomeId(1), SpeciesId(0) });
+    genomeSpeciesMap.insert({ GenomeId(2), SpeciesId(1) });
+    genomeSpeciesMap.insert({ GenomeId(3), SpeciesId(1) });
+    genomeSpeciesMap.insert({ GenomeId(4), SpeciesId(1) });
+
+    // Create a selector
+    {
+        MyRandom random;
+        random.reset();
+        DefaultGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
+        EXPECT_EQ(selector.getNumGenomes(), 5);
+        EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+
+        random.reset();
+
+        const GenomeData* g1 = nullptr;
+        const GenomeData* g2 = nullptr;
+
+        selector.setInterSpeciesCrossOverRate(1.0f);
+        selector.selectTwoGenomes(g1, g2);
+        EXPECT_EQ(g1, &genomes[0]);
+        EXPECT_EQ(g2, &genomes[1]);
+
+        random.m_val = 1.0f;
+
+        selector.selectTwoGenomes(g1, g2);
+        EXPECT_EQ(g1, &genomes[1]);
+        EXPECT_EQ(g2, &genomes[2]);
+
+        random.m_val = 1.0f;
+
+        selector.setInterSpeciesCrossOverRate(0.0f);
+        selector.selectTwoGenomes(g1, g2);
+        EXPECT_EQ(g1, &genomes[0]);
+        EXPECT_EQ(g2, &genomes[1]);
+
+        random.m_val = 3.0f;
+
+        selector.selectTwoGenomes(g1, g2);
+        EXPECT_EQ(g1, &genomes[3]);
+        EXPECT_EQ(g2, &genomes[4]);
     }
 }

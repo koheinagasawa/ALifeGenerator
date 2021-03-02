@@ -47,13 +47,13 @@ DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, cons
     float sumFitness = 0;
     m_sumFitness.push_back(0);
 
-    m_spciecesStartEndIndices.reserve(species.size());
+    m_spciecesStartEndIndices.reserve(m_species.size());
 
     // Helper functions to calculate factor for fitness sharing.
     // Genome's fitness is going to be normalized by the number of members in its species.
-    auto calcFitnessSharingFactor = [&species](SpeciesId speciesId)->float
+    auto calcFitnessSharingFactor = [this](SpeciesId speciesId)->float
     {
-        return speciesId.isValid() ? 1.f / (float)species.at(speciesId)->getNumMembers() : 1.0f;
+        return speciesId.isValid() ? 1.f / (float)m_species.at(speciesId)->getNumMembers() : 1.0f;
     };
 
     SpeciesId currentSpecies = getSpeciesId(genomeData[0]);

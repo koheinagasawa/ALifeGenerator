@@ -68,7 +68,7 @@ TEST(Generation, IncrementGeneration)
 
     Generation::Cinfo cinfo;
     {
-        cinfo.m_numGenomes = 100;
+        cinfo.m_numGenomes = 20;
         cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
         cinfo.m_genomeCinfo.m_numInputNodes = 3;
         cinfo.m_genomeCinfo.m_numOutputNodes = 3;
@@ -81,7 +81,7 @@ TEST(Generation, IncrementGeneration)
     Generation generation(cinfo);
     generation.evolveGeneration();
 
-    EXPECT_EQ(generation.getNumGenomes(), 100);
+    EXPECT_EQ(generation.getNumGenomes(), 20);
     for (int i = 0; i < generation.getNumGenomes(); i++)
     {
         const Generation::GenomeData& gd = generation.getGenomes()[i];
@@ -93,6 +93,26 @@ TEST(Generation, IncrementGeneration)
 
     generation.evolveGeneration();
 
-    EXPECT_EQ(generation.getNumGenomes(), 100);
+    EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_EQ(generation.getId().val(), 2);
+
+    generation.evolveGeneration();
+
+    EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_EQ(generation.getId().val(), 3);
+
+    generation.evolveGeneration();
+
+    EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_EQ(generation.getId().val(), 4);
+
+    generation.evolveGeneration();
+
+    EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_EQ(generation.getId().val(), 5);
+
+    generation.evolveGeneration();
+
+    EXPECT_EQ(generation.getNumGenomes(), 20);
+    EXPECT_EQ(generation.getId().val(), 6);
 }

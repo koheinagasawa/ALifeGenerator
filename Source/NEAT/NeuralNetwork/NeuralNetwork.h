@@ -122,6 +122,14 @@ protected:
     NodeDatas m_nodes; // Nodes of this network.
     Edges m_edges; // Edges of this network.
     NodeIds m_outputNodes; // A list of output nodes of this network.
+
+    // [TODO] Does it really make sense to store only output nodes but not input nodes?
+    //        When we evaluate the network, we evaluate each node starting from output nodes by backtracking
+    //        every incoming edges. In that sense, we don't need to know which nodes are input nodes.
+    //        One issue about this way of evaluation is you can't have a circular network.
+    //        In order to support circular network, it might be better to evaluate each node from input nodes
+    //        by tracking front line of evaluation and advancing time. In that approach, when you should stop
+    //        evaluation is a bit unclear, especially when you have circular network.
 };
 
 

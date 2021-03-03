@@ -10,4 +10,7 @@
     <ClCompile Include="PseudoRandom.cpp" />
     <ClCompile Include="Common.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Demos\XorNEAT\XorNEAT.vcxproj" />
+  </ItemGroup>
 </Project>

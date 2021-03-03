@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "..\Test\UnitTes
 		{656DD23A-07D7-4488-B9A7-9BB5028A3F8E} = {656DD23A-07D7-4488-B9A7-9BB5028A3F8E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XorNEAT", "..\Demos\XorNEAT\XorNEAT.vcxproj", "{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -47,6 +49,14 @@ Global
 		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x64.Build.0 = Release|x64
 		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x86.ActiveCfg = Release|Win32
 		{04E943CE-7B41-42B9-AEBE-DAC3EB252CA7}.Release|x86.Build.0 = Release|Win32
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Debug|x64.ActiveCfg = Debug|x64
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Debug|x64.Build.0 = Debug|x64
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Debug|x86.ActiveCfg = Debug|Win32
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Debug|x86.Build.0 = Debug|Win32
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Release|x64.ActiveCfg = Release|x64
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Release|x64.Build.0 = Release|x64
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Release|x86.ActiveCfg = Release|Win32
+		{A79A71D5-7CDA-4F7C-BADA-8D6D6181D8DE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

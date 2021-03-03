@@ -177,7 +177,6 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
-    <ClInclude Include="NeatBase.h" />
     <ClInclude Include="NeuralNetwork\MutableNetwork.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
   </ItemGroup>

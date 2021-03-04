@@ -84,6 +84,9 @@ namespace NEAT
         // Returns the list of all genomes. Genomes are sorted by SpeciesId.
         inline auto getGenomes() const->const GenomeDatas& { return *m_genomes; }
 
+        // Returns the list of all genomes in the order of fitness. The first genome is the best genome in this generation.
+        auto getGenomesInFitnessOrder() const->GenomeDatas;
+
         // Returns the list of all species.
         inline auto getAllSpecies() const->const SpeciesList& { return m_species; }
 

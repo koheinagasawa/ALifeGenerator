@@ -90,6 +90,18 @@ void Generation::init(const Cinfo& cinfo)
     calcFitness();
 }
 
+auto Generation::getGenomesInFitnessOrder() const->GenomeDatas
+{
+    GenomeDatas genomesOut = *m_genomes;
+
+    std::sort(genomesOut.begin(), genomesOut.end(), [](const GenomeData& a, const GenomeData& b)
+        {
+            return a.getFitness() > b.getFitness();
+        });
+
+    return genomesOut;
+}
+
 void Generation::preUpdateGeneration()
 {
     // Update species in the champion selector.
@@ -181,7 +193,7 @@ void Generation::postUpdateGeneration()
         s->setReproducible(reproducible);
     }
 
-    // Sort genomes by species id
+    // Sort genomes by species id.
     std::sort(m_genomes->begin(), m_genomes->end(), [this](const GenomeData& g1, const GenomeData& g2)
         {
             SpeciesId s1 = getSpecies(g1.getId());

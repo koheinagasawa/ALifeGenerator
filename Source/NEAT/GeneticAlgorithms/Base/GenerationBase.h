@@ -17,7 +17,7 @@ DECLARE_ID(GenomeId);
 class FitnessCalculatorBase
 {
 public:
-    virtual float calcFitness(const GenomeBase& genome) const = 0;
+    virtual float calcFitness(const GenomeBase& genome) = 0;
 };
 
 // Base class of generation used for generic algorithms.

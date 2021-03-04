@@ -66,11 +66,14 @@ public:
     // Add a new edge between node1 and node2 with weight.
     bool addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeId, float weight = 1.0f);
 
-    // Replace an node id with a new node id
+    // Replace an node id with a new node id.
     void replaceNodeId(NodeId nodeId, NodeId newId);
 
-    // Replace an edge id with a new edge id
+    // Replace an edge id with a new edge id.
     void replaceEdgeId(EdgeId edgeId, EdgeId newId);
+
+    // Returns the number of enabled edges.
+    int getNumEnabledEdges() const;
 
     // Enable/disable an edge.
     void setEdgeEnabled(EdgeId edgeId, bool enable);
@@ -260,6 +263,20 @@ void MutableNetwork<Node>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
     this->m_edges.insert({ newId, e });
 
     assert(this->validate());
+}
+
+template <typename Node>
+int MutableNetwork<Node>::getNumEnabledEdges() const
+{
+    int num = 0;
+    for (auto& itr : this->m_edges)
+    {
+        if (itr.second.isEnabled())
+        {
+            num++;
+        }
+    }
+    return num;
 }
 
 template <typename Node>

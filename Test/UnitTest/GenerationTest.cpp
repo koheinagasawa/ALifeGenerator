@@ -16,7 +16,7 @@ namespace
     class MyFitnessCalculator : public FitnessCalculatorBase
     {
     public:
-        virtual float calcFitness(const GenomeBase& genome) const override
+        virtual float calcFitness(const GenomeBase& genome) override
         {
             genome.evaluate({ 1.f, 1.f, 1.f });
 
@@ -64,6 +64,8 @@ TEST(Generation, CreateGeneration)
 TEST(Generation, IncrementGeneration)
 {
     using namespace NEAT;
+    using GenomeDatas = Generation::GenomeDatas;
+    using GenomeData = Generation::GenomeData;
 
     // Create a generation with 20 population.
     InnovationCounter innovCounter;
@@ -83,8 +85,22 @@ TEST(Generation, IncrementGeneration)
 
     Generation generation(cinfo);
 
+    auto verifyGenomes = [&generation]()
+    {
+        GenomeDatas genomes = generation.getGenomesInFitnessOrder();
+        float fitness = -1.f;
+        for (GenomeData genome : genomes)
+        {
+            const float f = genome.getFitness();
+            EXPECT_TRUE(f >= 0);
+            EXPECT_TRUE(fitness < 0 || f <= fitness);
+            fitness = f;
+        }
+    };
+
     // Evolve the generation several times.
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
 
@@ -100,30 +116,35 @@ TEST(Generation, IncrementGeneration)
     EXPECT_EQ(generation.getId().val(), 1);
 
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 2);
 
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 3);
 
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 4);
 
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);
     EXPECT_EQ(generation.getId().val(), 5);
 
     generation.evolveGeneration();
+    verifyGenomes();
 
     EXPECT_EQ(generation.getNumGenomes(), 20);
     EXPECT_TRUE(generation.getAllSpecies().size() > 0);

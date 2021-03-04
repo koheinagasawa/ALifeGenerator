@@ -241,7 +241,7 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
         const EdgeId cur2 = innovations2[curIdx2];
         if (cur1 == cur2)
         {
-            sumWeightDiffs += abs(network1->getWeightRaw(cur1) - network2->getWeightRaw(cur2));
+            sumWeightDiffs += abs(network1->getWeight(cur1) - network2->getWeight(cur2));
             curIdx1++;
             curIdx2++;
         }

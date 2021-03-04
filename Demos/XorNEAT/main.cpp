@@ -66,20 +66,18 @@ int main()
     Genome::Activation sigmoid = Genome::Activation([](float value) { return 1.f / (1.f + exp(-4.9f * value)); });
     sigmoid.m_name = "sigmoid";
 
-    InnovationCounter innovCounter;
 
     auto fitnessCalc = std::make_shared<XorFitnessCalculator>();
 
     Generation::Cinfo genCinfo;
-    genCinfo.m_numGenomes = 100;
+    genCinfo.m_numGenomes = 150;
     genCinfo.m_genomeCinfo.m_numInputNodes = 3; // Two inputs for XOR and one bias node.
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1;
     genCinfo.m_genomeCinfo.m_defaultActivation = &sigmoid;
-    genCinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
     genCinfo.m_fitnessCalculator = fitnessCalc;
 
     // Variables for performance investigation
-    const int maxGeneration = 150;
+    const int maxGeneration = 100;
     const int numRun = 100;
     int numFailed = 0;
     int totalGenerations = 0;
@@ -94,6 +92,9 @@ int main()
         std::cout << "Starting Run" << run << "..." << std::endl;
 
         fitnessCalc->m_numEvaluations = 0;
+        InnovationCounter innovCounter;
+        genCinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
+
         Generation generation(genCinfo);
 
         int i = 0;

@@ -124,7 +124,7 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
     m_innovations.push_back(newOutgoingEdge);
 }
 
-EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
+EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAddFlippedEdgeOnFail)
 {
     if (m_network->isConnected(inNode, outNode))
     {
@@ -135,13 +135,23 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
     const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
 
     // Add an edge.
-    if (m_network->addEdgeAt(inNode, outNode, newEdge, weight))
+    bool result = m_network->addEdgeAt(inNode, outNode, newEdge, weight);
+    if (tryAddFlippedEdgeOnFail && !result)
+    {
+        result = m_network->addEdgeAt(outNode, inNode, newEdge, weight);
+        assert(result);
+    }
+
+    if(result)
     {
         // Record the innovation.
         m_innovations.push_back(newEdge);
+        return newEdge;
     }
-
-    return newEdge;
+    else
+    {
+        return EdgeId::invalid();
+    }
 }
 
 void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)

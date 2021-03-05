@@ -249,6 +249,14 @@ TEST(Genome, CalcGenomesDistance)
 {
     using namespace NEAT;
 
+    // Custom random generator which always selects the minimum integer.
+    class MyRandom : public PseudoRandom
+    {
+    public:
+        MyRandom() : PseudoRandom(0) {}
+        virtual int randomInteger(int min, int max) override { return min; }
+    };
+
     // Create two genomes.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
@@ -273,10 +281,12 @@ TEST(Genome, CalcGenomesDistance)
 
     // Mutate the genomes several times.
     {
+        MyRandom random;
         DefaultMutation mutator;
         mutator.m_params.m_weightMutationRate = 0.0f;
         mutator.m_params.m_addEdgeMutationRate = 0.0f;
         mutator.m_params.m_addNodeMutationRate = 1.0f;
+        mutator.m_params.m_random = &random;
 
         DefaultMutation::MutationOut mutOut;
 
@@ -308,5 +318,5 @@ TEST(Genome, CalcGenomesDistance)
     params.m_weightFactor = 0.25f;
 
     EXPECT_EQ(Genome::calcDistance(genome1, genome1, params), 0.f);
-    EXPECT_EQ(Genome::calcDistance(genome1, genome2, params), 7.5f); // 7 * 0.5 + 16 * 0.25
+    EXPECT_EQ(Genome::calcDistance(genome1, genome2, params), 6.75f); // 7 * 0.5 + (0 + 5 + 4 + 4) * 0.25 <- note that some edges were disabled by mutation.
 }

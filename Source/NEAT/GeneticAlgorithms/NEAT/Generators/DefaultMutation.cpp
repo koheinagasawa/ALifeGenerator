@@ -168,7 +168,18 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         // Select a random node pair.
         const NodePair& pair = nodeCandidates[random->randomInteger(0, (int)nodeCandidates.size() - 1)];
         const float weight = random->randomReal(m_params.m_newEdgeMinWeight, m_params.m_newEdgeMaxWeight);
-        EdgeId newEdge = genome->addEdgeAt(pair.first, pair.second, weight);
+        bool tryAddFlippedEdgeOnFail = false;
+        EdgeId newEdge = genome->addEdgeAt(pair.first, pair.second, weight, tryAddFlippedEdgeOnFail);
+
+        if (!newEdge.isValid() &&
+            !network->isConnected(pair.second, pair.first) &&
+            network->getNode(pair.first).getNodeType() != Genome::Node::Type::INPUT &&
+            network->getNode(pair.second).getNodeType() != Genome::Node::Type::OUTPUT)
+        {
+            // Adding edge was failed most likely because it will cause a circular network.
+            // We might still be able to add an edge by flipping inNode and outNode when it's appropriate.
+            newEdge = genome->addEdgeAt(pair.second, pair.first, weight, tryAddFlippedEdgeOnFail);
+        }
 
         newEdgeAdded(newEdge);
 

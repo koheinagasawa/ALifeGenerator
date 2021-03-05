@@ -83,7 +83,9 @@ namespace NEAT
         void addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge);
 
         // Add a new edge between inNode and outNode with weight.
-        EdgeId addEdgeAt(NodeId inNode, NodeId outNode, float weight);
+        // When tryAddFlippedEdgeOnFail is true, after failing to add the original edge due to circular network,
+        // this function will try to add an edge by flipping inNode and outNode.
+        EdgeId addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAddFlippedEdgeOnFail = true);
 
         //
         // Innovation interface

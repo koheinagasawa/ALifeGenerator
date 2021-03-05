@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <stdio.h>
 
+// #define DEBUG_SLOW
+
 #define WARN(str, ...) printf(str##"\n", __VA_ARGS__);
 
 ////////////

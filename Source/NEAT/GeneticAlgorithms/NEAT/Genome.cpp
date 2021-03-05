@@ -135,18 +135,11 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight)
     const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
 
     // Add an edge.
-    bool result = m_network->addEdgeAt(inNode, outNode, newEdge, weight);
-
-    if (!result)
+    if (m_network->addEdgeAt(inNode, outNode, newEdge, weight))
     {
-        // Invalid edge id was returned. This means adding this edge makes the network circular.
-        // We should be able to add an edge of the opposite direction.
-        result = m_network->addEdgeAt(outNode, inNode, newEdge, weight);
-        assert(result);
+        // Record the innovation.
+        m_innovations.push_back(newEdge);
     }
-
-    // Record the innovation.
-    m_innovations.push_back(newEdge);
 
     return newEdge;
 }
@@ -274,6 +267,7 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
 
 bool Genome::validate() const
 {
+#ifdef DEBUG_SLOW
     // Make sure that the network is valid.
     if (!m_network.get()) return false;
     if (!m_network->validate()) return false;
@@ -314,6 +308,6 @@ bool Genome::validate() const
             if (m_network->getNode(nodeId).getNodeType() != Node::Type::INPUT) return false;
         }
     }
-
+#endif
     return true;
 }

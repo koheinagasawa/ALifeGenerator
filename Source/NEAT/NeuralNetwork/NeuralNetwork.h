@@ -322,6 +322,7 @@ void NeuralNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData&
 template <typename Node, typename Edge>
 bool NeuralNetwork<Node, Edge>::validate() const
 {
+#ifdef DEBUG_SLOW
     if (m_nodes.size() < 2) return false;
     if (m_edges.size() < 1) return false;
     if (m_outputNodes.size() < 1) return false;
@@ -397,7 +398,7 @@ bool NeuralNetwork<Node, Edge>::validate() const
 
     // Make sure the the network doesn't contain circular edges.
     if (hasCircularEdges()) return false;
-
+#endif
     return true;
 }
 

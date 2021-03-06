@@ -108,7 +108,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 }
 
                 // Check if these two nodes are already connected.
-                if (network->isConnected(n1Id, n2Id))
+                if (network->isConnected(n1Id, n2Id) || network->isConnected(n2Id, n1Id))
                 {
                     continue;
                 }
@@ -162,6 +162,8 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         mutationOut.m_numEdgesAdded += 2;
     }
 
+    assert(network->validate());
+
     // 3. Add an edge between random nodes
     if (!nodeCandidates.empty())
     {
@@ -172,7 +174,6 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         EdgeId newEdge = genome->addEdgeAt(pair.first, pair.second, weight, tryAddFlippedEdgeOnFail);
 
         if (!newEdge.isValid() &&
-            !network->isConnected(pair.second, pair.first) &&
             network->getNode(pair.first).getNodeType() != Genome::Node::Type::INPUT &&
             network->getNode(pair.second).getNodeType() != Genome::Node::Type::OUTPUT)
         {

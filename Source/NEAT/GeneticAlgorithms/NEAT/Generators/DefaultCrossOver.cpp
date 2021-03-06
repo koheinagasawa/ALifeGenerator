@@ -202,6 +202,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         network->setEdgeEnabled(edge, false);
     }
 
+    assert(network->validate());
+
     // Create a new genome.
     return std::make_unique<Genome>(genome1, network, innovations);
 }

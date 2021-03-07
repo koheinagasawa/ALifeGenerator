@@ -18,10 +18,10 @@ public:
         float score = 0.f;
 
         // Test 4 patterns of XOR
-        score += evaluate(genome, false, false);
-        score += 1.0f - evaluate(genome, false, true);
-        score += 1.0f - evaluate(genome, true, false);
-        score += evaluate(genome, true, true);
+        score += abs(evaluate(genome, false, false));
+        score += abs(1.0f - evaluate(genome, false, true));
+        score += abs(1.0f - evaluate(genome, true, false));
+        score += abs(evaluate(genome, true, true));
         score = 4.0f - score;
 
         return score * score;

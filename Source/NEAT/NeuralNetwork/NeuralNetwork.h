@@ -88,6 +88,8 @@ public:
     // Returns false if this network has invalid data.
     virtual bool validate() const;
 
+    bool hasCircularEdges() const;
+
 protected:
     // Default constructor.
     NeuralNetwork() = default;
@@ -115,8 +117,6 @@ protected:
 
     void evaluateNodeRecursive(NodeId id, EvaluationData& data);
 
-    // Used by validate().
-    bool hasCircularEdges() const;
     bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
 
     NodeDatas m_nodes; // Nodes of this network.
@@ -399,6 +399,12 @@ bool NeuralNetwork<Node, Edge>::validate() const
     // Make sure the the network doesn't contain circular edges.
     if (hasCircularEdges()) return false;
 #endif
+    static bool s_circularCheck = false;
+
+    if (s_circularCheck)
+    {
+        return !hasCircularEdges();
+    }
     return true;
 }
 

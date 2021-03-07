@@ -100,6 +100,7 @@ int main()
         int i = 0;
         for (; i < maxGeneration; ++i)
         {
+            std::cout << "Generation " << i << std::endl;
             generation.evolveGeneration();
             const int numGeneration = generation.getId().val();
 

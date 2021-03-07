@@ -180,7 +180,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.
-    while (!network->validate())
+    while (network->hasCircularEdges())
     {
         EdgeId edge;
 

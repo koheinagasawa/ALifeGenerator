@@ -287,14 +287,16 @@ void MutableNetwork<Node>::setEdgeEnabled(EdgeId edgeId, bool enable)
     this->m_edges[edgeId].setEnabled(enable);
 
 #ifdef _DEBUG
-    if (enable && this->hasCircularEdges())
+    if (enable)
     {
-        WARN("Cannot enabling edge %d because it would make this network circular.", edgeId.val());
-        this->m_edges[edgeId].setEnabled(false);
+        if (this->hasCircularEdges())
+        {
+            WARN("Cannot enabling edge %d because it would make this network circular.", edgeId.val());
+            this->m_edges[edgeId].setEnabled(false);
+        }
+        assert(this->validate());
     }
 #endif
-
-    assert(this->validate());
 }
 
 template <typename Node>

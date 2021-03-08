@@ -44,6 +44,14 @@ void GenomeBase::operator= (const GenomeBase& other)
     m_network = std::make_shared<Network>(*other.m_network.get());
 }
 
+void GenomeBase::clearNodeValues() const
+{
+    for (auto itr : m_network->getNodes())
+    {
+        m_network->accessNode(itr.first).setValue(0.f);
+    }
+}
+
 void GenomeBase::setInputNodeValues(const std::vector<float>& values) const
 {
     assert(values.size() == m_inputNodes.size());

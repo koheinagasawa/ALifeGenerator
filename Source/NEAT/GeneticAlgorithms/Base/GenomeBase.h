@@ -100,6 +100,8 @@ public:
     // Node interface
     //
 
+    void clearNodeValues() const;
+
     inline auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
 
     // Set values of input nodes.

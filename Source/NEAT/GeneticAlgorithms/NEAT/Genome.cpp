@@ -319,6 +319,5 @@ bool Genome::validate() const
         }
     }
 #endif
-    //return true;
-    return m_network->validate();
+    return true;
 }

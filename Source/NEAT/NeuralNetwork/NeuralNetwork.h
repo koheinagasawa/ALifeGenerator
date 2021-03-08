@@ -117,7 +117,7 @@ protected:
 
     void evaluateNodeRecursive(NodeId id, EvaluationData& data);
 
-    bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
+    virtual bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
 
     NodeDatas m_nodes; // Nodes of this network.
     Edges m_edges; // Edges of this network.
@@ -139,11 +139,6 @@ NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges,
     , m_outputNodes(outputNodes)
 {
     constructNodeData(nodes);
-
-    if (!validate())
-    {
-        WARN("Input nodes and edges are not valid neural network.");
-    }
 }
 
 template <typename Node, typename Edge>
@@ -399,12 +394,6 @@ bool NeuralNetwork<Node, Edge>::validate() const
     // Make sure the the network doesn't contain circular edges.
     if (hasCircularEdges()) return false;
 #endif
-    static bool s_circularCheck = false;
-
-    if (s_circularCheck)
-    {
-        return !hasCircularEdges();
-    }
     return true;
 }
 
@@ -421,11 +410,6 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unorde
 
     for (EdgeId e : getIncomingEdges(id))
     {
-        if (!m_edges.at(e).isEnabled())
-        {
-            continue;
-        }
-
         if (hasCircularEdgesRecursive(m_edges.at(e).getInNode(), visitedNodes))
         {
             return true;

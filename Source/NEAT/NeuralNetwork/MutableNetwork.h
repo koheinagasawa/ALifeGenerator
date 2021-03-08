@@ -81,12 +81,19 @@ public:
 
     // Return weight regardless of whether this edge is enabled.
     float getWeightRaw(EdgeId edgeId) const;
+
+protected:
+    virtual bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const override;
 };
 
 template <typename Node>
 MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes)
     : Base(nodes, edges, outputNodes)
 {
+    if (!this->validate())
+    {
+        WARN("Input nodes and edges are not valid neural network.");
+    }
 }
 
 template <typename Node>
@@ -311,3 +318,29 @@ float MutableNetwork<Node>::getWeightRaw(EdgeId edgeId) const
     return this->m_edges.at(edgeId).getWeightRaw();
 }
 
+template <typename Node>
+bool MutableNetwork<Node>::hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const
+{
+    if (visitedNodes.find(id) != visitedNodes.end())
+    {
+        // Already visited this node.
+        return true;
+    }
+
+    visitedNodes.insert(id);
+
+    for (EdgeId e : this->getIncomingEdges(id))
+    {
+        if (!this->m_edges.at(e).isEnabled())
+        {
+            continue;
+        }
+
+        if (this->hasCircularEdgesRecursive(this->m_edges.at(e).getInNode(), visitedNodes))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

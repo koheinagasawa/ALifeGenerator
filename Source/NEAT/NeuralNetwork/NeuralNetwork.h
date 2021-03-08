@@ -421,6 +421,11 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unorde
 
     for (EdgeId e : getIncomingEdges(id))
     {
+        if (!m_edges.at(e).isEnabled())
+        {
+            continue;
+        }
+
         if (hasCircularEdgesRecursive(m_edges.at(e).getInNode(), visitedNodes))
         {
             return true;

@@ -297,6 +297,11 @@ void NeuralNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData&
     float sumValue = 0;
     for (EdgeId incomingId : node.m_incomingEdges)
     {
+        if (getWeight(incomingId) == 0.f)
+        {
+            continue;
+        }
+
         NodeId inNodeId = getInNode(incomingId);
 
         // Recurse if we haven't evaluated this parent node yet.

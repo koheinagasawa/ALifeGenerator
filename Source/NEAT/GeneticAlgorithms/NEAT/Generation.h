@@ -29,7 +29,7 @@ namespace NEAT
         {
             // Maximum count of generations which one species can stay in stagnant.
             // Species who is stagnant more than this count is not allowed to reproduce.
-            uint16_t m_maxStagnantCount = 5;
+            uint16_t m_maxStagnantCount = 15;
 
             // Rate of interspecies crossover.
             float m_interSpeciesCrossOverRate = 0.001f;

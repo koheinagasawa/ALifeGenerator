@@ -120,6 +120,7 @@ auto DefaultGenomeSelector::selectGenome()->const GenomeData*
 void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const GenomeData*& g2)
 {
     assert(m_spciecesStartEndIndices.size() > 0);
+    assert(hasSpeciesMoreThanOneMember());
 
     g1 = nullptr;
     g2 = nullptr;
@@ -129,44 +130,42 @@ void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const Genome
         return;
     }
 
-    // Select a random genome.
-    g1 = selectGenome();
-    assert(g1);
+    const IndexSet* startEnd;
 
-    // Get start and end indices of the species of g1.
-    const IndexSet& startEnd = m_spciecesStartEndIndices.at(getSpeciesId(*g1));
-
-    if (m_random.randomReal01() < m_interSpeciesSelection || (startEnd.m_end - startEnd.m_start) < 2)
+    while (1)
     {
-        // Inter species cross-over. Just select another genome among the entire generation.
-        g2 = g1;
-        while (g1 == g2)
+        // Select a random genome.
+        g1 = selectGenome();
+        assert(g1);
+
+        // Get start and end indices of the species of g1.
+        startEnd = &m_spciecesStartEndIndices.at(getSpeciesId(*g1));
+
+        // Check if this species has more than one member, otherwise try to select other species.
+        if ((startEnd->m_end - startEnd->m_start) >= 2)
         {
-            g2 = selectGenome();
+            break;
         }
+    }
+
+    // Intra species cross-over. Select another genome within the same species.
+    if (startEnd->m_end - startEnd->m_start == 2)
+    {
+        // There are only two genomes in this species.
+        g1 = m_genomes[startEnd->m_start];
+        g2 = m_genomes[startEnd->m_end - 1];
     }
     else
     {
-        // Intra species cross-over. Select another genome within the same species.
-
-        if (startEnd.m_end - startEnd.m_start == 2)
+        // Select g2 among the species.
+        g2 = g1;
+        while (g1 == g2)
         {
-            // There are only two genomes in this species.
-            g1 = m_genomes[startEnd.m_start];
-            g2 = m_genomes[startEnd.m_end - 1];
+            g2 = selectGenome(startEnd->m_start, startEnd->m_end);
         }
-        else
-        {
-            // Select g2 among the species.
-            g2 = g1;
-            while (g1 == g2)
-            {
-                g2 = selectGenome(startEnd.m_start, startEnd.m_end);
-            }
-        }
-
-        assert(getSpeciesId(*g1) == getSpeciesId(*g2));
     }
+
+    assert(getSpeciesId(*g1) == getSpeciesId(*g2));
 }
 
 auto DefaultGenomeSelector::selectGenome(int start, int end)->const GenomeData*

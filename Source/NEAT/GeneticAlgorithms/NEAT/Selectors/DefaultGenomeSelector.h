@@ -31,11 +31,12 @@ namespace NEAT
         // Select two random genomes.
         virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) override;
 
-        // Set the probability to select two genomes from different species when selectTwoGenomes() is called.
-        inline void setInterSpeciesSelectionRate(float interSpeciesCrossOverRate) { m_interSpeciesSelection = interSpeciesCrossOverRate; }
-
         // Returns the number of genomes which could be selected by this selector.
         inline int getNumGenomes() const { return (int)m_genomes.size(); }
+
+        void setNumGenomesToSelect();
+
+        bool hasSpeciesMoreThanOneMember() const;
 
     protected:
         // Select a random genome between start and end (not including end) in m_genomes array.
@@ -58,9 +59,6 @@ namespace NEAT
         std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices; // Intermediate data used internally.
         const SpeciesList& m_species;
         const GenomeSpeciesMap& m_genomeSpeciesMap;
-
-        // Probability to select two genomes from different species when selectTwoGenomes() is called.
-        float m_interSpeciesSelection = 0.001f;
 
         // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;

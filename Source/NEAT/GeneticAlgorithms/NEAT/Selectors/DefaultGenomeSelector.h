@@ -60,6 +60,17 @@ namespace NEAT
         const SpeciesList& m_species;
         const GenomeSpeciesMap& m_genomeSpeciesMap;
 
+        struct SpeciesData
+        {
+            int m_population;
+            int m_remainingPopulation;
+            float m_sumFitness;
+            GenomeDataPtrs m_genomes;
+        };
+
+        std::vector<SpeciesData> m_speciesData;
+        int m_currentSpecies;
+
         // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;
 

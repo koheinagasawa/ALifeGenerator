@@ -35,7 +35,7 @@
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClCompile>
-    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.cpp">
+    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.cpp">
       <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,7 +86,7 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClInclude>
-    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.h">
+    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.h">
       <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
     </ClInclude>
   </ItemGroup>

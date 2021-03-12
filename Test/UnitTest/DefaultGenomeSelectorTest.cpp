@@ -1,12 +1,12 @@
 /*
-* DefaultGenomeSelectorTest.cpp
+* SpeciesBasedGenomeSelectorTest.cpp
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 
 namespace
 {
@@ -34,15 +34,15 @@ namespace
     };
 }
 
-TEST(DefaultGenomeSelector, CreateSelector)
+TEST(SpeciesBasedGenomeSelector, CreateSelector)
 {
     using namespace NEAT;
     using GenomePtr = std::shared_ptr<Genome>;
     using GenomeData = GenerationBase::GenomeData;
     using GenomeDatas = GenerationBase::GenomeDatas;
-    using SpeciesPtr = DefaultGenomeSelector::SpeciesPtr;
-    using SpeciesList = DefaultGenomeSelector::SpeciesList;
-    using GenomeSpeciesMap = DefaultGenomeSelector::GenomeSpeciesMap;
+    using SpeciesPtr = SpeciesBasedGenomeSelector::SpeciesPtr;
+    using SpeciesList = SpeciesBasedGenomeSelector::SpeciesList;
+    using GenomeSpeciesMap = SpeciesBasedGenomeSelector::GenomeSpeciesMap;
 
     // Create data storage we need to create DefaultGenomeSelector.
     GenomeDatas genomes;
@@ -64,7 +64,7 @@ TEST(DefaultGenomeSelector, CreateSelector)
     // Create a selector with no species.
     // You can select one genome selectTwoGenomes shouldn't work.
     {
-        DefaultGenomeSelector selector(genomes, species, genomeSpeciesMap);
+        SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap);
         EXPECT_EQ(selector.getNumGenomes(), 1);
         EXPECT_EQ(selector.selectGenome(), &genomes[0]);
         const GenomeData* g1 = nullptr;
@@ -105,7 +105,7 @@ TEST(DefaultGenomeSelector, CreateSelector)
     {
         MyRandom random;
         random.reset();
-        DefaultGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
+        SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
         EXPECT_EQ(selector.getNumGenomes(), 5);
         EXPECT_EQ(selector.selectGenome(), &genomes[0]);
 
@@ -139,7 +139,7 @@ TEST(DefaultGenomeSelector, CreateSelector)
     {
         MyRandom random;
         random.reset();
-        DefaultGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
+        SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
         EXPECT_EQ(selector.getNumGenomes(), 5);
         EXPECT_EQ(selector.selectGenome(), &genomes[0]);
 

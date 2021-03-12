@@ -6,7 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/UniformGenomeSelector.h>
 
@@ -205,7 +205,7 @@ void Generation::postUpdateGeneration()
 auto Generation::createSelector()->GenomeSelectorPtr
 {
     // Create a DefaultGenomeSelector.
-    std::shared_ptr<DefaultGenomeSelector> selector = std::make_shared<DefaultGenomeSelector>(*m_genomes, m_species, m_genomesSpecies);
+    std::shared_ptr<SpeciesBasedGenomeSelector> selector = std::make_shared<SpeciesBasedGenomeSelector>(*m_genomes, m_species, m_genomesSpecies);
     if(selector->getNumGenomes() > 0)
     {
         selector->setInterSpeciesSelectionRate(m_params.m_interSpeciesCrossOverRate);

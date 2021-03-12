@@ -176,7 +176,7 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Genome.h" />
-    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
     <ClInclude Include="NeuralNetwork\MutableNetwork.h" />
@@ -192,7 +192,7 @@
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Genome.cpp" />
-    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\DefaultGenomeSelector.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Species.cpp" />
     <ClCompile Include="Neat.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

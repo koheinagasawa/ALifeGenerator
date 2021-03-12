@@ -1,5 +1,5 @@
 /*
-* DefaultGenomeSelector.h
+* SpeciesBasedGenomeSelector.h
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
@@ -13,7 +13,7 @@
 namespace NEAT
 {
     // Helper class to select a random genome by taking fitness into account.
-    class DefaultGenomeSelector : public GenomeSelector
+    class SpeciesBasedGenomeSelector : public GenomeSelector
     {
     public:
         // Type declarations.
@@ -23,7 +23,7 @@ namespace NEAT
         using GenomeDataPtrs = std::vector<const GenomeData*>;
 
         // Constructor
-        DefaultGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random = nullptr);
+        SpeciesBasedGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random = nullptr);
 
         // Select a random genome.
         virtual auto selectGenome()->const GenomeData* override;
@@ -32,47 +32,34 @@ namespace NEAT
         virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) override;
 
         // Returns the number of genomes which could be selected by this selector.
-        inline int getNumGenomes() const { return (int)m_genomes.size(); }
+        inline int getNumGenomes() const { return m_numGenomes; }
 
-        void setNumGenomesToSelect();
+        void setNumGenomesToSelect(int numGenomes);
 
-        bool hasSpeciesMoreThanOneMember() const;
+        inline bool hasSpeciesMoreThanOneMember() const { return m_hasSpeciesMoreThanOneMember; }
 
     protected:
         // Select a random genome between start and end (not including end) in m_genomes array.
         auto selectGenome(int start, int end)->const GenomeData*;
 
-        // Returns SpeciesId of the given genome.
-        SpeciesId getSpeciesId(const GenomeData& gd) const;
-
-        // Returns true if the species of the given genome is reproducible.
-        bool isGenomeReproducible(const GenomeData& gd) const;
-
-        // Start and end index of genomes in m_genomes array for each species.
-        struct IndexSet
-        {
-            int m_start, m_end;
-        };
-
-        GenomeDataPtrs m_genomes; // The genomes in the generation.
-        std::vector<float> m_sumFitness; // Sum values of genomes' fitness.
-        std::unordered_map<SpeciesId, IndexSet> m_spciecesStartEndIndices; // Intermediate data used internally.
-        const SpeciesList& m_species;
-        const GenomeSpeciesMap& m_genomeSpeciesMap;
-
         struct SpeciesData
         {
-            int m_population;
-            int m_remainingPopulation;
-            float m_sumFitness;
+            int m_population = 0;
+            int m_remainingPopulation = 0;
+            float m_sumFitness = 0;
             GenomeDataPtrs m_genomes;
+            SpeciesPtr m_species;
         };
 
         std::vector<SpeciesData> m_speciesData;
-        int m_currentSpecies;
+        int m_currentSpeciesDataIndex;
+        float m_totalFitness;
+        int m_numGenomes;
 
         // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;
+
+        bool m_hasSpeciesMoreThanOneMember;
 
         // Random generator.
         PseudoRandom& m_random;

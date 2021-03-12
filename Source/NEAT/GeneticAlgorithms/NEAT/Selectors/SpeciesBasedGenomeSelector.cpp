@@ -1,18 +1,16 @@
 /*
-* DefaultGenomeSelector.cpp
+* SpeciesBasedGenomeSelector.cpp
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Selectors/DefaultGenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 
 using namespace NEAT;
 
-DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random)
+SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genomeData, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random)
     : GenomeSelector()
-    , m_species(species)
-    , m_genomeSpeciesMap(genomeSpeciesMap)
     , m_random(random ? *random : PseudoRandom::getInstance())
 {
     const int numGenomes = (int)genomeData.size();
@@ -24,11 +22,6 @@ DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, cons
         SpeciesId curId = getSpeciesId(genomeData[0]);
         for (const GenomeData& g : genomeData)
         {
-            if (!isGenomeReproducible(g) || g.getFitness() == 0)
-            {
-                continue;
-            }
-
             SpeciesId id = getSpeciesId(g);
             if (curId != id)
             {
@@ -39,85 +32,90 @@ DefaultGenomeSelector::DefaultGenomeSelector(const GenomeDatas& genomeData, cons
     }
 #endif
 
-    m_genomes.clear();
-    m_sumFitness.clear();
-    m_spciecesStartEndIndices.clear();
-    m_genomes.reserve(numGenomes);
-    m_sumFitness.reserve(numGenomes + 1);
-    float sumFitness = 0;
-    m_sumFitness.push_back(0);
+    m_speciesData.resize(species.size());
+    m_speciesData.resize(1);
 
-    m_spciecesStartEndIndices.reserve(m_species.size());
+    m_totalFitness = 0;
+    m_numGenomes = 0;
+    m_hasSpeciesMoreThanOneMember = false;
 
     // Helper functions to calculate factor for fitness sharing.
     // Genome's fitness is going to be normalized by the number of members in its species.
-    auto calcFitnessSharingFactor = [this](SpeciesId speciesId)->float
+    auto calcFitnessSharingFactor = [this](SpeciesPtr species)->float
     {
-        return speciesId.isValid() ? 1.f / (float)m_species.at(speciesId)->getNumMembers() : 1.0f;
+        return species ? 1.f / (float)species->getNumMembers() : 1.0f;
     };
 
-    SpeciesId currentSpecies = getSpeciesId(genomeData[0]);
-    float fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-    int currentSpeciesStartIndex = 0;
+    SpeciesId currentSpeciesId = SpeciesId::invalid();
+    SpeciesPtr currentSpecies = nullptr;
+    SpeciesData* speciesData;
+    float fitnessSharingFactor;
 
     auto addGenomes = [&]()
     {
         // Calculate adjusted fitness for each genome and sum up those fitnesses.
         for (const GenomeData& g : genomeData)
         {
-            if (!isGenomeReproducible(g) || g.getFitness() == 0)
+            const SpeciesId sId = genomeSpeciesMap.find(g.getId()) != genomeSpeciesMap.end() ? genomeSpeciesMap.at(g.getId()) : SpeciesId::invalid();
+            if (!sId.isValid() || !species.at(sId)->isReproducible() || g.getFitness() == 0)
             {
                 continue;
             }
 
             assert(g.getFitness() > 0);
 
-            if (currentSpecies != getSpeciesId(g))
+            if (currentSpeciesId != sId)
             {
                 // This genome is in a new species.
-                m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
+                currentSpeciesId = sId;
+                currentSpecies = species.at(currentSpeciesId);
 
-                currentSpecies = getSpeciesId(g);
-                fitnessSharingFactor = calcFitnessSharingFactor(currentSpecies);
-                currentSpeciesStartIndex = (int)m_genomes.size();
+                m_speciesData.push_back(SpeciesData());
+                speciesData = &m_speciesData.back();
+                speciesData->m_species = currentSpecies;
+
+                fitnessSharingFactor = currentSpecies ? 1.f / (float)currentSpecies->getNumMembers() : 1.0f;
+            }
+            else
+            {
+                m_hasSpeciesMoreThanOneMember = true;
             }
 
-            m_genomes.push_back(&g);
-            sumFitness += g.getFitness() * fitnessSharingFactor;
-            m_sumFitness.push_back(sumFitness);
+            float fitness = g.getFitness() * fitnessSharingFactor;
+            speciesData->m_genomes.push_back(&g);
+            speciesData->m_sumFitness += fitness;
+            m_totalFitness += fitness;
+            m_numGenomes++;
         }
     };
 
     addGenomes();
 
-    if (m_genomes.size() == 0)
+    if (m_numGenomes == 0)
     {
         // There was no genomes which can be reproducible or has positive fitness.
+        // Try again without skipping stagnant species.
+        m_skipStagnantSpecies = false;
+        addGenomes();
 
-        if (m_species.size() > 0)
-        {
-            // Try again without skipping stagnant species.
-            m_skipStagnantSpecies = false;
-            addGenomes();
-        }
-
-        if (m_genomes.size() == 0)
+        if (m_numGenomes == 0)
         {
             WARN("Failed to setup DefaultGenomeSelector because all genomes have zero fitness.");
         }
     }
-
-    m_spciecesStartEndIndices.insert({ currentSpecies, { currentSpeciesStartIndex, (int)m_genomes.size() } });
-
-    assert(m_genomes.size() + 1 == m_sumFitness.size());
 }
 
-auto DefaultGenomeSelector::selectGenome()->const GenomeData* 
+void SpeciesBasedGenomeSelector::setNumGenomesToSelect(int numGenomes)
 {
-    return selectGenome(0, m_genomes.size());
+
 }
 
-void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const GenomeData*& g2)
+auto SpeciesBasedGenomeSelector::selectGenome()->const GenomeData* 
+{
+    return selectGenome(0, m_numGenomes);
+}
+
+void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const GenomeData*& g2)
 {
     assert(m_spciecesStartEndIndices.size() > 0);
     assert(hasSpeciesMoreThanOneMember());
@@ -168,7 +166,7 @@ void DefaultGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const Genome
     assert(getSpeciesId(*g1) == getSpeciesId(*g2));
 }
 
-auto DefaultGenomeSelector::selectGenome(int start, int end)->const GenomeData*
+auto SpeciesBasedGenomeSelector::selectGenome(int start, int end)->const GenomeData*
 {
     assert(m_genomes.size() > 0 && (m_genomes.size() + 1 == m_sumFitness.size()));
     assert(start >= 0 && end < (int)m_sumFitness.size() && start < end);
@@ -197,17 +195,7 @@ auto DefaultGenomeSelector::selectGenome(int start, int end)->const GenomeData*
     }
 }
 
-SpeciesId DefaultGenomeSelector::getSpeciesId(const GenomeData& gd) const
+auto SpeciesBasedGenomeSelector::getSpeciesId(const GenomeData& gd)->SpeciesId const
 {
     return m_genomeSpeciesMap.find(gd.getId()) != m_genomeSpeciesMap.end() ? m_genomeSpeciesMap.at(gd.getId()) : SpeciesId::invalid();
-}
-
-bool DefaultGenomeSelector::isGenomeReproducible(const GenomeData& gd) const
-{
-    if (!m_skipStagnantSpecies)
-    {
-        return true;
-    }
-    SpeciesId speciesId = getSpeciesId(gd);
-    return !speciesId.isValid() || m_species.at(speciesId)->isReproducible();
 }

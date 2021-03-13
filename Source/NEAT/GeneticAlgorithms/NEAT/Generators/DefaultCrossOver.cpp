@@ -215,6 +215,8 @@ void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes,
     // [todo] Do not always generate all the remaining genomes and add a parameter to decide calculate the number of genomes to generate.
     const int numGenomesToCrossover = numRemaningGenomes;
 
+    genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::TWO);
+
     // Clear new genomes output.
     m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numGenomesToCrossover);
@@ -253,4 +255,6 @@ void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes,
 
         m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase>(newGenome));
     }
+
+    genomeSelector->postSelection();
 }

@@ -206,6 +206,8 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
         return;
     }
 
+    genomeSelector->preSelection(numGenomesToMutate, GenomeSelector::ONE);
+
     std::vector<MutationOut> mutationOuts;
     mutationOuts.resize(numGenomesToMutate);
 
@@ -283,4 +285,6 @@ void DefaultMutation::generate(int numTotalGenomes, int numRemaningGenomes, Geno
 
         m_generatedGenomes.push_back(std::static_pointer_cast<GenomeBase>(newGenome));
     }
+
+    genomeSelector->postSelection();
 }

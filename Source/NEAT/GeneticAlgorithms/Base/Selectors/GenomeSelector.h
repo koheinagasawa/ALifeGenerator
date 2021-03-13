@@ -16,6 +16,18 @@ public:
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
 
+    enum SelectionMode
+    {
+        ONE,
+        TWO
+    };
+
+    // This function should be called before the first selection.
+    virtual void preSelection(int numGenomesToSelect, SelectionMode mode) {}
+
+    // This function should be called after the last selection.
+    virtual void postSelection() {}
+
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* = 0;
 

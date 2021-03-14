@@ -62,16 +62,24 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
     genomes.back().setFitness(1.f);
 
     // Create a selector with no species.
-    // You can select one genome selectTwoGenomes shouldn't work.
+    // The selector should be invalid and selection should fail.
     {
         SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap);
-        EXPECT_EQ(selector.getNumGenomes(), 1);
-        EXPECT_EQ(selector.selectGenome(), &genomes[0]);
-        const GenomeData* g1 = nullptr;
-        const GenomeData* g2 = nullptr;
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, nullptr);
-        EXPECT_EQ(g2, nullptr);
+        EXPECT_EQ(selector.getNumGenomes(), 0);
+        {
+            selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
+            EXPECT_EQ(selector.selectGenome(), nullptr);
+            selector.postSelection();
+        }
+        {
+            selector.preSelection(1, GenomeSelector::SELECT_TWO_GENOMES);
+            const GenomeData* g1 = nullptr;
+            const GenomeData* g2 = nullptr;
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, nullptr);
+            EXPECT_EQ(g2, nullptr);
+            selector.postSelection();
+        }
     }
 
     // Create more genomes.
@@ -107,24 +115,32 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
         random.reset();
         SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
         EXPECT_EQ(selector.getNumGenomes(), 5);
-        EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+        {
+            selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
+            EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+            selector.postSelection();
+        }
 
         random.reset();
 
-        const GenomeData* g1 = nullptr;
-        const GenomeData* g2 = nullptr;
+        {
+            selector.preSelection(2, GenomeSelector::SELECT_TWO_GENOMES);
+            const GenomeData* g1 = nullptr;
+            const GenomeData* g2 = nullptr;
 
-        selector.setInterSpeciesSelectionRate(1.0f);
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[0]);
-        EXPECT_EQ(g2, &genomes[1]);
+            selector.setInterSpeciesSelectionRate(1.0f);
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[1]);
 
-        random.reset();
+            random.reset();
 
-        selector.setInterSpeciesSelectionRate(0.0f);
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[0]);
-        EXPECT_EQ(g2, &genomes[1]);
+            selector.setInterSpeciesSelectionRate(0.0f);
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[1]);
+            selector.postSelection();
+        }
     }
 
     // Create a map
@@ -141,37 +157,48 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
         random.reset();
         SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
         EXPECT_EQ(selector.getNumGenomes(), 5);
-        EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+        {
+            selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
+            EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+            selector.postSelection();
+        }
 
         random.reset();
 
-        const GenomeData* g1 = nullptr;
-        const GenomeData* g2 = nullptr;
+        {
+            // Allow inter-species selection
+            selector.setInterSpeciesSelectionRate(1.0f);
+            selector.preSelection(2, GenomeSelector::SELECT_TWO_GENOMES);
 
-        // Allow inter-species selection
-        selector.setInterSpeciesSelectionRate(1.0f);
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[0]);
-        EXPECT_EQ(g2, &genomes[1]);
+            const GenomeData* g1 = nullptr;
+            const GenomeData* g2 = nullptr;
 
-        random.m_val = 1.0f;
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[1]);
 
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[1]);
-        EXPECT_EQ(g2, &genomes[2]);
+            random.m_val = 1.0f;
 
-        random.m_val = 1.0f;
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[1]);
+            EXPECT_EQ(g2, &genomes[2]);
+            selector.postSelection();
 
-        // Disallow inter-species selection
-        selector.setInterSpeciesSelectionRate(0.0f);
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[0]);
-        EXPECT_EQ(g2, &genomes[1]);
+            random.m_val = 1.0f;
 
-        random.m_val = 3.0f;
+            // Disallow inter-species selection
+            selector.setInterSpeciesSelectionRate(0.0f);
+            selector.preSelection(2, GenomeSelector::SELECT_TWO_GENOMES);
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[1]);
 
-        selector.selectTwoGenomes(g1, g2);
-        EXPECT_EQ(g1, &genomes[3]);
-        EXPECT_EQ(g2, &genomes[4]);
+            random.m_val = 3.0f;
+
+            selector.selectTwoGenomes(g1, g2);
+            EXPECT_EQ(g1, &genomes[3]);
+            EXPECT_EQ(g2, &genomes[4]);
+            selector.postSelection();
+        }
     }
 }

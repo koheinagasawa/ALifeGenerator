@@ -43,8 +43,7 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
     }
 #endif
 
-    m_speciesData.resize(species.size());
-    m_speciesData.resize(1);
+    m_speciesData.reserve(species.size());
 
     // Helper functions to calculate factor for fitness sharing.
     // Genome's fitness is going to be normalized by the number of members in its species.
@@ -125,13 +124,15 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
 
     m_currentSpeciesDataIndex = 0;
 
-    if (numGenomesToSelect <= 0)
+    if (numGenomesToSelect <= 0 || 
+        (!hasSpeciesMoreThanOneMember() && m_mode == GenomeSelector::SELECT_TWO_GENOMES) ||
+        m_totalFitness == 0.f)
     {
         return;
     }
 
     int remainingGenomes = numGenomesToSelect;
-    m_numInterSpeciesSelection = (m_mode == GenomeSelector::ONE) ? 0 : (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
+    m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
     remainingGenomes -= m_numInterSpeciesSelection;
 
     // Distribute population to species based on the sum of fitness of its members.
@@ -141,7 +142,7 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
         for (auto& sData : m_speciesData)
         {
             // Skip species which has only one genome when for selection by two genomes at once.
-            if (m_mode == GenomeSelector::TWO && sData.getNumGenomes() < 2)
+            if (m_mode == GenomeSelector::SELECT_TWO_GENOMES && sData.getNumGenomes() < 2)
             {
                 continue;
             }
@@ -173,6 +174,17 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
         sData.m_remainingPopulation = sData.m_population;
     }
 
+    // Set the current species data index to the first species which has population
+    while (m_speciesData[m_currentSpeciesDataIndex].m_population == 0)
+    {
+        m_currentSpeciesDataIndex++;
+        if (m_currentSpeciesDataIndex == (int)m_speciesData.size())
+        {
+            // No species has population. This means all the selections are going to be inter-species selection.
+            break;
+        }
+    }
+
     if (m_numInterSpeciesSelection)
     {
         m_cumulativeSpeciesFitness.reserve(m_speciesData.size() + 1);
@@ -202,14 +214,31 @@ void SpeciesBasedGenomeSelector::preSelection(int numGenomesToSelect, SelectionM
 
 void SpeciesBasedGenomeSelector::postSelection()
 {
-    assert(m_currentSpeciesDataIndex == (int)m_speciesData.size());
-    assert(m_speciesData.back().m_remainingPopulation == 0);
+    if (m_numGenomes == 0)
+    {
+        return;
+    }
+
+#ifdef _DEBUG
+    {
+        for (const auto& sData : m_speciesData)
+        {
+            assert(sData.m_remainingPopulation == 0);
+        }
+    }
+#endif
+
 }
 
 auto SpeciesBasedGenomeSelector::selectGenomeImpl()->const GenomeData*
 {
+    if (m_numGenomes == 0)
+    {
+        return nullptr;
+    }
+
     assert(m_currentSpeciesDataIndex >= 0 && m_currentSpeciesDataIndex < (int)m_speciesData.size());
-    assert(m_numGenomes > 0 && m_speciesData.size() > 0);
+    assert(m_speciesData.size() > 0);
 
     const SpeciesData& sData = m_speciesData[m_currentSpeciesDataIndex];
 
@@ -235,18 +264,20 @@ auto SpeciesBasedGenomeSelector::selectGenomeImpl()->const GenomeData*
 
 auto SpeciesBasedGenomeSelector::selectGenome()->const GenomeData*
 {
-    assert(m_mode == GenomeSelector::ONE);
+    assert(m_mode == GenomeSelector::SELECT_ONE_GENOME);
 
     const GenomeData* genomeOut =  selectGenomeImpl();
-    assert(genomeOut);
-    decrementPopulationOfCurrentSpecies();
+    if (genomeOut)
+    {
+        decrementPopulationOfCurrentSpecies();
+    }
 
     return genomeOut;
 }
 
 void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const GenomeData*& g2)
 {
-    assert(m_mode == GenomeSelector::TWO);
+    assert(m_mode == GenomeSelector::SELECT_TWO_GENOMES);
 
     g1 = nullptr;
     g2 = nullptr;
@@ -272,8 +303,6 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
 
         SpeciesData& sData = m_speciesData[m_currentSpeciesDataIndex];
 
-        assert(!(sData.m_remainingPopulation & 0x1) && sData.m_remainingPopulation >= 2);
-
         if (sData.getNumGenomes() == 2)
         {
             // There are only two genomes in this species.
@@ -283,11 +312,11 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
         else
         {
             // Select g1 and g2 among the species.
-            g1 = selectGenome();
+            g1 = selectGenomeImpl();
             g2 = g1;
             while (g1 == g2)
             {
-                g2 = selectGenome();
+                g2 = selectGenomeImpl();
             }
         }
 

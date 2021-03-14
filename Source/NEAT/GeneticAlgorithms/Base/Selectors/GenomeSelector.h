@@ -18,12 +18,13 @@ public:
 
     enum SelectionMode
     {
-        ONE,
-        TWO
+        NONE,
+        SELECT_ONE_GENOME,
+        SELECT_TWO_GENOMES
     };
 
     // This function should be called before the first selection.
-    virtual void preSelection(int numGenomesToSelect, SelectionMode mode) {}
+    virtual void preSelection(int numGenomesToSelect, SelectionMode mode = NONE) {}
 
     // This function should be called after the last selection.
     virtual void postSelection() {}

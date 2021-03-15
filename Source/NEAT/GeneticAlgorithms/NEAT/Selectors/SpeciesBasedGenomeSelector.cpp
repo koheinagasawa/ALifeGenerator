@@ -165,7 +165,7 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
             }
         }
 
-        fitnessScale *= 10.f;
+        fitnessScale *= 2.f;
     }
 
     // Set remaining population
@@ -202,7 +202,10 @@ void SpeciesBasedGenomeSelector::decrementPopulationOfCurrentSpecies()
     sData.m_remainingPopulation -= 1;
     if (sData.m_remainingPopulation == 0)
     {
-        m_currentSpeciesDataIndex++;
+        do
+        {
+            m_currentSpeciesDataIndex++;
+        } while (m_currentSpeciesDataIndex < (int)m_speciesData.size() && m_speciesData[m_currentSpeciesDataIndex].m_population == 0);
     }
 }
 

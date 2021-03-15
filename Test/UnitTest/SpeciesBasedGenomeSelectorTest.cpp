@@ -109,19 +109,17 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
     }
 
     // Create a selector with empty map.
-    // Species will affect adjusted fitness of each genome but shouldn't affect selection itself.
+    // The selector should be invalid and selection should fail.
     {
         MyRandom random;
         random.reset();
         SpeciesBasedGenomeSelector selector(genomes, species, genomeSpeciesMap, &random);
-        EXPECT_EQ(selector.getNumGenomes(), 5);
+        EXPECT_EQ(selector.getNumGenomes(), 0);
         {
             selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
-            EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+            EXPECT_EQ(selector.selectGenome(), nullptr);
             selector.postSelection();
         }
-
-        random.reset();
 
         {
             selector.preSelection(2, GenomeSelector::SELECT_TWO_GENOMES);
@@ -130,15 +128,8 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
 
             selector.setInterSpeciesSelectionRate(1.0f);
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[0]);
-            EXPECT_EQ(g2, &genomes[1]);
-
-            random.reset();
-
-            selector.setInterSpeciesSelectionRate(0.0f);
-            selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[0]);
-            EXPECT_EQ(g2, &genomes[1]);
+            EXPECT_EQ(g1, nullptr);
+            EXPECT_EQ(g2, nullptr);
             selector.postSelection();
         }
     }
@@ -159,7 +150,7 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
         EXPECT_EQ(selector.getNumGenomes(), 5);
         {
             selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
-            EXPECT_EQ(selector.selectGenome(), &genomes[0]);
+            EXPECT_EQ(selector.selectGenome(), &genomes[2]);
             selector.postSelection();
         }
 
@@ -184,7 +175,7 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
             EXPECT_EQ(g2, &genomes[2]);
             selector.postSelection();
 
-            random.m_val = 1.0f;
+            random.reset();
 
             // Disallow inter-species selection
             selector.setInterSpeciesSelectionRate(0.0f);
@@ -193,11 +184,11 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
             EXPECT_EQ(g1, &genomes[0]);
             EXPECT_EQ(g2, &genomes[1]);
 
-            random.m_val = 3.0f;
+            random.reset();
 
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[3]);
-            EXPECT_EQ(g2, &genomes[4]);
+            EXPECT_EQ(g1, &genomes[2]);
+            EXPECT_EQ(g2, &genomes[3]);
             selector.postSelection();
         }
     }

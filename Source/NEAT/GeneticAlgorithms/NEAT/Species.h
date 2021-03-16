@@ -37,6 +37,9 @@ namespace NEAT
         // Return true if the genome is added to this species and otherwise return false.
         bool tryAddGenome(CGenomePtr genome, float fitness, float distanceThreshold, const Genome::CalcDistParams& params);
 
+        // Add a genome to this species without checking its distance from the representative.
+        void addGenome(CGenomePtr genome, float fitness);
+
         inline auto getBestGenome() const->CGenomePtr { return m_bestGenome; }
 
         inline float getBestFitness() const { return m_bestFitness; }

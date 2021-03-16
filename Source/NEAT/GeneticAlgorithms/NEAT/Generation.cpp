@@ -70,8 +70,17 @@ void Generation::init(const Cinfo& cinfo)
     {
         // Select a genome randomly and use it as representative of the species.
         const GenomeData& representative = (*m_genomes)[m_randomGenerator->randomInteger(0, m_genomes->size() - 1)];
-        SpeciesId newSpecies = m_speciesIdGenerator.getNewId();
-        m_species.insert({ newSpecies, std::make_shared<Species>(*std::static_pointer_cast<const Genome>(representative.getGenome())) });
+        SpeciesId newSpeciesId = m_speciesIdGenerator.getNewId();
+        SpeciesPtr newSpecies = std::make_shared<Species>(*std::static_pointer_cast<const Genome>(representative.getGenome()));
+        m_species.insert({ newSpeciesId, newSpecies });
+
+        // Assign this species to all the genomes
+        m_genomesSpecies.reserve(m_genomes->size());
+        for (const auto& genome : *m_genomes)
+        {
+            m_genomesSpecies.insert({ genome.getId(), newSpeciesId });
+            newSpecies->addGenome(std::static_pointer_cast<const Genome>(genome.getGenome()), 0.f);
+        }
     }
 
     m_generators.reserve(3);

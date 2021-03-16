@@ -60,17 +60,22 @@ bool Species::tryAddGenome(CGenomePtr genome, float fitness, float distanceThres
 
     if (distance <= distanceThreshold)
     {
-        m_members.push_back(genome);
-
-        // Update best fitness and genome.
-        if (fitness > m_bestFitness)
-        {
-            m_bestFitness = fitness;
-            m_bestGenome = genome;
-        }
+        addGenome(genome, fitness);
 
         return true;
     }
 
     return false;
+}
+
+void Species::addGenome(CGenomePtr genome, float fitness)
+{
+    m_members.push_back(genome);
+
+    // Update best fitness and genome.
+    if (fitness > m_bestFitness)
+    {
+        m_bestFitness = fitness;
+        m_bestGenome = genome;
+    }
 }

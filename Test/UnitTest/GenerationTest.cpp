@@ -50,13 +50,13 @@ TEST(Generation, CreateGeneration)
     {
         const Generation::GenomeData& gd = generation.getGenomes()[i];
         EXPECT_TRUE(gd.getGenome());
-        EXPECT_EQ(generation.getSpecies(gd.getId()), SpeciesId::invalid());
+        EXPECT_NE(generation.getSpecies(gd.getId()), SpeciesId::invalid());
     }
     EXPECT_EQ(generation.getAllSpecies().size(), 1);
     EXPECT_TRUE(generation.getSpecies(SpeciesId(0)));
     EXPECT_FALSE(generation.getSpecies(SpeciesId(0))->getBestGenome());
     EXPECT_EQ(generation.getSpecies(SpeciesId(0))->getStagnantGenerationCount(), 0);
-    EXPECT_EQ(generation.getSpecies(SpeciesId(0))->getNumMembers(), 0);
+    EXPECT_EQ(generation.getSpecies(SpeciesId(0))->getNumMembers(), 100);
     EXPECT_TRUE(generation.isSpeciesReproducible(SpeciesId(0)));
     EXPECT_EQ(generation.getId().val(), 0);
 }

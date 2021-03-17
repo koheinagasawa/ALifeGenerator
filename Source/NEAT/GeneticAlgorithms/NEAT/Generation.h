@@ -90,6 +90,9 @@ namespace NEAT
         // Returns the list of all species.
         inline auto getAllSpecies() const->const SpeciesList& { return m_species; }
 
+        // Returns the list of all species in the order of the best fitness.
+        auto getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr>;
+
         // Returns pointer to a species.
         inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return m_species.find(id) != m_species.end() ? m_species.at(id) : nullptr; }
 

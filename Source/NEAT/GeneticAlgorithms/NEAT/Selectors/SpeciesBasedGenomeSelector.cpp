@@ -132,7 +132,7 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
     }
 
     int remainingGenomes = numGenomesToSelect;
-    m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
+    m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : std::max((int)(numGenomesToSelect * m_interSpeciesSelectionRate), 1);
     remainingGenomes -= m_numInterSpeciesSelection;
 
     // Distribute population to species based on the sum of fitness of its members.
@@ -337,18 +337,18 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
             // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
             // calculation later.
             float v = m_random.randomReal(m_cumulativeSpeciesFitness[0], std::nexttoward(m_cumulativeSpeciesFitness.back(), -1.f));
-            for (int i = 0; i < (int)m_cumulativeSpeciesFitness.size(); i++)
+            for (int i = 0; i < (int)m_speciesData.size(); i++)
             {
                 if (v < m_cumulativeSpeciesFitness[i + 1])
                 {
                     if (i > 0)
                     {
-                        v -= m_speciesData[i - 1].m_cumulativeFitnesses.back();
+                        v -= m_cumulativeSpeciesFitness[i];
                     }
 
                     const SpeciesData& sData = m_speciesData[i];
 
-                    for (int j = 0; j < (int)sData.m_cumulativeFitnesses.size(); j++)
+                    for (int j = 0; j < (int)sData.m_genomes.size(); j++)
                     {
                         if (v < sData.m_cumulativeFitnesses[j + 1])
                         {

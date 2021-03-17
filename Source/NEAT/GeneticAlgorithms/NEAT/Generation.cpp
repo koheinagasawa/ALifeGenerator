@@ -111,6 +111,24 @@ auto Generation::getGenomesInFitnessOrder() const->GenomeDatas
     return genomesOut;
 }
 
+auto Generation::getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr>
+{
+    std::vector<SpeciesPtr> speciesOut;
+    speciesOut.reserve(m_species.size());
+
+    for (auto itr : m_species)
+    {
+        speciesOut.push_back(itr.second);
+    }
+
+    std::sort(speciesOut.begin(), speciesOut.end(), [](const SpeciesPtr& s1, const SpeciesPtr& s2)
+        {
+            return s1->getBestFitness() > s2->getBestFitness();
+        });
+
+    return speciesOut;
+}
+
 void Generation::preUpdateGeneration()
 {
     // Update species in the champion selector.

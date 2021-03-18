@@ -182,9 +182,12 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             newEdge = genome->addEdgeAt(pair.second, pair.first, weight, tryAddFlippedEdgeOnFail);
         }
 
-        newEdgeAdded(newEdge);
+        if (newEdge.isValid())
+        {
+            newEdgeAdded(newEdge);
 
-        mutationOut.m_numEdgesAdded++;
+            mutationOut.m_numEdgesAdded++;
+        }
     }
 
     assert(network->validate());

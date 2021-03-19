@@ -150,7 +150,7 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
         EXPECT_EQ(selector.getNumGenomes(), 5);
         {
             selector.preSelection(1, GenomeSelector::SELECT_ONE_GENOME);
-            EXPECT_EQ(selector.selectGenome(), &genomes[2]);
+            EXPECT_EQ(selector.selectGenome(), &genomes[4]);
             selector.postSelection();
         }
 
@@ -165,14 +165,14 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
             const GenomeData* g2 = nullptr;
 
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[0]);
-            EXPECT_EQ(g2, &genomes[1]);
+            EXPECT_EQ(g1, &genomes[1]);
+            EXPECT_EQ(g2, &genomes[0]);
 
             random.m_val = 1.0f;
 
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[1]);
-            EXPECT_EQ(g2, &genomes[2]);
+            EXPECT_EQ(g1, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[4]);
             selector.postSelection();
 
             random.reset();
@@ -181,13 +181,13 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
             selector.setInterSpeciesSelectionRate(0.0f);
             selector.preSelection(2, GenomeSelector::SELECT_TWO_GENOMES);
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[0]);
-            EXPECT_EQ(g2, &genomes[1]);
+            EXPECT_EQ(g1, &genomes[1]);
+            EXPECT_EQ(g2, &genomes[0]);
 
             random.reset();
 
             selector.selectTwoGenomes(g1, g2);
-            EXPECT_EQ(g1, &genomes[2]);
+            EXPECT_EQ(g1, &genomes[4]);
             EXPECT_EQ(g2, &genomes[3]);
             selector.postSelection();
         }

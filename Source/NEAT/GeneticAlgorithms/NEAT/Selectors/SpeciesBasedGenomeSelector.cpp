@@ -52,13 +52,12 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
         return species ? 1.f / (float)species->getNumMembers() : 1.0f;
     };
 
-    SpeciesId currentSpeciesId = SpeciesId::invalid();
-    SpeciesPtr currentSpecies = nullptr;
-    SpeciesData* speciesData;
-    float fitnessSharingFactor;
-
     auto addGenomes = [&]()
     {
+        SpeciesId currentSpeciesId = SpeciesId::invalid();
+        SpeciesPtr currentSpecies = nullptr;
+        SpeciesData* speciesData = nullptr;
+
         // Calculate adjusted fitness for each genome and sum up those fitnesses.
         for (const GenomeData& g : genomeData)
         {
@@ -78,19 +77,16 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
 
                 m_speciesData.push_back(SpeciesData(currentSpecies));
                 speciesData = &m_speciesData.back();
-
-                fitnessSharingFactor = currentSpecies ? 1.f / (float)currentSpecies->getNumMembers() : 1.0f;
             }
             else
             {
                 m_hasSpeciesMoreThanOneMember = true;
             }
 
-            float fitness = g.getFitness() * fitnessSharingFactor;
+            assert(speciesData);
+
             speciesData->m_genomes.push_back(&g);
-            m_totalFitness += fitness;
-            // Calculate cumulative sum of fitness of the species' members.
-            speciesData->m_cumulativeFitnesses.push_back(speciesData->m_cumulativeFitnesses.back() + fitness);
+
             m_numGenomes++;
         }
     };
@@ -109,6 +105,32 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
             WARN("Failed to setup DefaultGenomeSelector because all genomes have zero fitness.");
         }
     }
+
+    // Remove the least fit genomes in each species from selection
+    for (auto& sData : m_speciesData)
+    {
+        // Sort genomes by fitness
+        std::sort(sData.m_genomes.begin(), sData.m_genomes.end(), [](const GenomeData*& g1, const GenomeData*& g2)
+            {
+                return g1->getFitness() > g2->getFitness();
+            });
+
+        // Remove the least fit genome
+        if (sData.m_genomes.size() > 2)
+        {
+            sData.m_genomes.pop_back();
+        }
+
+        float fitnessSharingFactor = 1.f / (float)sData.m_species->getNumMembers();
+        for (int i = 0; i < (int)sData.m_genomes.size(); i++)
+        {
+            // Calculate cumulative sum of fitness of the species' members.
+            float fitness = sData.m_genomes[i]->getFitness() * fitnessSharingFactor;
+            sData.m_cumulativeFitnesses.push_back(sData.m_cumulativeFitnesses.back() + fitness);
+            m_totalFitness += fitness;
+        }
+    }
+
 }
 
 void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
@@ -132,7 +154,14 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
     }
 
     int remainingGenomes = numGenomesToSelect;
-    m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : std::max((int)(numGenomesToSelect * m_interSpeciesSelectionRate), 1);
+    m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
+
+    // Select at least one genome by inter-species selection when m_interSpeciesSelectionRate is non-zero.
+    if (m_mode == GenomeSelector::SELECT_TWO_GENOMES && m_numInterSpeciesSelection == 0 && m_interSpeciesSelectionRate > 0)
+    {
+        m_numInterSpeciesSelection = 1;
+    }
+
     remainingGenomes -= m_numInterSpeciesSelection;
 
     // Distribute population to species based on the sum of fitness of its members.
@@ -187,6 +216,7 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
 
     if (m_numInterSpeciesSelection)
     {
+        m_cumulativeSpeciesFitness.clear();
         m_cumulativeSpeciesFitness.reserve(m_speciesData.size() + 1);
         m_cumulativeSpeciesFitness.push_back(0);
         for (const auto& sData : m_speciesData)

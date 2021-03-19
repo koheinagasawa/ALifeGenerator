@@ -61,6 +61,6 @@ namespace NEAT
         int m_stagnantCount = 0;            // The number of consecutive generations where there was no improvement on fitness.
         float m_bestFitness = 0.f;          // The best fitness in this Species of the current generation.
         float m_previousBestFitness = 0.f;  // The best fitness in this Species of the previous generation.
-        bool m_reproducible = true;       // True if this species can reproduce descendants in the next generation.
+        bool m_reproducible = true;         // True if this species can reproduce descendants in the next generation.
     };
 }

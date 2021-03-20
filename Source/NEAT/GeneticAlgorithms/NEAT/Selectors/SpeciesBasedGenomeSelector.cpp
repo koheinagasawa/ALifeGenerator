@@ -115,8 +115,9 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
                 return g1->getFitness() > g2->getFitness();
             });
 
-        // Remove the least fit genome
-        if (sData.m_genomes.size() > 2)
+        // Remove the least fit genome unless the species has less than three members or
+        // the least fit genome has the same fitness as a genome at mean
+        if (sData.m_genomes.size() > 2 && sData.m_genomes.back()->getFitness() < sData.m_genomes[sData.m_genomes.size() / 2]->getFitness())
         {
             sData.m_genomes.pop_back();
         }
@@ -214,6 +215,7 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
         }
     }
 
+    // Calculate cumulative fitness of species when we will need inter species selection
     if (m_numInterSpeciesSelection)
     {
         m_cumulativeSpeciesFitness.clear();

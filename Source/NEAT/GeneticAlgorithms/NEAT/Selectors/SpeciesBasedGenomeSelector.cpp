@@ -115,11 +115,18 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
                 return g1->getFitness() > g2->getFitness();
             });
 
-        // Remove the least fit genome unless the species has less than three members or
-        // the least fit genome has the same fitness as a genome at mean
-        if (sData.m_genomes.size() > 2 && sData.m_genomes.back()->getFitness() < sData.m_genomes[sData.m_genomes.size() / 2]->getFitness())
+        // Remove the least fit genome(s) unless the species has less than three members or
+        // the least fit genome(s) has the same fitness as a genome at the middle.
         {
-            sData.m_genomes.pop_back();
+            const float leastFitness = sData.m_genomes.back()->getFitness();
+            if (sData.m_genomes.size() > 2 && leastFitness < sData.m_genomes[sData.m_genomes.size() / 2]->getFitness())
+            {
+                sData.m_genomes.pop_back();
+                while (sData.m_genomes.back()->getFitness() == leastFitness)
+                {
+                    sData.m_genomes.pop_back();
+                }
+            }
         }
 
         float fitnessSharingFactor = 1.f / (float)sData.m_species->getNumMembers();

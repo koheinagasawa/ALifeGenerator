@@ -208,12 +208,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     return std::make_unique<Genome>(genome1, network, innovations);
 }
 
-void DefaultCrossOver::generate(int /*numTotalGenomes*/, int numRemaningGenomes, GenomeSelector* genomeSelector)
+void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector)
 {
     using GenomeData = GenerationBase::GenomeData;
 
-    // [todo] Do not always generate all the remaining genomes and add a parameter to decide calculate the number of genomes to generate.
-    const int numGenomesToCrossover = numRemaningGenomes;
+    const int numGenomesToCrossover = std::min(numRemaningGenomes, (int)(numTotalGenomes * m_params.m_numCrossOverGenomesRate));
 
     genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::SELECT_TWO_GENOMES);
 

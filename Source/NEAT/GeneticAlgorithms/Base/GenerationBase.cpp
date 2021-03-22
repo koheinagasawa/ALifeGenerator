@@ -6,6 +6,8 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/Base/Modifiers/GenomeModifier.h>
 
 GenerationBase::GenomeData::GenomeData(GenomeBasePtr genome, GenomeId id)
     : m_genome(genome)
@@ -13,11 +15,12 @@ GenerationBase::GenomeData::GenomeData(GenomeBasePtr genome, GenomeId id)
 {
 }
 
-void GenerationBase::GenomeData::init(GenomeBasePtr genome, GenomeId id)
+void GenerationBase::GenomeData::init(GenomeBasePtr genome, bool isProtected, GenomeId id)
 {
     m_genome = genome;
-    m_id = id;
     m_fitness = 0.f;
+    m_isProtected = isProtected;
+    m_id = id;
 }
 
 GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator)
@@ -65,9 +68,10 @@ void GenerationBase::evolveGeneration()
         //        so that it can generate all the remaining genomes.
         generator->generate(numGenomes, numGenomesToAdd, selector.get());
 
+        const bool protecteGenomes = generator->shouldGenomesProtected();
         for (auto& newGenome : generator->getGeneratedGenomes())
         {
-            addGenome(newGenome);
+            addGenome(newGenome, protecteGenomes);
         }
 
         numGenomesToAdd -= generator->getNumGeneratedGenomes();
@@ -75,6 +79,20 @@ void GenerationBase::evolveGeneration()
 
     // We should have added all the genomes at this point.
     assert(m_genomes->size() == m_prevGenGenomes->size());
+
+    // Modify genomes
+    for (GenomeData& genomeData : *m_genomes)
+    {
+        if (genomeData.isProtected())
+        {
+            continue;
+        }
+
+        for (ModifierPtr& modifier : m_modifiers)
+        {
+            modifier->modifyGenomes(genomeData.m_genome);
+        }
+    }
 
     // Evaluate all genomes.
     calcFitness();
@@ -95,8 +113,8 @@ void GenerationBase::calcFitness()
     }
 }
 
-void GenerationBase::addGenome(GenomeBasePtr genome)
+void GenerationBase::addGenome(GenomeBasePtr genome, bool protectGenome)
 {
-    (*m_genomes)[m_numGenomes].init(genome, GenomeId(m_numGenomes));
+    (*m_genomes)[m_numGenomes].init(genome, protectGenome, GenomeId(m_numGenomes));
     m_numGenomes++;
 }

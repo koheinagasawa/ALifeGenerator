@@ -167,15 +167,16 @@
     <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeGenerator.h" />
-    <ClInclude Include="GeneticAlgorithms\Base\Generators\MutationDelegate.h" />
     <ClInclude Include="GeneticAlgorithms\Base\GenomeBase.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Modifiers\GenomeModifier.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Selectors\GenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Generation.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.h" />
-    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Genome.h" />
+    <ClInclude Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
@@ -184,14 +185,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />
-    <ClCompile Include="GeneticAlgorithms\Base\Generators\MutationDelegate.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Generation.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.cpp" />
-    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Genome.cpp" />
+    <ClCompile Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.cpp" />
     <ClCompile Include="GeneticAlgorithms\NEAT\Species.cpp" />
     <ClCompile Include="Neat.cpp">

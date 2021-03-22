@@ -8,7 +8,7 @@
 
 #include <Common/PseudoRandom.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
-#include <NEAT/GeneticAlgorithms/Base/Generators/MutationDelegate.h>
+#include <NEAT/GeneticAlgorithms/Base/Modifiers/MutationDelegate.h>
 
 namespace NEAT
 {
@@ -49,9 +49,6 @@ namespace NEAT
             // Maximum weight for a new edge.
             float m_newEdgeMaxWeight = 0.5f;
 
-            // The ratio of genomes to mutate among the total population of a generation.
-            float m_mutatedGenomesRate = 0.25f;
-
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;
         };
@@ -60,6 +57,8 @@ namespace NEAT
         DefaultMutation() = default;
         DefaultMutation(const MutationParams& params) : m_params(params) {}
 
+        void reset();
+
         // Mutate a single genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Add a new node at a random edge.
@@ -67,11 +66,13 @@ namespace NEAT
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) override;
 
-        // Generate a set of new genomes by using genomeSelector.
-        // genomeSelector has to be already configured and available to select existing genomes.
-        virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
+        // Modifies the genomes by mutation.
+        virtual void modifyGenomes(GenomeBasePtr& genome) override;
 
         // The parameter.
         MutationParams m_params;
+
+    protected:
+        std::vector<MutationOut> m_mutations;
     };
 }

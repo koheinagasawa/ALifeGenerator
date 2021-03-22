@@ -20,6 +20,9 @@ public:
     // genomeSelector has to be already configured and available to select existing genomes.
     virtual void generate(int numTotalGenomes, int numRemaningGenomes, class GenomeSelector* genomeSelector) = 0;
 
+    // Returns true if the generated genomes should be protected from further modifications.
+    virtual bool shouldGenomesProtected() const { return false; }
+
     // Returns the number of newly generated genomes.
     inline int getNumGeneratedGenomes() const { return (int)m_generatedGenomes.size(); }
 

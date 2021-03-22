@@ -9,7 +9,7 @@
 #include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Species.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
 
 namespace NEAT

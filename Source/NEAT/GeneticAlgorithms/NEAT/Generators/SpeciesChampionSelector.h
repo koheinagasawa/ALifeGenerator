@@ -25,6 +25,9 @@ namespace NEAT
         // Generate new genomes by copying the champion in major species without modifying them.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
+        // Returns true since species champions should be protected from further modifications.
+        virtual bool shouldGenomesProtected() const { return true; }
+
     protected:
         const SpeciesList* m_species = nullptr; // The Species.
 

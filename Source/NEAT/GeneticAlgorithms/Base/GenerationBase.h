@@ -8,7 +8,6 @@
 
 #include <Common/PseudoRandom.h>
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
-#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 
 DECLARE_ID(GenerationId);
 DECLARE_ID(GenomeId);
@@ -28,8 +27,10 @@ public:
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using CGenomeBasePtr = std::shared_ptr<const GenomeBase>;
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
-    using GeneratorPtr = std::shared_ptr<GenomeGenerator>;
+    using GeneratorPtr = std::shared_ptr<class GenomeGenerator>;
     using GeneratorPtrs = std::vector<GeneratorPtr>;
+    using ModifierPtr = std::shared_ptr<class GenomeModifier>;
+    using ModifierPtrs = std::vector<ModifierPtr>;
 
     // Struct holding a genome and its fitness.
     struct GenomeData
@@ -42,18 +43,21 @@ public:
         GenomeData(GenomeBasePtr genome, GenomeId id);
 
         // Initialize by a pointer to the genome and its id.
-        void init(GenomeBasePtr genome, GenomeId id);
+        void init(GenomeBasePtr genome, bool isProtected, GenomeId id);
 
         inline GenomeId getId() const { return m_id; }
         inline auto getGenome() const->const CGenomeBasePtr { return m_genome; }
         inline float getFitness() const { return m_fitness; }
         inline void setFitness(float fitness) { m_fitness = fitness; }
+        inline bool isProtected() const { return m_isProtected; }
 
     protected:
-
         GenomeBasePtr m_genome; // The genome.
         float m_fitness = 0.f;  // Genome's fitness.
+        bool m_isProtected = false;
         GenomeId m_id;
+
+        friend class GenerationBase;
     };
 
     // Type declarations.
@@ -91,9 +95,10 @@ protected:
     virtual auto createSelector()->GenomeSelectorPtr = 0;
 
     // Called inside createNewGeneration().
-    void addGenome(GenomeBasePtr genome);
+    void addGenome(GenomeBasePtr genome, bool protectGenome);
 
     GeneratorPtrs m_generators;                 // Genome generators used to evolve generation.
+    ModifierPtrs m_modifiers;                   // Genome modifiers used to evolve generation.
     FitnessCalculatorPtr m_fitnessCalculator;   // The fitness calculator.
     GenomeDatasPtr m_genomes;                   // Genomes in the current generation.
     GenomeDatasPtr m_prevGenGenomes;            // Genomes in the previous generation.

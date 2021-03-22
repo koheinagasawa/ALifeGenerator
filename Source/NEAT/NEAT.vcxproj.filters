@@ -11,9 +11,6 @@
     <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp">
       <Filter>GeneticAlgorithms\Base</Filter>
     </ClCompile>
-    <ClCompile Include="GeneticAlgorithms\Base\Generators\MutationDelegate.cpp">
-      <Filter>GeneticAlgorithms\Base\Generators</Filter>
-    </ClCompile>
     <ClCompile Include="GeneticAlgorithms\Base\Selectors\UniformGenomeSelector.cpp">
       <Filter>GeneticAlgorithms\Base\Selectors</Filter>
     </ClCompile>
@@ -29,14 +26,17 @@
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.cpp">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClCompile>
-    <ClCompile Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.cpp">
-      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
-    </ClCompile>
     <ClCompile Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.cpp">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClCompile>
     <ClCompile Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.cpp">
       <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.cpp">
+      <Filter>GeneticAlgorithms\Base\Modifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.cpp">
+      <Filter>GeneticAlgorithms\NEAT\Modifiers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,9 +59,6 @@
     <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeGenerator.h">
       <Filter>GeneticAlgorithms\Base\Generators</Filter>
     </ClInclude>
-    <ClInclude Include="GeneticAlgorithms\Base\Generators\MutationDelegate.h">
-      <Filter>GeneticAlgorithms\Base\Generators</Filter>
-    </ClInclude>
     <ClInclude Include="GeneticAlgorithms\Base\Selectors\GenomeSelector.h">
       <Filter>GeneticAlgorithms\Base\Selectors</Filter>
     </ClInclude>
@@ -80,14 +77,20 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultCrossOver.h">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClInclude>
-    <ClInclude Include="GeneticAlgorithms\NEAT\Generators\DefaultMutation.h">
-      <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
-    </ClInclude>
     <ClInclude Include="GeneticAlgorithms\NEAT\Generators\SpeciesChampionSelector.h">
       <Filter>GeneticAlgorithms\NEAT\Generators</Filter>
     </ClInclude>
     <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.h">
       <Filter>GeneticAlgorithms\NEAT\Selectors</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Modifiers\GenomeModifier.h">
+      <Filter>GeneticAlgorithms\Base\Modifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.h">
+      <Filter>GeneticAlgorithms\Base\Modifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.h">
+      <Filter>GeneticAlgorithms\NEAT\Modifiers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +117,12 @@
     </Filter>
     <Filter Include="GeneticAlgorithms\NEAT\Selectors">
       <UniqueIdentifier>{e96f56ae-73ba-4028-bd42-46551b9020ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\Base\Modifiers">
+      <UniqueIdentifier>{e4be9764-a222-4415-ade4-8666588c8f8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\NEAT\Modifiers">
+      <UniqueIdentifier>{5ef60585-be26-4ee5-96ec-1f0e31d0390c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

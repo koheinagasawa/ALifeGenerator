@@ -5,7 +5,7 @@
 */
 
 #include <NEAT/Neat.h>
-#include <NEAT/GeneticAlgorithms/Base/Generators/MutationDelegate.h>
+#include <NEAT/GeneticAlgorithms/Base/Modifiers/MutationDelegate.h>
 
 void MutationDelegate::MutationOut::clear()
 {

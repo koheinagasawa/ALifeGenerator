@@ -89,11 +89,11 @@ void Generation::init(const Cinfo& cinfo)
     m_speciesChampionSelectorGenerator = std::make_shared<SpeciesChampionSelector>(cinfo.m_minMembersInSpeciesToCopyChampion);
     m_generators.push_back(m_speciesChampionSelectorGenerator);
 
-    // Create mutate delegate.
-    m_generators.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
-
     // Create cross-over delegate.
     m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
+
+    // Create mutate delegate.
+    m_modifiers.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
 
     // Calculate initial fitness of genomes.
     calcFitness();

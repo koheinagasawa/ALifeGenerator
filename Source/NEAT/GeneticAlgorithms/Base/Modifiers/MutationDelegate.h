@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
+#include <NEAT/GeneticAlgorithms/Base/Modifiers/GenomeModifier.h>
 
-// GenomeGenerator which creates a new genome by mutating existing one.
-class MutationDelegate : public GenomeGenerator
+// GenomeModifier which mutates genomes.
+class MutationDelegate : public GenomeModifier
 {
 public:
     // Struct to store information about newly added node and edges by mutate().

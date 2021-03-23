@@ -7,7 +7,7 @@
 #include <UnitTest/UnitTestPch.h>
 
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 TEST(DefaultCrossOver, GenerateSingleGenome)

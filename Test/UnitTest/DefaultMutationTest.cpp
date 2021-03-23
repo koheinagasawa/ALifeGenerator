@@ -6,8 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h>
-#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 
 namespace
 {
@@ -272,19 +271,6 @@ TEST(DefaultMutation, MutateGeneration)
 {
     using namespace NEAT;
     using GenomePtr = std::shared_ptr<Genome>;
-    using GenomeData = GenerationBase::GenomeData;
-
-    // Custom selector class to select genome incrementally.
-    class MyGenomeSelector : public GenomeSelector
-    {
-    public:
-        MyGenomeSelector(const GenomeDatas& genomes) : m_genomes(genomes) {}
-        virtual auto selectGenome()->const GenomeData* override { return &m_genomes[m_index++]; }
-        virtual void selectTwoGenomes(const GenomeData*& genome1, const GenomeData*& genome2) override { assert(0); }
-    protected:
-        const GenomeDatas& m_genomes;
-        int m_index = 0;
-    };
 
     // Custom random generator which always selects the minimum integer.
     class MyRandom : public PseudoRandom
@@ -367,30 +353,18 @@ TEST(DefaultMutation, MutateGeneration)
     EXPECT_TRUE(genome2->validate());
     EXPECT_TRUE(compareGenomeWithWeightsAndStates(*genome1, *genome2));
 
+    // Modify two new genomes by mutation.
+    mutator.modifyGenomes(std::static_pointer_cast<GenomeBase>(genome1));
+    mutator.modifyGenomes(std::static_pointer_cast<GenomeBase>(genome2));
+
     // Create an array of GenomeData.
-    std::vector<GenomeData> genomes;
-    genomes.push_back(GenomeData(genome1, GenomeId(0)));
-    genomes.push_back(GenomeData(genome2, GenomeId(1)));
-
-    // Set up the custom selector.
-    MyGenomeSelector selector(genomes);
-    mutator.m_params.m_mutatedGenomesRate = 1.0f;
-
-    EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
-    EXPECT_EQ(mutator.getGeneratedGenomes().size(), 0);
-
-    // Generate no genome.
-    mutator.generate(2, 0, &selector);
-    EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
-
-    // Generate two new genomes by mutation.
-    mutator.generate(2, 2, &selector);
+    std::vector<GenomePtr> genomes;
+    genomes.push_back(genome1);
+    genomes.push_back(genome2);
 
     // The exact same mutation should have happened for both descendants of genome1 and genome2.
     // Newly added edges in genome1 and genome2 are the same location, so they should have assigned the same innovation ids.
-    EXPECT_EQ(mutator.getNumGeneratedGenomes(), 2);
-    EXPECT_EQ(mutator.getGeneratedGenomes().size(), 2);
-    for (const auto& g : mutator.getGeneratedGenomes())
+    for (const auto& g : genomes)
     {
         const Genome* newGenome = static_cast<const Genome*>(g.get());
         const Genome::Network* network = newGenome->getNetwork();
@@ -401,19 +375,10 @@ TEST(DefaultMutation, MutateGeneration)
         EXPECT_EQ(network->getOutputNodes().size(), 2);
     }
 
-    // Compare the two newly generated genomes.
+    // Compare the two modified genomes.
     // The two new genomes should have the identical structure but edge weights should be different.
     {
-        const Genome* newGenome1 = static_cast<const Genome*>(mutator.getGeneratedGenomes()[0].get());
-        const Genome* newGenome2 = static_cast<const Genome*>(mutator.getGeneratedGenomes()[1].get());
-        EXPECT_TRUE(compareGenome(*newGenome1, *newGenome2));
-        EXPECT_FALSE(compareGenomeWithWeightsAndStates(*newGenome1, *newGenome2));
+        EXPECT_TRUE(compareGenome(*genome1, *genome2));
+        EXPECT_FALSE(compareGenomeWithWeightsAndStates(*genome1, *genome2));
     }
-
-    // Change the parameter and call generate again.
-    // No genomes should be generated.
-    mutator.m_params.m_mutatedGenomesRate = 0.0f;
-    mutator.generate(2, 2, &selector);
-    EXPECT_EQ(mutator.getNumGeneratedGenomes(), 0);
-    EXPECT_EQ(mutator.getGeneratedGenomes().size(), 0);
 }

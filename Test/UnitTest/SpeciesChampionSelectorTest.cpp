@@ -7,7 +7,7 @@
 #include <UnitTest/UnitTestPch.h>
 
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
-#include "NEAT/GeneticAlgorithms/NEAT/Generators/DefaultMutation.h"
+#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 
 TEST(SpeciesChampionSelector, SelectChampions)
 {

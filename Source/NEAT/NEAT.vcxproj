@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h" />
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeCopier.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeGenerator.h" />
     <ClInclude Include="GeneticAlgorithms\Base\GenomeBase.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Modifiers\GenomeModifier.h" />

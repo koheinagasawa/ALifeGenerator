@@ -78,11 +78,13 @@ void GenerationBase::evolveGeneration()
     }
 
     // We should have added all the genomes at this point.
-    assert(m_genomes->size() == m_prevGenGenomes->size());
+    assert(m_numGenomes == m_prevGenGenomes->size());
 
     // Modify genomes
     for (GenomeData& genomeData : *m_genomes)
     {
+        assert(genomeData.getGenome());
+
         if (genomeData.isProtected())
         {
             continue;

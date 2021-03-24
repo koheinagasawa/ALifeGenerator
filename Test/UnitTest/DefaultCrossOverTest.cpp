@@ -203,6 +203,7 @@ TEST(DefaultCrossOver, GenerateGeneration)
 
     // Create a cross over delegate.
     DefaultCrossOver crossOver;
+    crossOver.m_params.m_numCrossOverGenomesRate = 1.0f;
 
     // Generate no genome.
     crossOver.generate(2, 0, &selector);

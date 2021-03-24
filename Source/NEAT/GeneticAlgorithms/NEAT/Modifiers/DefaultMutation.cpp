@@ -199,6 +199,11 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
 void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
 {
+    if (!genomeIn)
+    {
+        return;
+    }
+
     Genome* genome = static_cast<Genome*>(genomeIn.get());
 
     MutationOut mutationOut;

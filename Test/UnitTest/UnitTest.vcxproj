@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DefaultCrossOverTest.cpp" />
+    <ClCompile Include="GenomeCopierTest.cpp" />
     <ClCompile Include="SpeciesBasedGenomeSelectorTest.cpp" />
     <ClCompile Include="DefaultMutationTest.cpp" />
     <ClCompile Include="GenerationTest.cpp" />

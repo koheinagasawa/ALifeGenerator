@@ -14,6 +14,7 @@ namespace NEAT
     template <typename GenomeType>
     class GenomeCopier : public GenomeGenerator
     {
+    public:
         // Generate a set of new genomes by using genomeSelector.
         // genomeSelector has to be already configured and available to select existing genomes.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;

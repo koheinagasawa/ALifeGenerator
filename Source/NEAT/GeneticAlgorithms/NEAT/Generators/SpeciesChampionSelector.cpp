@@ -14,8 +14,10 @@ SpeciesChampionSelector::SpeciesChampionSelector(float minMembersInSpeciesToCopy
 {
 }
 
-void SpeciesChampionSelector::generate(int /*numTotalGenomes*/, int numRemaningGenomes, GenomeSelector* /*genomeSelector*/)
+void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* /*genomeSelector*/)
 {
+    assert(numTotalGenomes >= numRemaningGenomes);
+
     using GenomePtr = std::shared_ptr<Genome>;
 
     m_generatedGenomes.clear();

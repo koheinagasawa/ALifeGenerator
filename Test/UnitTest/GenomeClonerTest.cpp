@@ -1,12 +1,12 @@
 /*
-* GenomeCopierTest.cpp
+* GenomeClonerTest.cpp
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeCopier.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeCloner.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
@@ -26,15 +26,15 @@ namespace
     };
 }
 
-TEST(GenomeCopier, CopyGenome)
+TEST(GenomeCloner, CopyGenome)
 {
     using namespace NEAT;
     using namespace TestUtils;
     using GenomePtr = std::shared_ptr<Genome>;
     using GenomeData = GenerationBase::GenomeData;
 
-    // Create a copier
-    GenomeCopier<GenomeBase> copier;
+    // Create a cloner
+    GenomeCloner<GenomeBase> cloner;
 
     // Create three genomes.
     InnovationCounter innovCounter;
@@ -71,9 +71,9 @@ TEST(GenomeCopier, CopyGenome)
     MyGenomeSelector selector(genomes);
 
     // Copy
-    copier.generate(3, 3, &selector);
+    cloner.generate(3, 3, &selector);
 
-    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[0].get()), *genome1));
-    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[1].get()), *genome2));
-    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[2].get()), *genome3));
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(cloner.getGeneratedGenomes()[0].get()), *genome1));
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(cloner.getGeneratedGenomes()[1].get()), *genome2));
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(cloner.getGeneratedGenomes()[2].get()), *genome3));
 }

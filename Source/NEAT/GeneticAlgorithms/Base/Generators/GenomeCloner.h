@@ -1,5 +1,5 @@
 /*
-* GenerationCopier.h
+* GenerationCloner.h
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
@@ -12,7 +12,7 @@ namespace NEAT
 {
     // GenomeGenerator which just copies selected genomes.
     template <typename GenomeType>
-    class GenomeCopier : public GenomeGenerator
+    class GenomeCloner : public GenomeGenerator
     {
     public:
         // Generate a set of new genomes by using genomeSelector.
@@ -21,7 +21,7 @@ namespace NEAT
     };
 
     template <typename GenomeType>
-    void GenomeCopier<GenomeType>::generate(int /*numTotalGenomes*/, int numRemaningGenomes, GenomeSelector* genomeSelector)
+    void GenomeCloner<GenomeType>::generate(int /*numTotalGenomes*/, int numRemaningGenomes, GenomeSelector* genomeSelector)
     {
         using GenomeData = GenerationBase::GenomeData;
 

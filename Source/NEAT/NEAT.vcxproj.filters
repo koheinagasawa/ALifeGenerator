@@ -92,7 +92,7 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.h">
       <Filter>GeneticAlgorithms\NEAT\Modifiers</Filter>
     </ClInclude>
-    <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeCopier.h">
+    <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeCloner.h">
       <Filter>GeneticAlgorithms\Base\Generators</Filter>
     </ClInclude>
   </ItemGroup>

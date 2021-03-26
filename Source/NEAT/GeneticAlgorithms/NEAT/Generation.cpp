@@ -9,7 +9,7 @@
 #include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/UniformGenomeSelector.h>
-#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeCopier.h>
+#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeCloner.h>
 
 using namespace NEAT;
 
@@ -93,8 +93,8 @@ void Generation::init(const Cinfo& cinfo)
     // Create cross-over delegate.
     m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
 
-    // Create genome copier
-    m_generators.push_back(std::make_unique<GenomeCopier<Genome>>());
+    // Create genome cloner
+    m_generators.push_back(std::make_unique<GenomeCloner<Genome>>());
 
     // Create mutate delegate.
     m_modifiers.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));

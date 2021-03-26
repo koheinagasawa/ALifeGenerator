@@ -14,7 +14,7 @@
     <ClCompile Include="GenomeBaseTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
-    <ClCompile Include="GenomeCopierTest.cpp">
+    <ClCompile Include="GenomeClonerTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
     <ClCompile Include="GenomeTest.cpp">

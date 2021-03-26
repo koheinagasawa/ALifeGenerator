@@ -10,6 +10,7 @@
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <UnitTest/Util/TestUtils.h>
 
 namespace
 {
@@ -28,6 +29,7 @@ namespace
 TEST(GenomeCopier, CopyGenome)
 {
     using namespace NEAT;
+    using namespace TestUtils;
     using GenomePtr = std::shared_ptr<Genome>;
     using GenomeData = GenerationBase::GenomeData;
 
@@ -70,4 +72,8 @@ TEST(GenomeCopier, CopyGenome)
 
     // Copy
     copier.generate(3, 3, &selector);
+
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[0].get()), *genome1));
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[1].get()), *genome2));
+    EXPECT_TRUE(compareGenomeWithWeightsAndStates(*static_cast<Genome*>(copier.getGeneratedGenomes()[2].get()), *genome3));
 }

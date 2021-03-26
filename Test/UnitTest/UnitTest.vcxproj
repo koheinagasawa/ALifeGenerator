@@ -50,6 +50,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />
+    <ClInclude Include="Util\TestUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DefaultCrossOverTest.cpp" />
@@ -69,6 +70,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Util\TestUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Common\Common.vcxproj">

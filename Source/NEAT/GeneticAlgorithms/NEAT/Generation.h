@@ -118,5 +118,6 @@ namespace NEAT
         std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;   // A map between genome and species.
         UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
         std::shared_ptr<class SpeciesChampionSelector> m_speciesChampionSelectorGenerator; // Generator to select species champion.
+        std::shared_ptr<class DefaultMutation> m_mutator; // Genome mutator.
     };
 }

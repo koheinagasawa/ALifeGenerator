@@ -97,7 +97,8 @@ void Generation::init(const Cinfo& cinfo)
     m_generators.push_back(std::make_unique<GenomeCloner<Genome>>());
 
     // Create mutate delegate.
-    m_modifiers.push_back(std::make_shared<DefaultMutation>(cinfo.m_mutationParams));
+    m_mutator = std::make_shared<DefaultMutation>(cinfo.m_mutationParams);
+    m_modifiers.push_back(m_mutator);
 
     // Calculate initial fitness of genomes.
     calcFitness();
@@ -137,6 +138,9 @@ void Generation::preUpdateGeneration()
 {
     // Update species in the champion selector.
     m_speciesChampionSelectorGenerator->updateSpecies(getAllSpecies());
+
+    // Clear mutator.
+    m_mutator->reset();
 }
 
 void Generation::postUpdateGeneration()

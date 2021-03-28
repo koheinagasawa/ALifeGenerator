@@ -154,15 +154,20 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
 
     m_currentSpeciesDataIndex = 0;
 
-    if (numGenomesToSelect <= 0 || 
-        (!hasSpeciesMoreThanOneMember() && m_mode == GenomeSelector::SELECT_TWO_GENOMES) ||
-        m_totalFitness == 0.f)
+    if (numGenomesToSelect <= 0 || m_totalFitness == 0.f)
     {
         return;
     }
 
     int remainingGenomes = numGenomesToSelect;
     m_numInterSpeciesSelection = (m_mode == GenomeSelector::SELECT_ONE_GENOME) ? 0 : (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
+
+    if (!hasSpeciesMoreThanOneMember() && m_mode == GenomeSelector::SELECT_TWO_GENOMES)
+    {
+        // We don't have any species which we can select two species from.
+        // Then just select all species as inter species selection.
+        m_numInterSpeciesSelection = numGenomesToSelect;
+    }
 
     // Select at least one genome by inter-species selection when m_interSpeciesSelectionRate is non-zero.
     if (m_mode == GenomeSelector::SELECT_TWO_GENOMES && m_numInterSpeciesSelection == 0 && m_interSpeciesSelectionRate > 0)
@@ -248,20 +253,17 @@ void SpeciesBasedGenomeSelector::decrementPopulationOfCurrentSpecies()
     }
 }
 
-void SpeciesBasedGenomeSelector::preSelection(int numGenomesToSelect, SelectionMode mode)
+bool SpeciesBasedGenomeSelector::preSelection(int numGenomesToSelect, SelectionMode mode)
 {
     m_mode = mode;
     setSpeciesPopulations(numGenomesToSelect);
+    return m_mode == GenomeSelector::SELECT_TWO_GENOMES ? m_numGenomes > 1 : m_numGenomes > 0;
 }
 
-void SpeciesBasedGenomeSelector::postSelection()
+bool SpeciesBasedGenomeSelector::postSelection()
 {
-    if (m_numGenomes == 0)
-    {
-        return;
-    }
-
 #ifdef _DEBUG
+    if(m_numGenomes != 0)
     {
         for (const auto& sData : m_speciesData)
         {
@@ -270,6 +272,7 @@ void SpeciesBasedGenomeSelector::postSelection()
     }
 #endif
 
+    return true;
 }
 
 auto SpeciesBasedGenomeSelector::selectGenomeImpl()->const GenomeData*

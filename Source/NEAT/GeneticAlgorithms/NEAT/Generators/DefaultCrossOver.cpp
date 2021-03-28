@@ -6,6 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
+#include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 using namespace NEAT;
@@ -214,10 +215,15 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
 
     const int numGenomesToCrossover = std::min(numRemaningGenomes, (int)(numTotalGenomes * m_params.m_numCrossOverGenomesRate));
 
-    genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::SELECT_TWO_GENOMES);
+    bool result = genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::SELECT_TWO_GENOMES);
+
+    if (!result)
+    {
+        return;
+    }
 
     // Clear new genomes output.
-    m_generatedGenomes.clear();;
+    m_generatedGenomes.clear();
     m_generatedGenomes.reserve(numGenomesToCrossover);
 
     if (numGenomesToCrossover <= 0)

@@ -26,10 +26,10 @@ namespace NEAT
         SpeciesBasedGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random = nullptr);
 
         // This function should be called before the first selection.
-        virtual void preSelection(int numGenomesToSelect, SelectionMode mode) override;
+        virtual bool preSelection(int numGenomesToSelect, SelectionMode mode) override;
 
         // This function should be called after the last selection.
-        virtual void postSelection() override;
+        virtual bool postSelection() override;
 
         // Select a random genome.
         virtual auto selectGenome()->const GenomeData* override;

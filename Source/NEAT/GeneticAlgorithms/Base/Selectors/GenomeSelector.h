@@ -24,10 +24,10 @@ public:
     };
 
     // This function should be called before the first selection.
-    virtual void preSelection(int numGenomesToSelect, SelectionMode mode = NONE) {}
+    virtual bool preSelection(int numGenomesToSelect, SelectionMode mode = NONE) { return true; }
 
     // This function should be called after the last selection.
-    virtual void postSelection() {}
+    virtual bool postSelection() { return true; }
 
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* = 0;

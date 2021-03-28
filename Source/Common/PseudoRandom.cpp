@@ -23,8 +23,9 @@ float PseudoRandom::randomReal01()
 {
     float v = randomReal(0.f, std::nexttoward(1.f, std::numeric_limits<float>::max()));
     // Make sure that v is [0, 1] range. std::uniform_real_distribution should return a value in
-    // [min, max) range but it seems it does include max value.
-    assert(v <= 1.0f);
+    // [min, max) range but it seems it returns values outside of the range sometimes.
+    //assert(v <= 1.0f);
+    v = std::max(0.f, std::min(v, 1.f));
     return v;
 }
 

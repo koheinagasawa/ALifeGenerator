@@ -318,5 +318,5 @@ TEST(Genome, CalcGenomesDistance)
     params.m_weightFactor = 0.25f;
 
     EXPECT_EQ(Genome::calcDistance(genome1, genome1, params), 0.f);
-    EXPECT_EQ(Genome::calcDistance(genome1, genome2, params), 6.75f); // 7 * 0.5 + (0 + 5 + 4 + 4) * 0.25 <- note that some edges were disabled by mutation.
+    EXPECT_EQ(Genome::calcDistance(genome1, genome2, params), 4.3125f); // 7 * 0.5 + (0 + 5 + 4 + 4) / 4 * 0.25 <- note that some edges were disabled by mutation.
 }

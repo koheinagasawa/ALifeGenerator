@@ -230,6 +230,7 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
     }
 
     int numDisjointEdges = 0;
+    int numMatchingEdges = 0;
     float sumWeightDiffs = 0.f;
 
     // Iterate over all edges in both genomes including disabled edges then
@@ -247,6 +248,7 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
             sumWeightDiffs += abs(network1->getWeight(cur1) - network2->getWeight(cur2));
             curIdx1++;
             curIdx2++;
+            numMatchingEdges++;
         }
         else
         {
@@ -272,7 +274,7 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
     }
 
     // Calculate the final distance
-    return disjointFactor * numDisjointEdges + params.m_weightFactor * sumWeightDiffs;
+    return disjointFactor * numDisjointEdges + params.m_weightFactor * sumWeightDiffs / (float)numMatchingEdges;
 }
 
 bool Genome::validate() const

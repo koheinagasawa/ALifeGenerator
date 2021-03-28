@@ -184,7 +184,7 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
         // Revert the change
         this->m_edges.erase(newEdgeId);
         edgesToOutNode.pop_back();
-        WARN("Cannot add an edge because it would cause a circular network.");
+        //WARN("Cannot add an edge because it would cause a circular network.");
         return false;
     }
 

@@ -269,5 +269,8 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
         }
     }
 
-    m_mutations.push_back(mutationOut);
+    if (mutationOut.m_numEdgesAdded != 0 || mutationOut.m_numNodesAdded != 0)
+    {
+        m_mutations.push_back(mutationOut);
+    }
 }

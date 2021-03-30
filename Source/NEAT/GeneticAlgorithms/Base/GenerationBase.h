@@ -50,6 +50,7 @@ public:
         inline float getFitness() const { return m_fitness; }
         inline void setFitness(float fitness) { m_fitness = fitness; }
         inline bool isProtected() const { return m_isProtected; }
+        inline void setProtected(bool protect) { m_isProtected = protect; }
 
     protected:
         GenomeBasePtr m_genome; // The genome.

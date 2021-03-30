@@ -141,6 +141,12 @@ void Generation::preUpdateGeneration()
 
     // Clear mutator.
     m_mutator->reset();
+
+    // Clear protection of all genomes
+    for (GenomeData& gd : *m_genomes)
+    {
+        gd.setProtected(false);
+    }
 }
 
 void Generation::postUpdateGeneration()

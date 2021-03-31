@@ -26,7 +26,7 @@ namespace NEAT
 
             // Perturbation of weight mutation. It has to be between 0 and 1.
             // Mutated weight can be from [original * (1 - intensity)] to [original * (1 + intensity)].
-            float m_weightMutationPerturbation = 0.05f;
+            float m_weightMutationPerturbation = 0.2f;
 
             // Probability that an edge gets a new random weight instead of perturbation. It has to be between 0 and 1.
             float m_weightMutationNewValRate = 0.1f;
@@ -44,10 +44,10 @@ namespace NEAT
             float m_addEdgeMutationRate = 0.05f;
 
             // Minimum weight for a new edge.
-            float m_newEdgeMinWeight = -0.5f;
+            float m_newEdgeMinWeight = -10.f;
 
             // Maximum weight for a new edge.
-            float m_newEdgeMaxWeight = 0.5f;
+            float m_newEdgeMaxWeight = 10.f;
 
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;

@@ -15,13 +15,14 @@ class XorFitnessCalculator : public FitnessCalculatorBase
 public:
     virtual float calcFitness(const GenomeBase& genome) override
     {
+        m_numEvaluations++;
         float score = 0.f;
 
         // Test 4 patterns of XOR
-        score += abs(evaluate(genome, false, false));
-        score += abs(1.0f - evaluate(genome, false, true));
-        score += abs(1.0f - evaluate(genome, true, false));
-        score += abs(evaluate(genome, true, true));
+        score += fabs(evaluate(genome, false, false));
+        score += fabs(1.0f - evaluate(genome, false, true));
+        score += fabs(1.0f - evaluate(genome, true, false));
+        score += fabs(evaluate(genome, true, true));
         score = 4.0f - score;
 
         return score * score;
@@ -29,8 +30,6 @@ public:
 
     float evaluate(const GenomeBase& genome, bool input1, bool input2)
     {
-        m_numEvaluations++;
-
         genome.clearNodeValues();
 
         // Initialize values
@@ -50,10 +49,10 @@ public:
     {
         bool result = true;
         // Test 4 patterns of XOR
-        result &= evaluate(*genome, false, false) <= 0.5f;
-        result &= evaluate(*genome, false, true) > 0.5f;
-        result &= evaluate(*genome, true, false) > 0.5f;
-        result &= evaluate(*genome, true, true) <= 0.5f;
+        result &= evaluate(*genome, false, false) < 0.5f;
+        result &= evaluate(*genome, false, true) >= 0.5f;
+        result &= evaluate(*genome, true, false) >= 0.5f;
+        result &= evaluate(*genome, true, true) < 0.5f;
 
         return result;
     }
@@ -79,7 +78,7 @@ int main()
     genCinfo.m_fitnessCalculator = fitnessCalc;
 
     // Variables for performance investigation
-    const int maxGeneration = 100;
+    const int maxGeneration = 200;
     const int numRun = 100;
     int numFailed = 0;
     int totalGenerations = 0;

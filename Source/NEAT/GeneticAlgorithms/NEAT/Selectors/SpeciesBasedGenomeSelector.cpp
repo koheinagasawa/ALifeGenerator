@@ -45,13 +45,6 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
 
     m_speciesData.reserve(species.size());
 
-    // Helper functions to calculate factor for fitness sharing.
-    // Genome's fitness is going to be normalized by the number of members in its species.
-    auto calcFitnessSharingFactor = [this](SpeciesPtr species)->float
-    {
-        return species ? 1.f / (float)species->getNumMembers() : 1.0f;
-    };
-
     auto addGenomes = [&]()
     {
         SpeciesId currentSpeciesId = SpeciesId::invalid();
@@ -106,6 +99,12 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
         }
     }
 
+    //// Sort species data in the best fitness order
+    //std::sort(m_speciesData.begin(), m_speciesData.end(), [](const SpeciesData& s1, const SpeciesData& s2)
+    //    {
+    //        return s1.m_species->getBestFitness() > s2.m_species->getBestFitness();
+    //    });
+
     // Remove the least fit genomes in each species from selection
     for (auto& sData : m_speciesData)
     {
@@ -115,21 +114,21 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
                 return g1->getFitness() > g2->getFitness();
             });
 
+        const float fitnessSharingFactor = 1.f / (float)sData.m_species->getNumMembers();
+
         // Remove the least fit genome(s) unless the species has less than three members or
         // the least fit genome(s) has the same fitness as a genome at the middle.
         {
             const float leastFitness = sData.m_genomes.back()->getFitness();
             if (sData.m_genomes.size() > 2 && leastFitness < sData.m_genomes[sData.m_genomes.size() / 2]->getFitness())
             {
-                sData.m_genomes.pop_back();
-                while (sData.m_genomes.back()->getFitness() == leastFitness)
+                do 
                 {
                     sData.m_genomes.pop_back();
-                }
+                } while (sData.m_genomes.back()->getFitness() == leastFitness);
             }
         }
 
-        float fitnessSharingFactor = 1.f / (float)sData.m_species->getNumMembers();
         for (int i = 0; i < (int)sData.m_genomes.size(); i++)
         {
             // Calculate cumulative sum of fitness of the species' members.
@@ -177,37 +176,61 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
 
     remainingGenomes -= m_numInterSpeciesSelection;
 
-    // Distribute population to species based on the sum of fitness of its members.
-    float fitnessScale = 1.0f;
-    while (remainingGenomes > 0)
+    float totalFitness = 0;
+    for (int i = 0; i < (int)m_speciesData.size(); i++)
     {
-        for (auto& sData : m_speciesData)
+        const SpeciesData& sData = m_speciesData[i];
+
+        // Skip species which has only one genome when for selection by two genomes at once.
+        if (m_mode == GenomeSelector::SELECT_TWO_GENOMES && sData.getNumGenomes() < 2)
         {
+            continue;
+        }
+
+        totalFitness += sData.m_cumulativeFitnesses.back();
+    }
+
+    // Distribute population to species based on the sum of fitness of its members.
+    {
+        int assignedGenomes = 0;
+        std::vector<std::pair<int, float>> residues;
+        residues.reserve(m_speciesData.size());
+        for (int i = 0; i < (int)m_speciesData.size(); i++)
+        {
+            SpeciesData& sData = m_speciesData[i];
+
             // Skip species which has only one genome when for selection by two genomes at once.
             if (m_mode == GenomeSelector::SELECT_TWO_GENOMES && sData.getNumGenomes() < 2)
             {
+                residues.push_back({ i, 0.f });
                 continue;
             }
 
-            int population = int(sData.getSumFitness() * fitnessScale / m_totalFitness);
+            float populationF = sData.getSumFitness() / totalFitness * remainingGenomes;
+            int population = int(populationF);
+            residues.push_back({ i, populationF - (float)population });
 
-            // Make sure that we don't exceed the total number of genomes.
-            if (population > remainingGenomes)
-            {
-                population = remainingGenomes;
-            }
-
-            sData.m_population += population;
-            remainingGenomes -= population;
-            assert(remainingGenomes >= 0);
-
-            if (remainingGenomes == 0)
-            {
-                break;
-            }
+            sData.m_population = population;
+            assignedGenomes += population;
+            assert(assignedGenomes <= remainingGenomes);
         }
 
-        fitnessScale *= 2.f;
+        assert(assignedGenomes <= remainingGenomes && (remainingGenomes - assignedGenomes) < (int)m_speciesData.size());
+
+        if (assignedGenomes < remainingGenomes)
+        {
+            std::sort(residues.begin(), residues.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b)
+                {
+                    return a.second > b.second;
+                });
+
+            int index = 0;
+            while (assignedGenomes < remainingGenomes)
+            {
+                m_speciesData[residues[index++].first].m_population++;
+                assignedGenomes++;
+            }
+        }
     }
 
     // Set remaining population
@@ -217,13 +240,12 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
     }
 
     // Set the current species data index to the first species which has population
-    while (m_speciesData[m_currentSpeciesDataIndex].m_population == 0)
+    if (m_numInterSpeciesSelection < (int)m_speciesData.size())
     {
-        m_currentSpeciesDataIndex++;
-        if (m_currentSpeciesDataIndex == (int)m_speciesData.size())
+        while (m_speciesData[m_currentSpeciesDataIndex].m_population == 0)
         {
-            // No species has population. This means all the selections are going to be inter-species selection.
-            break;
+            m_currentSpeciesDataIndex++;
+            assert(m_currentSpeciesDataIndex < (int)m_speciesData.size());
         }
     }
 
@@ -243,7 +265,8 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
 void SpeciesBasedGenomeSelector::decrementPopulationOfCurrentSpecies()
 {
     SpeciesData& sData = m_speciesData[m_currentSpeciesDataIndex];
-    sData.m_remainingPopulation -= 1;
+    assert(sData.m_remainingPopulation > 0);
+    sData.m_remainingPopulation--;
     if (sData.m_remainingPopulation == 0)
     {
         do
@@ -346,7 +369,7 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
             m_currentSpeciesDataIndex++;
         }
 
-        SpeciesData& sData = m_speciesData[m_currentSpeciesDataIndex];
+        const SpeciesData& sData = m_speciesData[m_currentSpeciesDataIndex];
 
         if (sData.getNumGenomes() == 2)
         {
@@ -373,7 +396,9 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
 
         assert(m_cumulativeSpeciesFitness.size() == m_speciesData.size() + 1);
 
-        auto select = [this]()->const GenomeData*
+        int selectedSpeciesId1, selectedSpeciesId2;
+
+        auto select = [this](int& selectedSpeciesId)->const GenomeData*
         {
             // std::uniform_real_distribution should return [min, max), but if we call randomReal(m_sumFitness[start], m_sumFitness[end])
             // we see v == m_sumFitness[end] here for some reason. That's why we have to calculate nexttoward of max here to avoid unintentional
@@ -394,6 +419,7 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
                     {
                         if (v < sData.m_cumulativeFitnesses[j + 1])
                         {
+                            selectedSpeciesId = i;
                             return sData.m_genomes[j];
                         }
                     }
@@ -403,11 +429,11 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
             return nullptr;
         };
 
-        g1 = select();
-        g2 = g1;
-        while (g2 == g1)
+        g1 = select(selectedSpeciesId1);
+        selectedSpeciesId2 = selectedSpeciesId1;
+        while (selectedSpeciesId1 == selectedSpeciesId2)
         {
-            g2 = select();
+            g2 = select(selectedSpeciesId2);
         }
     }
 }

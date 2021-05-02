@@ -174,6 +174,11 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
         m_numInterSpeciesSelection = 1;
     }
 
+    if (m_speciesData.size() == 1)
+    {
+        m_numInterSpeciesSelection = 0;
+    }
+
     remainingGenomes -= m_numInterSpeciesSelection;
 
     float totalFitness = 0;
@@ -395,6 +400,7 @@ void SpeciesBasedGenomeSelector::selectTwoGenomes(const GenomeData*& g1, const G
         // Inter species selection.
 
         assert(m_cumulativeSpeciesFitness.size() == m_speciesData.size() + 1);
+        assert(m_speciesData.size() > 1);
 
         int selectedSpeciesId1, selectedSpeciesId2;
 

@@ -33,7 +33,7 @@ public:
     {
     public:
         // Type of Node.
-        enum class Type
+        enum class Type : char
         {
             INPUT,
             HIDDEN,
@@ -60,9 +60,9 @@ public:
         inline Type getNodeType() const { return m_type; }
 
     protected:
+        const Activation* m_activation = nullptr;
         float m_value = 0.f;
         Type m_type = Type::NONE;
-        const Activation* m_activation = nullptr;
 
         friend class GenomeBase;
     };
@@ -100,8 +100,10 @@ public:
     // Node interface
     //
 
+    // Clear all values stored in nodes.
     void clearNodeValues() const;
 
+    // Returns a list of input node ids.
     inline auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
 
     // Set values of input nodes.
@@ -113,7 +115,7 @@ public:
     //
 
     // Set activation of node.
-    inline void setActivation(NodeId nodeId, const Activation* activation) { m_network->accessNode(nodeId).m_activation = activation; }
+    void setActivation(NodeId nodeId, const Activation* activation);
 
     // Set activation of all nodes except input nodes.
     void setActivationAll(const Activation* activation);
@@ -136,6 +138,7 @@ public:
     void evaluate() const;
 
 protected:
+    // Set type and activation func of a node.
     void setNodeTypeAndActivation(NodeId node, Node::Type type, const Activation* activation);
 
     NetworkPtr m_network;                   // The network.

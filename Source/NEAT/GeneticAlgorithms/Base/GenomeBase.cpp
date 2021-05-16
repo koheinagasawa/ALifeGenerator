@@ -62,6 +62,14 @@ void GenomeBase::setInputNodeValues(const std::vector<float>& values) const
     }
 }
 
+void GenomeBase::setActivation(NodeId nodeId, const Activation* activation)
+{
+    assert(m_network.get());
+    assert(m_network->getNode(nodeId).getNodeType() != Node::Type::INPUT);
+
+    m_network->accessNode(nodeId).m_activation = activation;
+}
+
 void GenomeBase::setActivationAll(const Activation* activation)
 {
     assert(m_network.get());

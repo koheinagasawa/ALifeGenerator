@@ -38,6 +38,7 @@ public:
             INPUT,
             HIDDEN,
             OUTPUT,
+            BIAS,
             NONE
         };
 
@@ -58,6 +59,8 @@ public:
         inline auto getActivationName() const->const std::string& { return m_activation->m_name; }
 
         inline Type getNodeType() const { return m_type; }
+
+        inline bool isInputOrBias() const { return m_type == Type::INPUT || m_type == Type::BIAS; }
 
     protected:
         const Activation* m_activation = nullptr;
@@ -110,6 +113,9 @@ public:
     // values has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
     void setInputNodeValues(const std::vector<float>& values) const;
 
+    // Set value of bias node.
+    void setBiasNodeValue(float value);
+
     //
     // Activation interface
     //
@@ -142,6 +148,7 @@ protected:
     void setNodeTypeAndActivation(NodeId node, Node::Type type, const Activation* activation);
 
     NetworkPtr m_network;                   // The network.
-    Network::NodeIds m_inputNodes;          // A list of input nodes.
+    Network::NodeIds m_inputNodes;          // A list of input nodes including a bias node.
+    NodeId m_biasNode;                      // Bias node id.
     const Activation* m_defaultActivation;  // Activation assigned to new Node by default.
 };

@@ -30,6 +30,7 @@ GenomeBase::GenomeBase(const Activation* defaultActivation)
 GenomeBase::GenomeBase(const GenomeBase& other)
     : m_inputNodes(other.m_inputNodes)
     , m_defaultActivation(other.m_defaultActivation)
+    , m_biasNode(other.m_biasNode)
 {
     // Copy the network
     m_network = std::make_shared<Network>(*other.m_network.get());
@@ -39,6 +40,7 @@ void GenomeBase::operator= (const GenomeBase& other)
 {
     m_inputNodes = other.m_inputNodes;
     m_defaultActivation = other.m_defaultActivation;
+    m_biasNode = other.m_biasNode;
 
     // Copy the network
     m_network = std::make_shared<Network>(*other.m_network.get());
@@ -62,10 +64,21 @@ void GenomeBase::setInputNodeValues(const std::vector<float>& values) const
     }
 }
 
+void GenomeBase::setBiasNodeValue(float value)
+{
+    if (!m_biasNode.isValid())
+    {
+        WARN("No bias node in this genome");
+        return;
+    }
+
+    m_network->accessNode(m_biasNode).setValue(value);
+}
+
 void GenomeBase::setActivation(NodeId nodeId, const Activation* activation)
 {
     assert(m_network.get());
-    assert(m_network->getNode(nodeId).getNodeType() != Node::Type::INPUT);
+    assert(!m_network->getNode(nodeId).isInputOrBias());
 
     m_network->accessNode(nodeId).m_activation = activation;
 }

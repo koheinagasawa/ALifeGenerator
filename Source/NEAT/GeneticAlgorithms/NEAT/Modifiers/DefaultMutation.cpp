@@ -72,12 +72,17 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     if (addNewNode)
     {
         edgeCandidates.reserve(network->getNumEdges());
-        for (const Genome::Network::EdgeEntry& edge : network->getEdges())
+        for (const Genome::Network::EdgeEntry& entry : network->getEdges())
         {
-            // We cannot add a new node at disable edges
-            if (edge.second.isEnabled())
+            const Genome::Network::Edge& edge = entry.second;
+            // We cannot add a new node at disable edges or edges from bias nodes
+            if (edge.isEnabled())
             {
-                edgeCandidates.push_back(edge.first);
+                const GenomeBase::Node& node = network->getNode(edge.getInNode());
+                if (node.getNodeType() != GenomeBase::Node::Type::BIAS)
+                {
+                    edgeCandidates.push_back(entry.first);
+                }
             }
         }
     }
@@ -106,7 +111,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 assert(n1.getNodeType() != Genome::Node::Type::NONE);
 
                 // Cannot create an edge between two input nodes or two output nodes.
-                if (n1.getNodeType() != Genome::Node::Type::HIDDEN && n1.getNodeType() == n2.getNodeType())
+                if (n1.getNodeType() != Genome::Node::Type::HIDDEN && ((n1.getNodeType() == n2.getNodeType()) || (n1.isInputOrBias() && n2.isInputOrBias())))
                 {
                     continue;
                 }
@@ -122,7 +127,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 {
                     std::swap(n1Id, n2Id);
                 }
-                else if (n2.getNodeType() == Genome::Node::Type::INPUT)
+                else if (n2.isInputOrBias())
                 {
                     std::swap(n1Id, n2Id);
                 }
@@ -178,7 +183,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         EdgeId newEdge = genome->addEdgeAt(pair.first, pair.second, weight, tryAddFlippedEdgeOnFail);
 
         if (!newEdge.isValid() &&
-            network->getNode(pair.first).getNodeType() != Genome::Node::Type::INPUT &&
+            !network->getNode(pair.first).isInputOrBias() &&
             network->getNode(pair.second).getNodeType() != Genome::Node::Type::OUTPUT)
         {
             // Adding edge was failed most likely because it will cause a circular network.

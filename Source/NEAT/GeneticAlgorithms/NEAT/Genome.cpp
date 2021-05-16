@@ -19,7 +19,8 @@ Genome::Genome(const Cinfo& cinfo)
     Network::Edges edges;
     Network::NodeIds outputNodes;
 
-    const int numNodes = cinfo.m_numInputNodes + cinfo.m_numOutputNodes;
+    const int numInputNodes = cinfo.m_numInputNodes + (cinfo.m_createBiasNode ? 1 : 0);
+    const int numNodes = numInputNodes + cinfo.m_numOutputNodes;
 
     // Create nodes
     nodes.reserve(numNodes);
@@ -32,7 +33,16 @@ Genome::Genome(const Cinfo& cinfo)
         nodes.insert({ id, Node(Node::Type::INPUT) });
         m_inputNodes.push_back(id);
     }
-    for (int i = cinfo.m_numInputNodes; i < numNodes; i++)
+
+    if (cinfo.m_createBiasNode)
+    {
+        // Create a bias node.
+        m_biasNode = m_innovIdCounter.getNewNodeId();
+        nodes.insert({ m_biasNode, Node(Node::Type::BIAS) });
+        nodes[m_biasNode].setValue(cinfo.m_biasNodeValue);
+    }
+
+    for (int i = numInputNodes; i < numNodes; i++)
     {
         // Create output nodes.
         NodeId id = m_innovIdCounter.getNewNodeId();
@@ -43,16 +53,16 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create fully connected edges between input nodes and output nodes.
     // Input nodes are from 0 to numInputNodes and output nodes are from numInputNodes+1 to numNodes.
-    const int numEdges = cinfo.m_numInputNodes * cinfo.m_numOutputNodes;
+    const int numEdges = numInputNodes * cinfo.m_numOutputNodes;
     edges.reserve(numEdges);
     m_innovations.reserve(numEdges);
     {
-        for (int i = 0; i < cinfo.m_numInputNodes; i++)
+        for (int i = 0; i < numInputNodes; i++)
         {
             for (int j = 0; j < cinfo.m_numOutputNodes; j++)
             {
                 EdgeId eid = m_innovIdCounter.getNewInnovationId();
-                edges.insert({ eid, Network::Edge(NodeId(i), NodeId(cinfo.m_numInputNodes + j)) });
+                edges.insert({ eid, Network::Edge(NodeId(i), NodeId(numInputNodes + j)) });
                 m_innovations.push_back(eid);
             }
         }

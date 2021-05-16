@@ -43,6 +43,12 @@ namespace NEAT
             // The number of output nodes.
             uint16_t m_numOutputNodes = 1;
 
+            // True to create a bias node.
+            bool m_createBiasNode = false;
+
+            // Default value of bias node.
+            float m_biasNodeValue = 1.0f;
+
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter* m_innovIdCounter = nullptr;
 

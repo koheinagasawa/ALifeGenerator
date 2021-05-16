@@ -34,10 +34,9 @@ public:
 
         // Initialize values
         static std::vector<float> values;
-        values.resize(3);
+        values.resize(2);
         values[0] = input1 ? 1.f : 0.f;
         values[1] = input2 ? 1.f : 0.f;
-        values[2] = 1.f; // bias node
 
         genome.evaluate(values);
 
@@ -72,8 +71,9 @@ int main()
 
     Generation::Cinfo genCinfo;
     genCinfo.m_numGenomes = 150;
-    genCinfo.m_genomeCinfo.m_numInputNodes = 3; // Two inputs for XOR and one bias node.
+    genCinfo.m_genomeCinfo.m_numInputNodes = 2; // Two inputs for XOR.
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1;
+    genCinfo.m_genomeCinfo.m_createBiasNode = true;
     genCinfo.m_genomeCinfo.m_defaultActivation = &sigmoid;
     genCinfo.m_fitnessCalculator = fitnessCalc;
 

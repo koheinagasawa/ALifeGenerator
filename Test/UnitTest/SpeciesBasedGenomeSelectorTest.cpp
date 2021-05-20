@@ -166,7 +166,7 @@ TEST(SpeciesBasedGenomeSelector, CreateSelector)
 
             selector.selectTwoGenomes(g1, g2);
             EXPECT_EQ(g1, &genomes[1]);
-            EXPECT_EQ(g2, &genomes[0]);
+            EXPECT_EQ(g2, &genomes[4]);
 
             random.m_val = 1.0f;
 

@@ -69,6 +69,9 @@ public:
     // Replace an node id with a new node id.
     void replaceNodeId(NodeId nodeId, NodeId newId);
 
+    // Remove an existing edge
+    void removeEdge(EdgeId edgeId);
+
     // Replace an edge id with a new edge id.
     void replaceEdgeId(EdgeId edgeId, EdgeId newId);
 
@@ -225,6 +228,39 @@ void MutableNetwork<Node>::replaceNodeId(NodeId nodeId, NodeId newId)
         {
             this->m_outputNodes.erase(itr);
             this->m_outputNodes.push_back(newId);
+            break;
+        }
+    }
+
+    assert(this->validate());
+}
+
+template <typename Node>
+void MutableNetwork<Node>::removeEdge(EdgeId edgeId)
+{
+    assert(this->validate());
+    assert(this->hasEdge(edgeId));
+
+    const Edge& edge = this->m_edges.at(edgeId);
+
+    // Update incoming edges of output node
+    NodeData& outputNode = this->m_nodes[edge.getOutNode()];
+    EdgeIds& edgesToOutNode = outputNode.m_incomingEdges;
+    for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); itr++)
+    {
+        if (*itr == edgeId)
+        {
+            edgesToOutNode.erase(itr);
+            break;
+        }
+    }
+
+    // Remove the original edge id
+    for (auto itr = this->m_edges.begin(); itr != this->m_edges.end(); itr++)
+    {
+        if (itr->first == edgeId)
+        {
+            this->m_edges.erase(itr);
             break;
         }
     }

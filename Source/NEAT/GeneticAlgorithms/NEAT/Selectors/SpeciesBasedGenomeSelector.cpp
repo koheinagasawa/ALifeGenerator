@@ -245,13 +245,9 @@ void SpeciesBasedGenomeSelector::setSpeciesPopulations(int numGenomesToSelect)
     }
 
     // Set the current species data index to the first species which has population
-    if (m_numInterSpeciesSelection < (int)m_speciesData.size())
+    while (m_currentSpeciesDataIndex < (int)m_speciesData.size() && m_speciesData[m_currentSpeciesDataIndex].m_population == 0)
     {
-        while (m_speciesData[m_currentSpeciesDataIndex].m_population == 0)
-        {
-            m_currentSpeciesDataIndex++;
-            assert(m_currentSpeciesDataIndex < (int)m_speciesData.size());
-        }
+        m_currentSpeciesDataIndex++;
     }
 
     // Calculate cumulative fitness of species when we will need inter species selection

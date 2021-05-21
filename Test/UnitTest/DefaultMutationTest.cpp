@@ -46,6 +46,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     mutator.m_params.m_weightMutationRate = 0.0f;
     mutator.m_params.m_addEdgeMutationRate = 1.0f;
     mutator.m_params.m_addNodeMutationRate = 1.0f;
+    mutator.m_params.m_removeEdgeMutationRate = 0.f;
 
     DefaultMutation::MutationOut out;
 
@@ -193,6 +194,37 @@ TEST(DefaultMutation, MutateSingleGenome)
             }
         }
     }
+
+    // Reset parameter so that only edge removal can happen.
+    mutator.m_params.m_addEdgeMutationRate = 0.0f;
+    mutator.m_params.m_addNodeMutationRate = 0.0f;
+    mutator.m_params.m_weightMutationNewValRate = 0.0f;
+    mutator.m_params.m_weightMutationRate = 0.0f;
+    mutator.m_params.m_removeEdgeMutationRate = 1.0f;
+
+    mutator.mutate(&genome, out);
+
+    EXPECT_TRUE(genome.validate());
+    EXPECT_EQ(out.m_numNodesAdded, 0);
+    EXPECT_FALSE(out.m_newNode.m_newNode.isValid());
+    EXPECT_FALSE(out.m_newNode.m_previousEdgeId.isValid());
+    EXPECT_FALSE(out.m_newNode.m_newIncomingEdgeId.isValid());
+    EXPECT_FALSE(out.m_newNode.m_newOutgoingEdgeId.isValid());
+    EXPECT_EQ(out.m_numEdgesAdded, 0);
+    EXPECT_FALSE(out.m_newEdges[0].m_sourceInNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[0].m_sourceOutNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[0].m_newEdge.isValid());
+    EXPECT_FALSE(out.m_newEdges[1].m_sourceInNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[1].m_sourceOutNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[1].m_newEdge.isValid());
+    EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
+    EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getNumNodes(), 6);
+    EXPECT_EQ(network->getNumEdges(), 8);
+    EXPECT_EQ(network->getOutputNodes().size(), 2);
+
 }
 
 TEST(DefaultMutation, MutateGeneration)
@@ -246,6 +278,7 @@ TEST(DefaultMutation, MutateGeneration)
     mutator.m_params.m_weightMutationRate = 0.0f;
     mutator.m_params.m_addEdgeMutationRate = 1.0f;
     mutator.m_params.m_addNodeMutationRate = 1.0f;
+    mutator.m_params.m_removeEdgeMutationRate = 0.f;
     mutator.m_params.m_random = &random;
 
     {

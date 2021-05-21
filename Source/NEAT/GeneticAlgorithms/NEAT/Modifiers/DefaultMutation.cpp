@@ -34,7 +34,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
     int numNewEdges = 0;
 
-    // 1. Change weights of edges with a certain probability
+    // 1. Change weights of edges with a small perturbation.
     for (const Genome::Network::EdgeEntry& edge : network->getEdges())
     {
         EdgeId edgeId = edge.first;
@@ -57,7 +57,35 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         }
     }
 
-    // 2. 3. Add a new node and edge
+    Genome* genome = static_cast<Genome*>(genomeInOut);
+
+    // 2. Remove a random existing edge.
+    if (random->randomReal01() < m_params.m_removeEdgeMutationRate)
+    {
+        const Genome::Network::Edges& edges = network->getEdges();
+
+        // Select an edge to remove randomly.
+        int index = random->randomInteger(0, edges.size() - 1);
+        
+        // Find EdgeId of the edge to remove.
+        EdgeId edgeToRemove;
+        {
+            int i = 0;
+            for (auto itr = edges.begin(); itr != edges.end(); itr++, i++)
+            {
+                if (i == index)
+                {
+                    edgeToRemove = itr->first;
+                    break;
+                }
+            }
+        }
+
+        // Remove the edge.
+        genome->removeEdge(edgeToRemove);
+    }
+
+    // 3. 4. Add a new node and edge
 
     // Decide whether we add a new node/edge
     const bool addNewNode = random->randomReal01() < m_params.m_addNodeMutationRate;
@@ -149,8 +177,6 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         newEdgeInfo.m_newEdge = newEdge;
     };
 
-    Genome* genome = static_cast<Genome*>(genomeInOut);
-
     // 2. Add a node at a random edge
     if (!edgeCandidates.empty())
     {
@@ -199,6 +225,8 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         }
     }
 
+    // [TODO] Add a mutation to remove a random edge. Then if a node has no edges connected to it, remove the node too.
+
     assert(network->validate());
 }
 
@@ -216,6 +244,10 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
 
     // Check if there is already a mutation of the same structural change.
     // If so, assign the same innovation id to it.
+
+    // [TODO] Consider to track record of all the innovations which ever added
+    //        and reuse the innovation id when the same structural change happens
+    //        at different generations.
 
     // Check all the newly added edges.
     for (int innov1 = 0; innov1 < mutationOut.m_numEdgesAdded; innov1++)

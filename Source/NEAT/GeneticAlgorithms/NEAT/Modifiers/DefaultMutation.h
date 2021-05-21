@@ -43,6 +43,9 @@ namespace NEAT
             // Probability of mutation to add a new edge. It has to be between 0 and 1.
             float m_addEdgeMutationRate = 0.05f;
 
+            // Probability of removing an existing edge.
+            float m_removeEdgeMutationRate = 0.02f;
+
             // Minimum weight for a new edge.
             float m_newEdgeMinWeight = -10.f;
 
@@ -61,8 +64,9 @@ namespace NEAT
 
         // Mutate a single genome. There are three ways of mutation.
         // 1. Change weights of edges with a small perturbation.
-        // 2. Add a new node at a random edge.
-        // 3. Connect random two nodes by a new edge.
+        // 2. Remove a random existing edge.
+        // 3. Add a new node at a random edge.
+        // 4. Connect random two nodes by a new edge.
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) override;
 

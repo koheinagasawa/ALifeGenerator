@@ -164,6 +164,24 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAd
     }
 }
 
+void Genome::removeEdge(EdgeId edge)
+{
+    assert(m_network->hasEdge(edge));
+
+    // Remove the edge from the network.
+    m_network->removeEdge(edge);
+    
+    // Remove the innovation.
+    for (auto itr = m_innovations.begin(); itr != m_innovations.end(); itr++)
+    {
+        if (*itr == edge)
+        {
+            m_innovations.erase(itr);
+            break;
+        }
+    }
+}
+
 void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
 {
     assert(m_network->hasNode(originalId) && !m_network->hasNode(newId));

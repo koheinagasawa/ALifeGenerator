@@ -93,6 +93,9 @@ namespace NEAT
         // this function will try to add an edge by flipping inNode and outNode.
         EdgeId addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAddFlippedEdgeOnFail = true);
 
+        // Remove an existing edge.
+        void removeEdge(EdgeId edge);
+
         //
         // Innovation interface
         //

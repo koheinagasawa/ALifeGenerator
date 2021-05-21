@@ -64,25 +64,33 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     {
         const Genome::Network::Edges& edges = network->getEdges();
 
-        // Select an edge to remove randomly.
-        int index = random->randomInteger(0, edges.size() - 1);
-        
-        // Find EdgeId of the edge to remove.
-        EdgeId edgeToRemove;
+        if (edges.size() > 1)
         {
-            int i = 0;
-            for (auto itr = edges.begin(); itr != edges.end(); itr++, i++)
+            // Select an edge to remove randomly.
+            int index = random->randomInteger(0, edges.size() - 1);
+
+            // Find EdgeId of the edge to remove.
+            EdgeId edgeToRemove;
             {
-                if (i == index)
+                int i = 0;
+                for (auto itr = edges.begin(); itr != edges.end(); itr++, i++)
                 {
-                    edgeToRemove = itr->first;
-                    break;
+                    if (i == index)
+                    {
+                        edgeToRemove = itr->first;
+                        break;
+                    }
                 }
             }
-        }
 
-        // Remove the edge.
-        genome->removeEdge(edgeToRemove);
+            NodeId outNodeId = network->getOutNode(edgeToRemove);
+            if (network->getNode(outNodeId).getNodeType() != GenomeBase::Node::Type::OUTPUT ||
+                network->getIncomingEdges(outNodeId).size() > 1)
+            {
+                // Remove the edge.
+                genome->removeEdge(edgeToRemove);
+            }
+        }
     }
 
     // 3. 4. Add a new node and edge

@@ -44,7 +44,7 @@ namespace NEAT
             float m_addEdgeMutationRate = 0.05f;
 
             // Probability of removing an existing edge.
-            float m_removeEdgeMutationRate = 0.02f;
+            float m_removeEdgeMutationRate = 0.005f;
 
             // Minimum weight for a new edge.
             float m_newEdgeMinWeight = -10.f;

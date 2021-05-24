@@ -233,8 +233,6 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         }
     }
 
-    // [TODO] Add a mutation to remove a random edge. Then if a node has no edges connected to it, remove the node too.
-
     assert(network->validate());
 }
 

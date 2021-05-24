@@ -36,7 +36,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // Create arrays to store innovations, nodes and edges for the new genome.
     Network::EdgeIds innovations;
-    Network::Nodes newGnomeNodes;
+    Network::Nodes newGenomeNodes;
     Network::Edges newGenomeEdges;
 
     // Edges which are disabled in genome1 but enabled in the newGenome.
@@ -164,20 +164,34 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
             if (addedNodes.find(inNode) == addedNodes.end())
             {
-                newGnomeNodes.insert({ inNode, network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode) });
+                newGenomeNodes.insert({ inNode, network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode) });
                 addedNodes.insert(inNode);
             }
 
             if (addedNodes.find(outNode) == addedNodes.end())
             {
-                newGnomeNodes.insert({ outNode, network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode) });
+                newGenomeNodes.insert({ outNode, network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode) });
                 addedNodes.insert(outNode);
             }
         }
     }
 
+    // Add input, output and hidden nodes
+    {
+        for (NodeId node : genome1.getInputNodes())
+        {
+            newGenomeNodes.insert({ node, network1->getNode(node) });
+        }
+        for (NodeId node : network1->getOutputNodes())
+        {
+            newGenomeNodes.insert({ node, network1->getNode(node) });
+        }
+        NodeId biasNode = genome1.getBiasNode();
+        newGenomeNodes.insert({ biasNode, network1->getNode(biasNode) });
+    }
+
     // Create a new network.
-    Genome::NetworkPtr network = std::make_shared<Network>(newGnomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
+    Genome::NetworkPtr network = std::make_shared<Network>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.

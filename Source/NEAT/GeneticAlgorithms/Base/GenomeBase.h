@@ -116,6 +116,8 @@ public:
     // Set value of bias node.
     void setBiasNodeValue(float value);
 
+    inline NodeId getBiasNode() const { return m_biasNode; }
+
     //
     // Activation interface
     //

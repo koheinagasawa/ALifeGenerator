@@ -255,6 +255,7 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
     //        and reuse the innovation id when the same structural change happens
     //        at different generations.
 
+    // [STARTFROMHERE] We don't need to do this anymore.
     // Check all the newly added edges.
     for (int innov1 = 0; innov1 < mutationOut.m_numEdgesAdded; innov1++)
     {
@@ -269,7 +270,9 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
             for (int innov2 = 0; innov2 < mout2.m_numEdgesAdded; innov2++)
             {
                 const MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
-                if (newEdge2.m_sourceInNode == inNode && newEdge2.m_sourceOutNode == outNode)
+                if (newEdge.m_newEdge != newEdge2.m_newEdge &&
+                    newEdge2.m_sourceInNode == inNode &&
+                    newEdge2.m_sourceOutNode == outNode)
                 {
                     genome->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
                     newEdge.m_newEdge = newEdge2.m_newEdge;

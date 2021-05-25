@@ -15,10 +15,34 @@ namespace NEAT
     class InnovationCounter
     {
     public:
+        struct EdgeEntry
+        {
+            NodeId m_inNode;
+            NodeId m_outNode;
+
+            inline bool operator==(const EdgeEntry& other) const
+            {
+                return m_inNode == other.m_inNode && m_outNode == other.m_outNode;
+            }
+        };
+
+        // The specialized hash function
+        struct EdgeEntryHash
+        {
+            std::size_t operator() (const InnovationCounter::EdgeEntry& entry) const
+            {
+                std::size_t h1 = std::hash<NodeId>()(entry.m_inNode);
+                std::size_t h2 = std::hash<NodeId>()(entry.m_outNode);
+
+                return h1 ^ (h2 << 1);
+            }
+        };
+
         InnovationCounter() = default;
 
         NodeId getNewNodeId() { return m_nodeIdCounter.getNewId(); }
-        EdgeId getNewInnovationId() { return m_innovationIdCounter.getNewId(); }
+
+        EdgeId getEdgeId(const EdgeEntry& entry);
 
         void reset() { m_nodeIdCounter.reset(); m_innovationIdCounter.reset(); }
 
@@ -28,6 +52,7 @@ namespace NEAT
 
         UniqueIdCounter<NodeId> m_nodeIdCounter;
         UniqueIdCounter<EdgeId> m_innovationIdCounter;
+        std::unordered_map<EdgeEntry, EdgeId, EdgeEntryHash> m_innovationHistory;
     };
 
     // Genome for NEAT

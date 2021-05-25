@@ -7,7 +7,21 @@
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 
+#include <algorithm>
+
 using namespace NEAT;
+
+EdgeId InnovationCounter::getEdgeId(const EdgeEntry& entry)
+{
+    if (m_innovationHistory.find(entry) != m_innovationHistory.end())
+    {
+        return m_innovationHistory.at(entry);
+    }
+
+    EdgeId newEdge = m_innovationIdCounter.getNewId();
+    m_innovationHistory[entry] = newEdge;
+    return newEdge;
+}
 
 Genome::Genome(const Cinfo& cinfo)
     : GenomeBase(cinfo.m_defaultActivation)
@@ -18,6 +32,7 @@ Genome::Genome(const Cinfo& cinfo)
     Network::Nodes nodes;
     Network::Edges edges;
     Network::NodeIds outputNodes;
+    Network::NodeIds inputNodes;
 
     const int numInputNodes = cinfo.m_numInputNodes + (cinfo.m_createBiasNode ? 1 : 0);
     const int numNodes = numInputNodes + cinfo.m_numOutputNodes;
@@ -25,6 +40,7 @@ Genome::Genome(const Cinfo& cinfo)
     // Create nodes
     nodes.reserve(numNodes);
     m_inputNodes.reserve(cinfo.m_numInputNodes);
+    inputNodes.reserve(cinfo.m_numInputNodes);
     outputNodes.reserve(cinfo.m_numOutputNodes);
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
     {
@@ -32,6 +48,7 @@ Genome::Genome(const Cinfo& cinfo)
         NodeId id = m_innovIdCounter.getNewNodeId();
         nodes.insert({ id, Node(Node::Type::INPUT) });
         m_inputNodes.push_back(id);
+        inputNodes.push_back(id);
     }
 
     if (cinfo.m_createBiasNode)
@@ -40,6 +57,7 @@ Genome::Genome(const Cinfo& cinfo)
         m_biasNode = m_innovIdCounter.getNewNodeId();
         nodes.insert({ m_biasNode, Node(Node::Type::BIAS) });
         nodes[m_biasNode].setValue(cinfo.m_biasNodeValue);
+        inputNodes.push_back(m_biasNode);
     }
 
     for (int i = numInputNodes; i < numNodes; i++)
@@ -61,8 +79,9 @@ Genome::Genome(const Cinfo& cinfo)
         {
             for (int j = 0; j < cinfo.m_numOutputNodes; j++)
             {
-                EdgeId eid = m_innovIdCounter.getNewInnovationId();
-                edges.insert({ eid, Network::Edge(NodeId(i), NodeId(numInputNodes + j)) });
+                InnovationCounter::EdgeEntry entry{ inputNodes[i], outputNodes[j] };
+                EdgeId eid = m_innovIdCounter.getEdgeId(entry);
+                edges.insert({ eid, Network::Edge(inputNodes[i], outputNodes[j]) });
                 m_innovations.push_back(eid);
             }
         }
@@ -119,8 +138,14 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
 
     // Create new ids.
     newNode = m_innovIdCounter.getNewNodeId();
-    newIncomingEdge = m_innovIdCounter.getNewInnovationId();
-    newOutgoingEdge = m_innovIdCounter.getNewInnovationId();
+    NodeId inNode = m_network->getInNode(edgeId);
+    NodeId outNode = m_network->getOutNode(edgeId);
+
+    InnovationCounter::EdgeEntry entry1{ inNode, newNode };
+    InnovationCounter::EdgeEntry entry2{ newNode, outNode };
+
+    newIncomingEdge = m_innovIdCounter.getEdgeId(entry1);
+    newOutgoingEdge = m_innovIdCounter.getEdgeId(entry2);
 
     // Add a node.
     bool result = m_network->addNodeAt(edgeId, newNode, newIncomingEdge, newOutgoingEdge);
@@ -132,6 +157,8 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
     // Record the innovations.
     m_innovations.push_back(newIncomingEdge);
     m_innovations.push_back(newOutgoingEdge);
+
+    std::sort(m_innovations.begin(), m_innovations.end());
 }
 
 EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAddFlippedEdgeOnFail)
@@ -142,7 +169,8 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAd
     }
 
     // Create a new id.
-    const EdgeId newEdge = m_innovIdCounter.getNewInnovationId();
+    InnovationCounter::EdgeEntry entry{ inNode, outNode };
+    const EdgeId newEdge = m_innovIdCounter.getEdgeId(entry);
 
     // Add an edge.
     bool result = m_network->addEdgeAt(inNode, outNode, newEdge, weight);
@@ -156,6 +184,8 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAd
     {
         // Record the innovation.
         m_innovations.push_back(newEdge);
+        std::sort(m_innovations.begin(), m_innovations.end());
+
         return newEdge;
     }
     else

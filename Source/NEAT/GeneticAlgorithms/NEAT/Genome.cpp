@@ -23,6 +23,13 @@ EdgeId InnovationCounter::getEdgeId(const EdgeEntry& entry)
     return newEdge;
 }
 
+void InnovationCounter::reset()
+{
+    m_nodeIdCounter.reset();
+    m_innovationIdCounter.reset();
+    m_innovationHistory.clear();
+}
+
 Genome::Genome(const Cinfo& cinfo)
     : GenomeBase(cinfo.m_defaultActivation)
     , m_innovIdCounter(*cinfo.m_innovIdCounter)

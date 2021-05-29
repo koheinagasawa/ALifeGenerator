@@ -250,47 +250,9 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
 
     // Check if there is already a mutation of the same structural change.
     // If so, assign the same innovation id to it.
-
-    // [TODO] Consider to track record of all the innovations which ever added
-    //        and reuse the innovation id when the same structural change happens
-    //        at different generations.
-
-    // [STARTFROMHERE] We don't need to do this anymore.
-    // Check all the newly added edges.
-    for (int innov1 = 0; innov1 < mutationOut.m_numEdgesAdded; innov1++)
-    {
-        MutationOut::NewEdgeInfo& newEdge = mutationOut.m_newEdges[innov1];
-        NodeId inNode = newEdge.m_sourceInNode;
-        NodeId outNode = newEdge.m_sourceOutNode;
-
-        bool idChanged = false;
-        for (int i = 0; i < (int)m_mutations.size(); i++)
-        {
-            const MutationOut& mout2 = m_mutations[i];
-            for (int innov2 = 0; innov2 < mout2.m_numEdgesAdded; innov2++)
-            {
-                const MutationOut::NewEdgeInfo& newEdge2 = mout2.m_newEdges[innov2];
-                if (newEdge.m_newEdge != newEdge2.m_newEdge &&
-                    newEdge2.m_sourceInNode == inNode &&
-                    newEdge2.m_sourceOutNode == outNode)
-                {
-                    genome->reassignInnovation(newEdge.m_newEdge, newEdge2.m_newEdge);
-                    newEdge.m_newEdge = newEdge2.m_newEdge;
-                    idChanged = true;
-                    break;
-                }
-            }
-
-            if (idChanged)
-            {
-                assert(genome->validate());
-                break;
-            }
-        }
-    }
-
-
-    // Check the newly added node.
+    // We iterate over the newly added nodes and check if there's any mutations with the same structural change.
+    // Note that we don't need to check newly added edges between existing nodes because it is already guaranteed
+    // that edges of the same structure get the same innovation id by NEAT::InnovationCounter
     if (mutationOut.m_numNodesAdded > 0)
     {
         MutationOut::NewNodeInfo& newNode = mutationOut.m_newNode;

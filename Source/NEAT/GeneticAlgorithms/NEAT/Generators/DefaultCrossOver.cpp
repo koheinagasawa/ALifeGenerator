@@ -186,8 +186,12 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         {
             newGenomeNodes.insert({ node, network1->getNode(node) });
         }
+
         NodeId biasNode = genome1.getBiasNode();
-        newGenomeNodes.insert({ biasNode, network1->getNode(biasNode) });
+        if(biasNode.isValid())
+        {
+            newGenomeNodes.insert({ biasNode, network1->getNode(biasNode) });
+        }
     }
 
     // Create a new network.

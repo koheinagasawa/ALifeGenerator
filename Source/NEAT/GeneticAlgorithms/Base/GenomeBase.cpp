@@ -28,8 +28,7 @@ GenomeBase::GenomeBase(const Activation* defaultActivation)
 }
 
 GenomeBase::GenomeBase(const GenomeBase& other)
-    : m_inputNodes(other.m_inputNodes)
-    , m_defaultActivation(other.m_defaultActivation)
+    : m_defaultActivation(other.m_defaultActivation)
     , m_biasNode(other.m_biasNode)
 {
     // Copy the network
@@ -38,7 +37,6 @@ GenomeBase::GenomeBase(const GenomeBase& other)
 
 void GenomeBase::operator= (const GenomeBase& other)
 {
-    m_inputNodes = other.m_inputNodes;
     m_defaultActivation = other.m_defaultActivation;
     m_biasNode = other.m_biasNode;
 
@@ -56,11 +54,11 @@ void GenomeBase::clearNodeValues() const
 
 void GenomeBase::setInputNodeValues(const std::vector<float>& values) const
 {
-    assert(values.size() == m_inputNodes.size());
+    assert(values.size() == (m_biasNode.isValid() ? (m_network->getInputNodes().size() - 1 ) : m_network->getInputNodes().size()));
 
     for (int i = 0; i < (int)values.size(); i++)
     {
-        m_network->setNodeValue(m_inputNodes[i], values[i]);
+        m_network->setNodeValue(m_network->getInputNodes()[i], values[i]);
     }
 }
 

@@ -56,7 +56,7 @@ public:
     using EdgeEntry = std::pair<EdgeId, Edge>;
 
     // Constructor from network information
-    NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
+    NeuralNetwork(const Nodes& nodes, const Edges& edges);
 
     // Copy constructor
     NeuralNetwork(const NeuralNetwork& other) = default;
@@ -79,16 +79,8 @@ public:
     inline auto getInNode(EdgeId id) const->NodeId;
     inline auto getOutNode(EdgeId id) const->NodeId;
 
-    inline int getNumOutputNodes() const { return m_outputNodes.size(); }
-    auto getOutputNodes() const->NodeIds;
-
-    // Evaluates this network and calculate new values for each node.
-    virtual void evaluate();
-
     // Returns false if this network has invalid data.
     virtual bool validate() const;
-
-    bool hasCircularEdges() const;
 
 protected:
     // Default constructor.
@@ -97,46 +89,16 @@ protected:
     // Construct m_nodes. This is called from constructor.
     void constructNodeData(const Nodes& nodes);
 
-    // Data used evaluation
-    struct EvaluationData
-    {
-        enum class NodeState
-        {
-            NONE,
-            EVALUATED
-        };
-
-        EvaluationData(const NeuralNetwork* network);
-
-        inline NodeState getNodeState(NodeId id) const { return m_nodeStates[m_id2Index.at(id)]; }
-        inline void setNodeState(NodeId id, NodeState state) { m_nodeStates[m_id2Index.at(id)] = state; }
-
-        std::unordered_map<NodeId, int> m_id2Index; // Map between NodeId and its index in m_nodeStates.
-        std::vector<NodeState> m_nodeStates; // Status of each node.
-    };
-
-    void evaluateNodeRecursive(NodeId id, EvaluationData& data);
-
-    virtual bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
-
     NodeDatas m_nodes; // Nodes of this network.
     Edges m_edges; // Edges of this network.
-    NodeIds m_outputNodes; // A list of output nodes of this network.
 
-    // [TODO] Does it really make sense to store only output nodes but not input nodes?
-    //        When we evaluate the network, we evaluate each node starting from output nodes by backtracking
-    //        every incoming edges. In that sense, we don't need to know which nodes are input nodes.
-    //        One issue about this way of evaluation is you can't have a circular network.
-    //        In order to support circular network, it might be better to evaluate each node from input nodes
-    //        by tracking front line of evaluation and advancing time. In that approach, when you should stop
-    //        evaluation is a bit unclear, especially when you have circular network.
+    // [TODO] Support recurrent network. Or at least make the entire system flexible so that it works with
+    //        recurrent network when we support it in the future.
 };
 
-
 template <typename Node, typename Edge>
-NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes)
+NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges)
     : m_edges(edges)
-    , m_outputNodes(outputNodes)
 {
     constructNodeData(nodes);
 }
@@ -227,6 +189,11 @@ inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) c
 template <typename Node, typename Edge>
 inline float NeuralNetwork<Node, Edge>::getWeight(EdgeId id) const
 {
+    if (!hasEdge(id))
+    {
+        int i = 0;
+        i = 1;
+    }
     assert(hasEdge(id));
     return m_edges.at(id).getWeight();
 }
@@ -253,79 +220,12 @@ inline auto NeuralNetwork<Node, Edge>::getOutNode(EdgeId id) const->NodeId
     return m_edges.at(id).getOutNode();
 }
 
-
-template <typename Node, typename Edge>
-auto NeuralNetwork<Node, Edge>::getOutputNodes() const->NodeIds
-{
-    NodeIds nodesOut;
-    nodesOut.reserve(m_outputNodes.size());
-    for (NodeId outputNode : m_outputNodes)
-    {
-        nodesOut.push_back(outputNode);
-    }
-
-    return nodesOut;
-}
-
-template <typename Node, typename Edge>
-void NeuralNetwork<Node, Edge>::evaluate()
-{
-    assert(validate());
-
-    // Initialize evaluation data
-    EvaluationData data(this);
-
-    // Evaluate output nodes
-    for (NodeId id : m_outputNodes)
-    {
-        evaluateNodeRecursive(id, data);
-    }
-}
-
-template <typename Node, typename Edge>
-void NeuralNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData& data)
-{
-    NodeData& node = m_nodes[id];
-
-    if (node.m_incomingEdges.empty())
-    {
-        // This is input/bias node. Don't update the value.
-        return;
-    }
-
-    // Calculate value of this node by visiting all parent nodes.
-    float sumValue = 0;
-    for (EdgeId incomingId : node.m_incomingEdges)
-    {
-        if (getWeight(incomingId) == 0.f)
-        {
-            continue;
-        }
-
-        NodeId inNodeId = getInNode(incomingId);
-
-        // Recurse if we haven't evaluated this parent node yet.
-        // NOTE: We assume that the network doesn't have any circular edges.
-        if (data.getNodeState(inNodeId) != EvaluationData::NodeState::EVALUATED)
-        {
-            evaluateNodeRecursive(inNodeId, data);
-        }
-
-        // Add a value from this parent.
-        sumValue += getNode(inNodeId).getValue() * getWeight(incomingId);
-    }
-
-    data.setNodeState(id, EvaluationData::NodeState::EVALUATED);
-    node.m_node.setValue(sumValue);
-}
-
 template <typename Node, typename Edge>
 bool NeuralNetwork<Node, Edge>::validate() const
 {
 #ifdef DEBUG_SLOW
     if (m_nodes.size() < 2) return false;
     if (m_edges.size() < 1) return false;
-    if (m_outputNodes.size() < 1) return false;
 
     // Validate all edges.
     {
@@ -340,28 +240,6 @@ bool NeuralNetwork<Node, Edge>::validate() const
             const Edge& e = itr.second;
             if (!hasNode(e.getInNode())) return false;
             if (!hasNode(e.getOutNode())) return false;
-        }
-    }
-
-    // Validate all output nodes.
-    {
-        std::unordered_set<NodeId> nodes;
-        for (NodeId n : m_outputNodes)
-        {
-            if (!hasNode(n)) return false;
-
-            // Make sure that the id is unique.
-            if (nodes.find(n) != nodes.end()) return false;
-            nodes.insert(n);
-
-            if (getIncomingEdges(n).empty()) return false;
-
-            // Make sure that no edge has this node as its inNode.
-            for (const auto& itr : m_edges)
-            {
-                const Edge& e = itr.second;
-                if (e.getInNode() == n) return false;
-            }
         }
     }
 
@@ -394,75 +272,6 @@ bool NeuralNetwork<Node, Edge>::validate() const
         }
         if (numInputOrBiasNode == 0) return false;
     }
-
-
-    // Make sure the the network doesn't contain circular edges.
-    if (hasCircularEdges()) return false;
 #endif
     return true;
-}
-
-template <typename Node, typename Edge>
-bool NeuralNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const
-{
-    if (visitedNodes.find(id) != visitedNodes.end())
-    {
-        // Already visited this node.
-        return true;
-    }
-
-    visitedNodes.insert(id);
-
-    for (EdgeId e : getIncomingEdges(id))
-    {
-        if (hasCircularEdgesRecursive(m_edges.at(e).getInNode(), visitedNodes))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-template <typename Node, typename Edge>
-bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
-{
-    std::unordered_set<NodeId> checkedNodes;
-
-    for (const auto& itr : m_nodes)
-    {
-        NodeId id = itr.first;
-
-        if (checkedNodes.find(id) != checkedNodes.end())
-        {
-            // This node is already checked.
-            continue;
-        }
-
-        // Check if this node is a part of circular links.
-        std::unordered_set<NodeId> visitedNodes;
-        if (hasCircularEdgesRecursive(id, visitedNodes)) return true;
-
-        // Concatenate visited nodes to checked nodes.
-        for (NodeId n : visitedNodes)
-        {
-            checkedNodes.insert(n);
-        }
-    }
-
-    return false;
-}
-
-template <typename Node, typename Edge>
-NeuralNetwork<Node, Edge>::EvaluationData::EvaluationData(const NeuralNetwork* network)
-{
-    const int numNodes = network->getNumNodes();
-    m_id2Index.reserve(numNodes);
-    int counter = 0;
-    for (const NodeEntry& node : network->getNodes())
-    {
-        m_id2Index[node.first] = counter++;
-    }
-
-    m_nodeStates.resize(numNodes, NodeState::NONE);
 }

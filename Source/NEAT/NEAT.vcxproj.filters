@@ -95,6 +95,9 @@
     <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeCloner.h">
       <Filter>GeneticAlgorithms\Base\Generators</Filter>
     </ClInclude>
+    <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GeneticAlgorithms">

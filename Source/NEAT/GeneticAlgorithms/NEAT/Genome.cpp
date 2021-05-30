@@ -46,7 +46,6 @@ Genome::Genome(const Cinfo& cinfo)
 
     // Create nodes
     nodes.reserve(numNodes);
-    m_inputNodes.reserve(cinfo.m_numInputNodes);
     inputNodes.reserve(cinfo.m_numInputNodes);
     outputNodes.reserve(cinfo.m_numOutputNodes);
     for (int i = 0; i < cinfo.m_numInputNodes; i++)
@@ -54,7 +53,6 @@ Genome::Genome(const Cinfo& cinfo)
         // Create input nodes.
         NodeId id = m_innovIdCounter.getNewNodeId();
         nodes.insert({ id, Node(Node::Type::INPUT) });
-        m_inputNodes.push_back(id);
         inputNodes.push_back(id);
     }
 
@@ -95,7 +93,7 @@ Genome::Genome(const Cinfo& cinfo)
     }
 
     // Create the network
-    m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+    m_network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
 }
 
 Genome::Genome(const Genome& other)
@@ -109,7 +107,6 @@ void Genome::operator= (const Genome& other)
 {
     assert(&m_innovIdCounter == &other.m_innovIdCounter);
     this->GenomeBase::operator=(other);
-    m_inputNodes = other.m_inputNodes;
     m_innovations = other.m_innovations;
 }
 
@@ -131,7 +128,7 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
                 numInputNodes++;
             }
         }
-        assert(numInputNodes == (int)source.getInputNodes().size());
+        assert(numInputNodes == (m_biasNode.isValid() ? ((int)source.getNetwork()->getInputNodes().size() - 1) : (int)source.getNetwork()->getInputNodes().size()));
 
         // Make sure that the number of innovations and the edges in the source are the same.
         assert(innovations.size() == network->getEdges().size());
@@ -226,19 +223,6 @@ void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
     const bool isInputNode = m_network->getNode(originalId).getNodeType() == Node::Type::INPUT;
 
     m_network->replaceNodeId(originalId, newId);
-
-    // Update the input node list.
-    if (isInputNode)
-    {
-        for (int i = 0; i < (int)m_inputNodes.size(); i++)
-        {
-            if (m_inputNodes[i] == originalId)
-            {
-                m_inputNodes[i] = newId;
-                break;
-            }
-        }
-    }
 
     assert(validate());
 }
@@ -366,23 +350,22 @@ bool Genome::validate() const
         prev = cur;
     }
 
-    // Make sure that input nodes are consistent
+    // Make sure that nodes are consistent
     {
-        int numInputNodes = 0;
-        for (auto itr : m_network->getNodes())
+        for (auto itr : m_network->getInputNodes())
         {
-            if (m_network->getNode(itr.first).getNodeType() == Node::Type::INPUT)
+            if (m_network->getNode(itr).getNodeType() != Node::Type::INPUT && m_network->getNode(itr).getNodeType() != Node::Type::BIAS)
             {
-                numInputNodes++;
+                return false;
             }
         }
 
-        if (numInputNodes != (int)m_inputNodes.size()) return false;
-
-        for (NodeId nodeId : m_inputNodes)
+        for (auto itr : m_network->getOutputNodes())
         {
-            if (!m_network->hasNode(nodeId)) return false;
-            if (m_network->getNode(nodeId).getNodeType() != Node::Type::INPUT) return false;
+            if (m_network->getNode(itr).getNodeType() != Node::Type::OUTPUT)
+            {
+                return false;
+            }
         }
     }
 #endif

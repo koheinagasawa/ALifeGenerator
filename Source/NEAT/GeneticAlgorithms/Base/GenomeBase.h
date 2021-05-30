@@ -106,9 +106,6 @@ public:
     // Clear all values stored in nodes.
     void clearNodeValues() const;
 
-    // Returns a list of input node ids.
-    inline auto getInputNodes() const->const Network::NodeIds& { return m_inputNodes; }
-
     // Set values of input nodes.
     // values has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
     void setInputNodeValues(const std::vector<float>& values) const;
@@ -150,7 +147,6 @@ protected:
     void setNodeTypeAndActivation(NodeId node, Node::Type type, const Activation* activation);
 
     NetworkPtr m_network;                   // The network.
-    Network::NodeIds m_inputNodes;          // A list of input nodes including a bias node.
-    NodeId m_biasNode;                      // Bias node id.
+    NodeId m_biasNode;
     const Activation* m_defaultActivation;  // Activation assigned to new Node by default.
 };

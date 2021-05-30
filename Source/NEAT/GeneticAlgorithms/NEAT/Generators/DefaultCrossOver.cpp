@@ -23,8 +23,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     assert(genome1.getNetwork() && genome2.getNetwork());
     // Make sure that the numbers of input/output nodes are the same.
     // NOTE: Not only the number of nodes but also all node ids have to be identical too. Maybe we should check that here on debug.
-    assert(genome1.getInputNodes().size() == genome2.getInputNodes().size());
-    assert(genome1.getNetwork()->getNumOutputNodes() == genome2.getNetwork()->getNumOutputNodes());
+    assert(genome1.getNetwork()->getInputNodes().size() == genome2.getNetwork()->getInputNodes().size());
+    assert(genome1.getNetwork()->getOutputNodes().size() == genome2.getNetwork()->getOutputNodes().size());
 
     RandomGenerator& random = m_params.m_random ? *m_params.m_random : PseudoRandom::getInstance();
 
@@ -178,7 +178,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // Add input, output and hidden nodes
     {
-        for (NodeId node : genome1.getInputNodes())
+        for (NodeId node : genome1.getNetwork()->getInputNodes())
         {
             newGenomeNodes.insert({ node, network1->getNode(node) });
         }
@@ -195,7 +195,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Create a new network.
-    Genome::NetworkPtr network = std::make_shared<Network>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getOutputNodes());
+    Genome::NetworkPtr network = std::make_shared<Network>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.

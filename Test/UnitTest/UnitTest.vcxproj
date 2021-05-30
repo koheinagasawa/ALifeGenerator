@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DefaultCrossOverTest.cpp" />
+    <ClCompile Include="FeedForwardNetworkTest.cpp" />
     <ClCompile Include="GenomeClonerTest.cpp" />
     <ClCompile Include="SpeciesBasedGenomeSelectorTest.cpp" />
     <ClCompile Include="DefaultMutationTest.cpp" />

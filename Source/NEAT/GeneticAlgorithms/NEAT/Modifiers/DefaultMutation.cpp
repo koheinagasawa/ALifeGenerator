@@ -159,16 +159,15 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 }
 
                 // Make sure that input node is not outNode and output node is not inNode.
-                if (n1.getNodeType() == Genome::Node::Type::OUTPUT)
+                if ((n1.getNodeType() == Genome::Node::Type::OUTPUT) || n2.isInputOrBias())
                 {
-                    std::swap(n1Id, n2Id);
+                    nodeCandidates.push_back({ n2Id, n1Id });
                 }
-                else if (n2.isInputOrBias())
+                else
                 {
-                    std::swap(n1Id, n2Id);
+                    nodeCandidates.push_back({ n1Id, n2Id });
                 }
 
-                nodeCandidates.push_back({ n1Id, n2Id });
             }
         }
     }

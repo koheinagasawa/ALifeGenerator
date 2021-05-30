@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/NeuralNetwork/NeuralNetwork.h>
+#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
 
 // Edge which can be turned on and off without losing previous weight value.
 struct SwitchableEdge : public EdgeBase
@@ -41,12 +41,12 @@ struct SwitchableEdge;
 
 // Mutable network for NEAT.
 template <typename Node>
-class MutableNetwork : public NeuralNetwork<Node, SwitchableEdge>
+class MutableNetwork : public FeedForwardNetwork<Node, SwitchableEdge>
 {
 public:
     // Declarations of types.
     using Edge = SwitchableEdge;
-    using Base = NeuralNetwork<Node, Edge>;
+    using Base = FeedForwardNetwork<Node, Edge>;
     using Nodes = Base::Nodes;
     using Edges = Base::Edges;
     using NodeData = Base::NodeData;
@@ -55,7 +55,7 @@ public:
     using EdgeIds = Base::EdgeIds;
 
     // Constructor using pre-setup network data.
-    MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes);
+    MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes);
 
     // Copy constructor
     MutableNetwork(const MutableNetwork& other) = default;
@@ -90,8 +90,8 @@ protected:
 };
 
 template <typename Node>
-MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& outputNodes)
-    : Base(nodes, edges, outputNodes)
+MutableNetwork<Node>::MutableNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes)
+    : Base(nodes, edges, inputNodes, outputNodes)
 {
     if (!this->validate())
     {
@@ -166,6 +166,16 @@ bool MutableNetwork<Node>::addEdgeAt(NodeId node1, NodeId node2, EdgeId newEdgeI
         }
     }
 
+    // Make sure that the node2 is not input node.
+    for (NodeId id : this->m_inputNodes)
+    {
+        if (id == node2)
+        {
+            WARN("Input node cannot have an incoming edge. Abort adding a new edge.");
+            return false;
+        }
+    }
+
     // Make sure that the node1 is not output node.
     for (NodeId id : this->m_outputNodes)
     {
@@ -222,13 +232,32 @@ void MutableNetwork<Node>::replaceNodeId(NodeId nodeId, NodeId newId)
     this->m_nodes.insert({ newId, nd });
     this->m_nodes.erase(nodeId);
 
-    for (auto itr = this->m_outputNodes.begin(); itr != this->m_outputNodes.end(); itr++)
+    // Update lists of input/output nodes
     {
-        if (*itr == nodeId)
+        bool isInput = false;
+
+        for (auto itr = this->m_inputNodes.begin(); itr != this->m_inputNodes.end(); itr++)
         {
-            this->m_outputNodes.erase(itr);
-            this->m_outputNodes.push_back(newId);
-            break;
+            if (*itr == nodeId)
+            {
+                this->m_inputNodes.erase(itr);
+                this->m_inputNodes.push_back(newId);
+                isInput = true;
+                break;
+            }
+        }
+
+        if (!isInput)
+        {
+            for (auto itr = this->m_outputNodes.begin(); itr != this->m_outputNodes.end(); itr++)
+            {
+                if (*itr == nodeId)
+                {
+                    this->m_outputNodes.erase(itr);
+                    this->m_outputNodes.push_back(newId);
+                    break;
+                }
+            }
         }
     }
 

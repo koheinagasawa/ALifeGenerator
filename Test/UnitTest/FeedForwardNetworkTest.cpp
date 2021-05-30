@@ -1,12 +1,12 @@
 /*
-* NeuralNetworkTest.cpp
+* FeedForwardNetworkTest.cpp
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/NeuralNetwork/NeuralNetwork.h>
+#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
 
 // Basic node class.
 struct Node : public NodeBase
@@ -36,16 +36,18 @@ struct Edge : public EdgeBase
     float m_weight = 0.f;
 };
 
-using NN = NeuralNetwork<Node, Edge>;
+using FFN = FeedForwardNetwork<Node, Edge>;
 
-TEST(NeuralNetwork, CreateInvalidNetworks)
+TEST(FeedForwardNetwork, CreateInvalidNetworks)
 {
-    NN::Nodes nodes;
-    NN::Edges edges;
+    FFN::Nodes nodes;
+    FFN::Edges edges;
+    FFN::NodeIds inputNodes;
+    FFN::NodeIds outputNodes;
 
     // Empty network
     {
-        NN nn(nodes, edges);
+        FFN nn(nodes, edges, inputNodes, outputNodes);
         EXPECT_FALSE(nn.validate());
     }
 
@@ -57,12 +59,31 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
 
     edges.insert({ EdgeId(0), Edge(inNode, outNode) });
 
+    outputNodes.push_back(outNode);
+
+    // Network with no input node
+    {
+        FFN nn(nodes, edges, inputNodes, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
+
+    outputNodes.clear();
+    inputNodes.push_back(inNode);
+
+    // Network with no output node
+    {
+        FFN nn(nodes, edges, inputNodes, outputNodes);
+        EXPECT_FALSE(nn.validate());
+    }
+
+    outputNodes.push_back(outNode);
+
     // Invalid edge
     {
-        NN::Edges edges2 = edges;
+        FFN::Edges edges2 = edges;
         edges2.insert({ EdgeId(1), Edge(NodeId(2), NodeId(3)) });
 
-        NN nn(nodes, edges2);
+        FFN nn(nodes, edges2, inputNodes, outputNodes);
         EXPECT_FALSE(nn.validate());
     }
 
@@ -81,28 +102,34 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
         edges.insert({ EdgeId(4), Edge(node3, node1) });
         edges.insert({ EdgeId(5), Edge(node3, outNode) });
 
-        NN nn(nodes, edges);
-        EXPECT_TRUE(nn.validate());
+        FFN nn(nodes, edges, inputNodes, outputNodes);
+        EXPECT_FALSE(nn.validate());
     }
 }
 
-TEST(NeuralNetwork, CreateMinimumNetwork)
+TEST(FeedForwardNetwork, CreateMinimumNetwork)
 {
     // Set up node and edges.
     NodeId inNode(0);
     NodeId outNode(1);
 
-    NN::Nodes nodes;
+    FFN::Nodes nodes;
     nodes.insert({ inNode, Node() });
     nodes.insert({ outNode, Node() });
 
     EdgeId edge(0);
 
-    NN::Edges edges;
+    FFN::Edges edges;
     edges.insert({ edge, Edge(inNode, outNode) });
 
+    FFN::NodeIds inputNodes;
+    inputNodes.push_back(inNode);
+
+    FFN::NodeIds outputNodes;
+    outputNodes.push_back(outNode);
+
     // Create a network.
-    NN nn(nodes, edges);
+    FFN nn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(nn.validate());
 
@@ -122,57 +149,58 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
     EXPECT_EQ(nn.getInNode(edge), inNode);
     EXPECT_EQ(nn.getOutNode(edge), outNode);
+
+    EXPECT_EQ(nn.getInputNodes().size(), 1);
+    EXPECT_EQ(nn.getInputNodes()[0], inNode);
+    EXPECT_EQ(nn.getOutputNodes().size(), 1);
+    EXPECT_EQ(nn.getOutputNodes()[0], outNode);
 }
 
-TEST(NeuralNetwork, GetSetNodeValues)
+TEST(FeedForwardNetwork, EvaluateSimpleNetwork)
 {
     // Set up node and edges.
-    NodeId inNode(0);
-    NodeId outNode(1);
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode(2);
+    float nodeVal1 = 5.f, nodeVal2 = 7.f;
 
-    NN::Nodes nodes;
-    nodes.insert({ inNode, Node(5.f) });
-    nodes.insert({ outNode, Node(7.f) });
+    FFN::Nodes nodes;
+    {
+        nodes.insert({ inNode1, Node(nodeVal1) });
+        nodes.insert({ inNode2, Node(nodeVal2) });
+        nodes.insert({ outNode, Node() });
+    }
 
-    EdgeId edge(0);
+    EdgeId edgeId1(0);
+    EdgeId edgeId2(1);
+    float weight1 = 0.5f, weight2 = 0.3f;
 
-    NN::Edges edges;
-    edges.insert({ edge, Edge(inNode, outNode) });
+    FFN::Edges edges;
+    {
+        Edge edge1(inNode1, outNode);
+        edge1.m_weight = weight1;
+        edges.insert({ edgeId1, edge1 });
+        Edge edge2(inNode2, outNode);
+        edge2.m_weight = weight2;
+        edges.insert({ edgeId2, edge2 });
+    }
+
+    FFN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+
+    FFN::NodeIds outputNodes;
+    outputNodes.push_back(outNode);
 
     // Create a network.
-    NN nn(nodes, edges);
+    FFN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_EQ(nn.getNumNodes(), 3);
+    EXPECT_EQ(nn.getNumEdges(), 2);
 
     EXPECT_TRUE(nn.validate());
 
-    EXPECT_EQ(nn.getNode(inNode).getValue(), 5.f);
-    EXPECT_EQ(nn.getNode(outNode).getValue(), 7.f);
-    nn.setNodeValue(inNode, 3.f);
-    EXPECT_EQ(nn.getNode(inNode).getValue(), 3.f);
-}
+    nn.evaluate();
 
-TEST(NeuralNetwork, GetSetEdgeWeights)
-{
-    // Set up node and edges.
-    NodeId inNode(0);
-    NodeId outNode(1);
-
-    NN::Nodes nodes;
-    nodes.insert({ inNode, Node() });
-    nodes.insert({ outNode, Node() });
-
-    EdgeId edgeId(0);
-
-    NN::Edges edges;
-    Edge edge(inNode, outNode);
-    edge.m_weight = 10.f;
-    edges.insert({ edgeId, edge });
-
-    // Create a network.
-    NN nn(nodes, edges);
-
-    EXPECT_TRUE(nn.validate());
-
-    EXPECT_EQ(nn.getWeight(edgeId), 10.f);
-    nn.setWeight(edgeId, 12.f);
-    EXPECT_EQ(nn.getWeight(edgeId), 12.f);
+    EXPECT_TRUE(std::abs((nn.getNode(outNode).getValue()) - (nodeVal1 * weight1 + nodeVal2 * weight2)) < 1e-5f);
 }

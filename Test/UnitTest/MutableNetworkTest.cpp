@@ -37,11 +37,13 @@ TEST(MutableNetwork, EnableDisableEdge)
     MN::Edges edges;
     edges.insert({ edge, MN::Edge(inNode, outNode, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 2);
@@ -79,11 +81,13 @@ TEST(MutableNetwork, AddNode)
     MN::Edges edges;
     edges.insert({ edge, MN::Edge(inNode, outNode, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 2);
@@ -203,12 +207,15 @@ TEST(MutableNetwork, AddEdge)
     edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
     edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode1);
     outputNodes.push_back(outNode2);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 6);
@@ -252,17 +259,12 @@ TEST(MutableNetwork, AddEdge)
     }
 
     // Add an edge going into an inputNode.
-    // This is fine and shouldn't fail because we don't differentiate input nodes and hidden nodes internally.
     EdgeId edge6(6);
-    EXPECT_TRUE(mn.addEdgeAt(inNode1, inNode2, edge6, 0.2f));
-    EXPECT_TRUE(mn.hasEdge(edge6));
-    EXPECT_EQ(mn.getNumEdges(), ++numEdges);
+    EXPECT_FALSE(mn.addEdgeAt(inNode1, inNode2, edge6, 0.2f));
+    EXPECT_FALSE(mn.hasEdge(edge6));
+    EXPECT_EQ(mn.getNumEdges(), numEdges);
     EXPECT_EQ(mn.getNumEnabledEdges(), numEdges);
-    EXPECT_EQ(mn.getWeight(edge6), 0.2f);
-    EXPECT_EQ(mn.getInNode(edge6), inNode1);
-    EXPECT_EQ(mn.getOutNode(edge6), inNode2);
-    EXPECT_EQ(mn.getIncomingEdges(inNode2).size(), 1);
-    EXPECT_EQ(mn.getIncomingEdges(inNode2)[0], edge6);
+    EXPECT_EQ(mn.getIncomingEdges(inNode2).size(), 0);
 
     // Try to add an edge at a node which doesn't exit.
     {
@@ -317,12 +319,15 @@ TEST(MutableNetwork, ReplaceEdge)
     edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
     edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode1);
     outputNodes.push_back(outNode2);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 6);
@@ -371,12 +376,15 @@ TEST(MutableNetwork, RemoveEdge)
     edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
     edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode1);
     outputNodes.push_back(outNode2);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 6);
@@ -422,12 +430,15 @@ TEST(MutableNetwork, ReplaceNode)
     edges.insert({ edge3, MN::Edge(hiddenNode1, outNode1, 0.5f) });
     edges.insert({ edge4, MN::Edge(hiddenNode2, outNode2, 0.5f) });
 
+    MN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
     MN::NodeIds outputNodes;
     outputNodes.push_back(outNode1);
     outputNodes.push_back(outNode2);
 
     // Create a MutableNetwork.
-    MN mn(nodes, edges, outputNodes);
+    MN mn(nodes, edges, inputNodes, outputNodes);
 
     EXPECT_TRUE(mn.validate());
     EXPECT_EQ(mn.getNumNodes(), 6);
@@ -447,6 +458,6 @@ TEST(MutableNetwork, ReplaceNode)
     EXPECT_EQ(mn.getIncomingEdges(newNode).size(), 1);
     EXPECT_EQ(mn.getIncomingEdges(newNode)[0], edge3);
     EXPECT_EQ(mn.getOutNode(edge3), newNode);
-    EXPECT_EQ(mn.getNumOutputNodes(), 2);
+    EXPECT_EQ(mn.getOutputNodes().size(), 2);
     EXPECT_TRUE(mn.getOutputNodes()[0] == newNode || mn.getOutputNodes()[1] == newNode);
 }

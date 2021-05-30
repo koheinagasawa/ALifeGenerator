@@ -22,6 +22,7 @@ namespace
 
         void createNetwork(const Network::Nodes& nodes, const Network::Edges& edges)
         {
+            Network::NodeIds inputNodes;
             Network::NodeIds outputNodes;
             for (auto& itr : nodes)
             {
@@ -31,11 +32,11 @@ namespace
                 }
                 if (itr.second.getNodeType() == Node::Type::INPUT)
                 {
-                    m_inputNodes.push_back(itr.first);
+                    inputNodes.push_back(itr.first);
                 }
             }
 
-            m_network = std::make_shared<Network>(nodes, edges, outputNodes);
+            m_network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
         }
     };
 }
@@ -76,9 +77,9 @@ TEST(GenomeBase, GenomeBasicOperations)
     EXPECT_EQ(genome.getEdgeWeight(EdgeId(1)), 4.0f);
 
     // Test node interface.
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
-    EXPECT_EQ(genome.getInputNodes()[0], NodeId(0));
-    EXPECT_EQ(genome.getInputNodes()[1], NodeId(1));
+    EXPECT_EQ(genome.getNetwork()->getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getNetwork()->getInputNodes()[0], NodeId(0));
+    EXPECT_EQ(genome.getNetwork()->getInputNodes()[1], NodeId(1));
     EXPECT_EQ(genome.getNetwork()->getNode(NodeId(0)).getValue(), 0.f);
     EXPECT_EQ(genome.getNetwork()->getNode(NodeId(1)).getValue(), 0.f);
     {

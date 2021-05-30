@@ -27,7 +27,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     const Genome::Network* network = genome.getNetwork();
 
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 4);
     EXPECT_EQ(network->getNumEdges(), 4);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -71,7 +71,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNode(out.m_newNode.m_newNode).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNumEdges(), 6);
@@ -98,7 +98,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_TRUE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_TRUE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_TRUE(out.m_newEdges[2].m_newEdge.isValid());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(out.m_newNode.m_newNode).getNodeType(), Genome::Node::Type::HIDDEN);
     EXPECT_EQ(network->getNode(out.m_newNode.m_newNode).getActivationName(), "MyActivation");
@@ -127,7 +127,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNumEdges(), 9);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -220,7 +220,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
     EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
-    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNumEdges(), 8);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -257,7 +257,7 @@ TEST(DefaultMutation, MutateGeneration)
         const Genome::Network* network = genome1->getNetwork();
 
         EXPECT_TRUE(genome1->validate());
-        EXPECT_EQ(genome1->getInputNodes().size(), 2);
+        EXPECT_EQ(network->getInputNodes().size(), 2);
         EXPECT_EQ(network->getNumNodes(), 4);
         EXPECT_EQ(network->getNumEdges(), 4);
         EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -303,7 +303,7 @@ TEST(DefaultMutation, MutateGeneration)
         EXPECT_FALSE(out.m_newEdges[2].m_sourceInNode.isValid());
         EXPECT_FALSE(out.m_newEdges[2].m_sourceOutNode.isValid());
         EXPECT_FALSE(out.m_newEdges[2].m_newEdge.isValid());
-        EXPECT_EQ(genome1->getInputNodes().size(), 2);
+        EXPECT_EQ(network->getInputNodes().size(), 2);
         EXPECT_EQ(network->getNumNodes(), 5);
         EXPECT_EQ(network->getNode(out.m_newNode.m_newNode).getNodeType(), Genome::Node::Type::HIDDEN);
         EXPECT_EQ(network->getNumEdges(), 6);
@@ -331,7 +331,7 @@ TEST(DefaultMutation, MutateGeneration)
         const Genome* newGenome = static_cast<const Genome*>(g.get());
         const Genome::Network* network = newGenome->getNetwork();
         EXPECT_TRUE(newGenome->validate());
-        EXPECT_EQ(genome1->getInputNodes().size(), 2);
+        EXPECT_EQ(network->getInputNodes().size(), 2);
         EXPECT_EQ(network->getNumNodes(), 6);
         EXPECT_EQ(network->getNumEdges(), 9);
         EXPECT_EQ(network->getOutputNodes().size(), 2);

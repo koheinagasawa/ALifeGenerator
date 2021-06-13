@@ -80,7 +80,7 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
 
     // Disable one edge in genome2.
     const EdgeId disabledEdge = mutOut.m_newEdges[0].m_newEdge;
-    const_cast<Genome::Network*>(genome2.getNetwork())->setEdgeEnabled(disabledEdge, false);
+    genome2.setEdgeEnabled(disabledEdge, false);
 
     // Set up cross over.
     DefaultCrossOver crossOver;
@@ -96,7 +96,7 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         EXPECT_EQ(newGenome1->getNetwork()->getNumEdges(), genome1.getNetwork()->getNumEdges());
         for (int i = 0; i < 4; i++)
         {
-            EXPECT_EQ(newGenome1->getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome1[i]);
+            EXPECT_EQ(newGenome1->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome1[i]);
         }
     }
 
@@ -112,9 +112,9 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         EXPECT_EQ(newGenome2->getNetwork()->getNumEdges(), genome2.getNetwork()->getNumEdges());
         for (int i = 0; i < 4; i++)
         {
-            EXPECT_EQ(newGenome2->getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
+            EXPECT_EQ(newGenome2->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
         }
-        EXPECT_FALSE(newGenome2->getNetwork()->isEdgeEnabled(disabledEdge));
+        EXPECT_FALSE(newGenome2->isEdgeEnabled(disabledEdge));
     }
 
     // Generate a genome by cross over using genome1 as a better offspring.
@@ -130,9 +130,9 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         EXPECT_EQ(newGenome3->getNetwork()->getNumEdges(), 13);
         for (int i = 0; i < 4; i++)
         {
-            EXPECT_EQ(newGenome3->getNetwork()->getWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
+            EXPECT_EQ(newGenome3->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
         }
-        EXPECT_TRUE(newGenome3->getNetwork()->isEdgeEnabled(disabledEdge));
+        EXPECT_TRUE(newGenome3->isEdgeEnabled(disabledEdge));
     }
 }
 

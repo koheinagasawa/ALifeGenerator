@@ -15,7 +15,7 @@ TEST(DefaultMutation, MutateSingleGenome)
 
     // Create a genome.
     InnovationCounter innovCounter;
-    Genome::Activation activation = [](float value) { return value * 2.f; };
+    Activation activation = [](float value) { return value * 2.f; };
     activation.m_name = "MyActivation";
     Genome::Cinfo cinfo;
     cinfo.m_numInputNodes = 2;
@@ -144,7 +144,7 @@ TEST(DefaultMutation, MutateSingleGenome)
         const Genome::Network::Edges& edges = network->getEdges();
         for (auto& itr : edges)
         {
-            originalWeights.insert({ itr.first, network->getWeightRaw(itr.first) });
+            originalWeights.insert({ itr.first, genome.getEdgeWeightRaw(itr.first) });
         }
 
         mutator.mutate(&genome, out);
@@ -154,10 +154,10 @@ TEST(DefaultMutation, MutateSingleGenome)
         // Check the edge mutation was done expectedly.
         for (auto& itr : edges)
         {
-            if (network->isEdgeEnabled(itr.first))
+            if (genome.isEdgeEnabled(itr.first))
             {
                 float original = originalWeights.at(itr.first);
-                float weight = network->getWeightRaw(itr.first);
+                float weight = genome.getEdgeWeightRaw(itr.first);
                 EXPECT_TRUE((original * weight) > 0); // Check weight hasn't changed its sign.
                 original = std::abs(original);
                 weight = std::abs(weight);
@@ -188,9 +188,9 @@ TEST(DefaultMutation, MutateSingleGenome)
         const Genome::Network::Edges& edges = network->getEdges();
         for (auto& itr : edges)
         {
-            if (network->isEdgeEnabled(itr.first))
+            if (genome.isEdgeEnabled(itr.first))
             {
-                EXPECT_EQ(network->getWeightRaw(itr.first), 3.f);
+                EXPECT_EQ(genome.getEdgeWeightRaw(itr.first), 3.f);
             }
         }
     }
@@ -244,7 +244,7 @@ TEST(DefaultMutation, MutateGeneration)
     // Create a genome.
     InnovationCounter innovCounter;
     Genome::Cinfo cinfo;
-    Genome::Activation activation = [](float value) { return value * 2.f; };
+    Activation activation = [](float value) { return value * 2.f; };
     activation.m_name = "MyActivation";
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;

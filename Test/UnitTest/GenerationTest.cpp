@@ -69,7 +69,7 @@ TEST(Generation, IncrementGeneration)
 
     // Create a generation with 20 population.
     InnovationCounter innovCounter;
-    Genome::Activation activation = [](float value) { return value; };
+    Activation activation = [](float value) { return value; };
 
     Generation::Cinfo cinfo;
     {

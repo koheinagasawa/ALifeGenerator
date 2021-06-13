@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Neat.cpp" />
-    <ClCompile Include="NeuralNetwork\MutableNetwork.cpp">
-      <Filter>NeuralNetwork</Filter>
-    </ClCompile>
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp">
       <Filter>GeneticAlgorithms\Base</Filter>
     </ClCompile>
@@ -38,12 +35,15 @@
     <ClCompile Include="GeneticAlgorithms\NEAT\Modifiers\DefaultMutation.cpp">
       <Filter>GeneticAlgorithms\NEAT\Modifiers</Filter>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork\Node.cpp">
+      <Filter>NeuralNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralNetwork\Edge.cpp">
+      <Filter>NeuralNetwork</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Neat.h" />
-    <ClInclude Include="NeuralNetwork\MutableNetwork.h">
-      <Filter>NeuralNetwork</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
@@ -96,6 +96,15 @@
       <Filter>GeneticAlgorithms\Base\Generators</Filter>
     </ClInclude>
     <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Activation.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Node.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Edge.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
   </ItemGroup>

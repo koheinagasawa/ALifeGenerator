@@ -15,6 +15,7 @@ namespace NEAT
     class InnovationCounter
     {
     public:
+        // Innovation (edge) that has ever created.
         struct EdgeEntry
         {
             NodeId m_inNode;
@@ -34,16 +35,26 @@ namespace NEAT
 
         InnovationCounter() = default;
 
+        // Return a new node id.
         inline NodeId getNewNodeId() { return m_nodeIdCounter.getNewId(); }
+
+        // Return a edge id. If the entry has already created before, then it returns an id from the history. Otherwise, it returns a new id.
         EdgeId getEdgeId(const EdgeEntry& entry);
+
+        // Reset the counter and history.
         void reset();
 
     protected:
         InnovationCounter(const InnovationCounter&) = delete;
         void operator=(const InnovationCounter&) = delete;
 
+        // Counter of node ids.
         UniqueIdCounter<NodeId> m_nodeIdCounter;
+
+        // Counter of innovation (edge) ids.
         UniqueIdCounter<EdgeId> m_innovationIdCounter;
+
+        // History of all the innovations that ever happened before.
         std::unordered_map<EdgeEntry, EdgeId, EdgeEntryHash> m_innovationHistory;
     };
 
@@ -72,6 +83,9 @@ namespace NEAT
             // Default activation functions used during evaluation at each node.
             // If it's nullptr, input values are merely passed as an output of the node.
             const Activation* m_defaultActivation = nullptr;
+
+            // Type of the network.
+            NeuralNetworkType m_networkType = NeuralNetworkType::FEED_FORWARD;
         };
 
         // Parameters used to calculation distance between two genomes.

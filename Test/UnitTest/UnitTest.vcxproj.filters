@@ -20,9 +20,6 @@
     <ClCompile Include="GenomeTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
-    <ClCompile Include="MutableNetworkTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
     <ClCompile Include="NeuralNetworkTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
@@ -38,7 +35,9 @@
     <ClCompile Include="Util\TestUtils.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="FeedForwardNetworkTest.cpp" />
+    <ClCompile Include="FeedForwardNetworkTest.cpp">
+      <Filter>UnitTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />

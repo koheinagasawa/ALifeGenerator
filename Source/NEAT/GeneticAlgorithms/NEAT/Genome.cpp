@@ -6,6 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
 
 #include <algorithm>
 
@@ -62,7 +63,6 @@ Genome::Genome(const Cinfo& cinfo)
         m_biasNode = m_innovIdCounter.getNewNodeId();
         nodes.insert({ m_biasNode, Node(Node::Type::BIAS) });
         nodes[m_biasNode].setValue(cinfo.m_biasNodeValue);
-        inputNodes.push_back(m_biasNode);
     }
 
     for (int i = numInputNodes; i < numNodes; i++)
@@ -82,18 +82,33 @@ Genome::Genome(const Cinfo& cinfo)
     {
         for (int i = 0; i < numInputNodes; i++)
         {
+            NodeId inputNode = (i == cinfo.m_numInputNodes) ? m_biasNode : inputNodes[i];
+
             for (int j = 0; j < cinfo.m_numOutputNodes; j++)
             {
-                InnovationCounter::EdgeEntry entry{ inputNodes[i], outputNodes[j] };
+                InnovationCounter::EdgeEntry entry{ inputNode, outputNodes[j] };
                 EdgeId eid = m_innovIdCounter.getEdgeId(entry);
-                edges.insert({ eid, Network::Edge(inputNodes[i], outputNodes[j]) });
+                edges.insert({ eid, Edge(inputNode, outputNodes[j]) });
                 m_innovations.push_back(eid);
             }
         }
     }
 
     // Create the network
-    m_network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
+    switch (cinfo.m_networkType)
+    {
+    case NeuralNetworkType::FEED_FORWARD:
+    {
+        m_network = std::make_shared<FeedForwardNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
+        break;
+    }
+    case NeuralNetworkType::RECURRENT:
+    default:
+    {
+        assert("Not supported yet.");
+        break;
+    }
+    }
 }
 
 Genome::Genome(const Genome& other)
@@ -128,7 +143,8 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
                 numInputNodes++;
             }
         }
-        assert(numInputNodes == (m_biasNode.isValid() ? ((int)source.getNetwork()->getInputNodes().size() - 1) : (int)source.getNetwork()->getInputNodes().size()));
+        assert(numInputNodes == (int)source.getNetwork()->getInputNodes().size());
+        assert(!(m_biasNode.isValid() ^ source.getBiasNode().isValid()));
 
         // Make sure that the number of innovations and the edges in the source are the same.
         assert(innovations.size() == network->getEdges().size());
@@ -152,8 +168,17 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
     newOutgoingEdge = m_innovIdCounter.getEdgeId(entry2);
 
     // Add a node.
-    bool result = m_network->addNodeAt(edgeId, newNode, newIncomingEdge, newOutgoingEdge);
-    assert(result);
+    m_network->addNodeAt(edgeId, newNode, newIncomingEdge, newOutgoingEdge);
+
+    // Set weights of newly added edges.
+    {
+        Edge& dividedEdge = m_network->accessEdge(edgeId);
+        const float weight = dividedEdge.getWeight();
+        dividedEdge.setEnabled(false);
+
+        m_network->accessEdge(newIncomingEdge).setWeight(1.0f);
+        m_network->accessEdge(newOutgoingEdge).setWeight(weight);
+    }
 
     // Set activation and mark it as a hidden node
     setNodeTypeAndActivation(newNode, Node::Type::HIDDEN, m_defaultActivation);

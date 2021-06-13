@@ -9,25 +9,12 @@
 #include <memory>
 #include <functional>
 
-#include <NEAT/NeuralNetwork/MutableNetwork.h>
+#include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
 // Base class of genome used for genetic algorithms.
 class GenomeBase
 {
 public:
-    // Wrapper struct for activation function.
-    struct Activation
-    {
-        using Func = std::function<float(float)>;
-
-        Activation(const Func& func) : m_func(func) {}
-
-        float activate(float value) const { return m_func(value); }
-
-        std::string m_name;
-        const Func m_func;
-    };
-
     // Node structure of the genome.
     struct Node : public NodeBase
     {
@@ -71,9 +58,9 @@ public:
     };
 
     // Type declarations.
-    using Network = MutableNetwork<Node>;
+    using Network = NeuralNetwork<Node, SwitchableEdge>;
     using NetworkPtr = std::shared_ptr<Network>;
-    using Edge = Network::Edge;
+    using Edge = SwitchableEdge;
 
     // Constructor
     GenomeBase(const Activation* defaultActivation);
@@ -99,6 +86,18 @@ public:
     // Set weight of edge.
     inline void setEdgeWeight(EdgeId edgeId, float weight) { m_network->setWeight(edgeId, weight); }
 
+    // Get weight of edge regardless if it's enabled or not.
+    inline float getEdgeWeightRaw(EdgeId edgeId) const { return m_network->getEdge(edgeId).getWeightRaw(); }
+
+    // Return true if the edge is enabled.
+    inline bool isEdgeEnabled(EdgeId edgeId) const { return m_network->getEdge(edgeId).isEnabled(); }
+
+    // Set enable/disable the edge.
+    inline void setEdgeEnabled(EdgeId edgeId, bool enabled) { m_network->accessEdge(edgeId).setEnabled(enabled); }
+
+    // Return the total number of enabled edges.
+    int getNumEnabledEdges() const;
+
     //
     // Node interface
     //
@@ -108,11 +107,12 @@ public:
 
     // Set values of input nodes.
     // values has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
-    void setInputNodeValues(const std::vector<float>& values) const;
+    void setInputNodeValues(const std::vector<float>& values, float biasNodeValue = 0.f) const;
 
     // Set value of bias node.
     void setBiasNodeValue(float value);
 
+    // Get node id of the bias node.
     inline NodeId getBiasNode() const { return m_biasNode; }
 
     //
@@ -137,7 +137,7 @@ public:
 
     // Evaluate this genome using the given input nodes.
     // inputNodeValues has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
-    void evaluate(const std::vector<float>& inputNodeValues) const;
+    void evaluate(const std::vector<float>& inputNodeValues, float biasNodeValue = 0.f) const;
 
     // Evaluate this genome using the current values of input nodes.
     void evaluate() const;

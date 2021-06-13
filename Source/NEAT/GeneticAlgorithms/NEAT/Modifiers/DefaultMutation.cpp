@@ -110,7 +110,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         edgeCandidates.reserve(network->getNumEdges());
         for (const Genome::Network::EdgeEntry& entry : network->getEdges())
         {
-            const Genome::Network::Edge& edge = entry.second;
+            const Genome::Edge& edge = entry.second;
             // We cannot add a new node at disable edges or edges from bias nodes
             if (edge.isEnabled())
             {

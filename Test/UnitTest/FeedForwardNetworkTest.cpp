@@ -24,7 +24,7 @@ struct Node : public NodeBase
 struct Edge : public EdgeBase
 {
     Edge() = default;
-    Edge(NodeId inNode, NodeId outNode) : m_inNode(inNode), m_outNode(outNode) {}
+    Edge(NodeId inNode, NodeId outNode, float weight = 0.f) : m_inNode(inNode), m_outNode(outNode), m_weight(weight) {}
 
     virtual NodeId getInNode() const { return m_inNode; }
     virtual NodeId getOutNode() const { return m_outNode; }
@@ -103,6 +103,7 @@ TEST(FeedForwardNetwork, CreateInvalidNetworks)
         edges.insert({ EdgeId(5), Edge(node3, outNode) });
 
         FFN nn(nodes, edges, inputNodes, outputNodes);
+        EXPECT_FALSE(nn.allowsCircularNetwork());
         EXPECT_FALSE(nn.validate());
     }
 }
@@ -141,6 +142,7 @@ TEST(FeedForwardNetwork, CreateMinimumNetwork)
     EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 1);
     EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
     EXPECT_TRUE(nn.isConnected(inNode, outNode));
+    EXPECT_TRUE(nn.isConnected(outNode, inNode));
 
     EXPECT_EQ(nn.getNumNodes(), 2);
     EXPECT_EQ(nn.getNumEdges(), 1);
@@ -203,4 +205,114 @@ TEST(FeedForwardNetwork, EvaluateSimpleNetwork)
     nn.evaluate();
 
     EXPECT_TRUE(std::abs((nn.getNode(outNode).getValue()) - (nodeVal1 * weight1 + nodeVal2 * weight2)) < 1e-5f);
+}
+
+TEST(FeedForwardNetwork, AddEdge)
+{
+    // Set up node and edges.
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    FFN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    FFN::Edges edges;
+    edges.insert({ edge1, Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, Edge(hiddenNode2, outNode2, 0.5f) });
+
+    FFN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+    FFN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    // Create a NeuralNetwork.
+    FFN ffn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(ffn.validate());
+    EXPECT_EQ(ffn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(ffn.getNumEdges(), numEdges);
+
+    // Add an edge.
+    EdgeId edge5(5);
+    EXPECT_TRUE(ffn.addEdgeAt(inNode1, hiddenNode2, edge5, 0.1f));
+    EXPECT_TRUE(ffn.hasEdge(edge5));
+    EXPECT_EQ(ffn.getNumEdges(), ++numEdges);
+    EXPECT_EQ(ffn.getWeight(edge5), 0.1f);
+    EXPECT_EQ(ffn.getInNode(edge5), inNode1);
+    EXPECT_EQ(ffn.getOutNode(edge5), hiddenNode2);
+    EXPECT_EQ(ffn.getIncomingEdges(hiddenNode2).size(), 2);
+    EXPECT_EQ(ffn.getIncomingEdges(hiddenNode2)[0], edge2);
+    EXPECT_EQ(ffn.getIncomingEdges(hiddenNode2)[1], edge5);
+
+    // Try to add an edge at nodes which are already connected.
+    {
+        EdgeId e(6);
+        EXPECT_FALSE(ffn.addEdgeAt(inNode1, hiddenNode1, e, 0.5f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e));
+    }
+
+    // Try to add an edge going from an outputNode.
+    {
+        EdgeId e(6);
+        EXPECT_FALSE(ffn.addEdgeAt(outNode1, inNode2, e, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e));
+        EXPECT_FALSE(ffn.addEdgeAt(outNode2, hiddenNode1, e, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e));
+    }
+
+    // Add an edge going into an inputNode.
+    {
+        EdgeId edge6(6);
+        EXPECT_FALSE(ffn.addEdgeAt(inNode1, inNode2, edge6, 0.2f));
+        EXPECT_FALSE(ffn.hasEdge(edge6));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_EQ(ffn.getIncomingEdges(inNode2).size(), 0);
+    }
+
+    // Try to add an edge at a node which doesn't exit.
+    {
+        EdgeId e(7);
+        EXPECT_FALSE(ffn.addEdgeAt(hiddenNode1, NodeId(6), e, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e));
+        EXPECT_FALSE(ffn.addEdgeAt(NodeId(7), outNode1, e, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e));
+    }
+
+    // Try to add an edge which creates a circle.
+    {
+        EdgeId e(7);
+        EXPECT_TRUE(ffn.addEdgeAt(hiddenNode1, hiddenNode2, e, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), ++numEdges);
+        EXPECT_TRUE(ffn.hasEdge(e));
+        EXPECT_EQ(ffn.getIncomingEdges(hiddenNode2).size(), 3);
+        EdgeId e2(8);
+        EXPECT_FALSE(ffn.addEdgeAt(hiddenNode2, hiddenNode1, e2, 0.1f));
+        EXPECT_EQ(ffn.getNumEdges(), numEdges);
+        EXPECT_FALSE(ffn.hasEdge(e2));
+        EXPECT_EQ(ffn.getIncomingEdges(hiddenNode1).size(), 1);
+    }
 }

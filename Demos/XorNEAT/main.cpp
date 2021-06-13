@@ -38,7 +38,7 @@ public:
         values[0] = input1 ? 1.f : 0.f;
         values[1] = input2 ? 1.f : 0.f;
 
-        genome.evaluate(values);
+        genome.evaluate(values, 1.0f);
 
         const GenomeBase::Network* network = genome.getNetwork();
         return network->getNode(network->getOutputNodes()[0]).getValue();
@@ -63,7 +63,7 @@ int main()
 {
     using namespace NEAT;
 
-    Genome::Activation sigmoid = Genome::Activation([](float value) { return 1.f / (1.f + exp(-4.9f * value)); });
+    Activation sigmoid = Activation([](float value) { return 1.f / (1.f + exp(-4.9f * value)); });
     sigmoid.m_name = "sigmoid";
 
 
@@ -118,7 +118,7 @@ int main()
                     worstGenerations = numGeneration;
                 }
                 totalNumHiddenNodes += network->getNumNodes() - 4; // 4 is two inputs, one output and one bias
-                totalNumNondisabledConnections += network->getNumEnabledEdges();
+                totalNumNondisabledConnections += bestGenome.getGenome()->getNumEnabledEdges();
                 if (worstEvaluationCount < fitnessCalc->m_numEvaluations)
                 {
                     worstEvaluationCount = fitnessCalc->m_numEvaluations;

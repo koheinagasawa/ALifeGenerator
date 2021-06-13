@@ -8,6 +8,7 @@
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
+#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
 
 using namespace NEAT;
 
@@ -34,6 +35,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     const Network::EdgeIds& innovations1 = genome1.getInnovations();
     const Network::EdgeIds& innovations2 = genome2.getInnovations();
 
+    const bool allowCircularNetwork = network1->allowsCircularNetwork();
+
     // Create arrays to store innovations, nodes and edges for the new genome.
     Network::EdgeIds innovations;
     Network::Nodes newGenomeNodes;
@@ -52,15 +55,15 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     // Inherit edges
     {
         // Helper function to add an inherit edge.
-        auto addEdge = [&disjointEnableEdges, &enabledEdges, &newGenomeEdges, &innovations, &random, this](const EdgeId edgeId, const Network* networkA, const Network* networkB, bool sameFitnessDisjoint)
+        auto addEdge = [&](const EdgeId edgeId, const Genome* genomeA, const Genome* genomeB, bool sameFitnessDisjoint)
         {
             // Copy the edge
-            const Network::Edge& edgeA = networkA->getEdges().at(edgeId);
-            Network::Edge edge = edgeA;
+            const Genome::Edge& edgeA = genomeA->getNetwork()->getEdge(edgeId);
+            Genome::Edge edge = edgeA;
             edge.setEnabled(true);
 
             // Disable the edge at a certain probability if either parent's edge is already disable
-            const bool disabled = !edgeA.isEnabled() || (networkB && !networkB->isEdgeEnabled(edgeId));
+            const bool disabled = !edgeA.isEnabled() || (genomeB && !genomeB->isEdgeEnabled(edgeId));
             if (disabled)
             {
                 if (random.randomReal01() < m_params.m_disablingEdgeRate)
@@ -76,7 +79,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 }
             }
 
-            if (sameFitnessDisjoint && edge.isEnabled())
+            if (!allowCircularNetwork && sameFitnessDisjoint && edge.isEnabled())
             {
                 disjointEnableEdges.push_back(edgeId);
             }
@@ -103,11 +106,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 // Randomly select an edge from either genome1 or genome2 for matching edges.
                 if (random.randomReal01() < m_params.m_matchingEdgeSelectionRate)
                 {
-                    addEdge(cur1, network1, network2, isDisjoint);
+                    addEdge(cur1, &genome1, &genome2, isDisjoint);
                 }
                 else
                 {
-                    addEdge(cur2, network2, network1, isDisjoint);
+                    addEdge(cur2, &genome2, &genome1, isDisjoint);
                 }
                 curIdx1++;
                 curIdx2++;
@@ -115,7 +118,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             else if (cur1 < cur2)
             {
                 // Always take disjoint edges from more fit genome.
-                addEdge(cur1, network1, nullptr, sameFittingScore);
+                addEdge(cur1, &genome1, nullptr, sameFittingScore);
                 curIdx1++;
             }
             else
@@ -123,7 +126,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 // Don't take disjoint edges from less fit genome unless the two genomes have the same fitness.
                 if (sameFittingScore)
                 {
-                    addEdge(cur2, network2, nullptr, sameFittingScore);
+                    addEdge(cur2, &genome2, nullptr, sameFittingScore);
                 }
                 curIdx2++;
             }
@@ -135,7 +138,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             const bool isSameFitnessDisjoint = false;
             while (curIdx1 < innovations1.size())
             {
-                addEdge(innovations1[curIdx1++], network1, nullptr, isSameFitnessDisjoint);
+                addEdge(innovations1[curIdx1++], &genome1, nullptr, isSameFitnessDisjoint);
             }
         }
         else
@@ -143,11 +146,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             const bool isSameFitnessDisjoint = true;
             while (curIdx1 < innovations1.size())
             {
-                addEdge(innovations1[curIdx1++], network1, nullptr, isSameFitnessDisjoint);
+                addEdge(innovations1[curIdx1++], &genome1, nullptr, isSameFitnessDisjoint);
             }
             while (curIdx2 < innovations2.size())
             {
-                addEdge(innovations2[curIdx2++], network2, nullptr, isSameFitnessDisjoint);
+                addEdge(innovations2[curIdx2++], &genome2, nullptr, isSameFitnessDisjoint);
             }
         }
     }
@@ -158,7 +161,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         std::unordered_set<NodeId> addedNodes;
         for (auto& itr : newGenomeEdges)
         {
-            const Network::Edge& edge = itr.second;
+            const Genome::Edge& edge = itr.second;
             const NodeId inNode = edge.getInNode();
             const NodeId outNode = edge.getOutNode();
 
@@ -199,26 +202,30 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.
-    while (network->hasCircularEdges())
+    if (!allowCircularNetwork)
     {
-        EdgeId edge;
-
-        if (disjointEnableEdges.size() > 0)
+        auto* ffn = static_cast<FeedForwardNetwork<Genome::Node, SwitchableEdge>*>(network.get());
+        while (ffn->hasCircularEdges())
         {
-            // If there is any disjoint edges, try to disable them first.
-            edge = disjointEnableEdges.back();
-            disjointEnableEdges.pop_back();
-        }
-        else
-        {
-            // Then, try to disable newly enabled edges next.
-            assert(enabledEdges.size() > 0);
-            edge = enabledEdges.back();
-            enabledEdges.pop_back();
-        }
+            EdgeId edge;
 
-        assert(network->isEdgeEnabled(edge));
-        network->setEdgeEnabled(edge, false);
+            if (disjointEnableEdges.size() > 0)
+            {
+                // If there is any disjoint edges, try to disable them first.
+                edge = disjointEnableEdges.back();
+                disjointEnableEdges.pop_back();
+            }
+            else
+            {
+                // Then, try to disable newly enabled edges next.
+                assert(enabledEdges.size() > 0);
+                edge = enabledEdges.back();
+                enabledEdges.pop_back();
+            }
+
+            assert(ffn->getEdge(edge).isEnabled());
+            ffn->accessEdge(edge).setEnabled(false);
+        }
     }
 
     assert(network->validate());

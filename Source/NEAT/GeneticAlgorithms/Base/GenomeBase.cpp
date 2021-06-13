@@ -32,7 +32,7 @@ GenomeBase::GenomeBase(const GenomeBase& other)
     , m_biasNode(other.m_biasNode)
 {
     // Copy the network
-    m_network = std::make_shared<Network>(*other.m_network.get());
+    m_network = other.m_network->clone();
 }
 
 void GenomeBase::operator= (const GenomeBase& other)
@@ -41,7 +41,20 @@ void GenomeBase::operator= (const GenomeBase& other)
     m_biasNode = other.m_biasNode;
 
     // Copy the network
-    m_network = std::make_shared<Network>(*other.m_network.get());
+    m_network = other.m_network->clone();
+}
+
+int GenomeBase::getNumEnabledEdges() const
+{
+    int num = 0;
+    for (auto& itr : m_network->getEdges())
+    {
+        if (itr.second.isEnabled())
+        {
+            num++;
+        }
+    }
+    return num;
 }
 
 void GenomeBase::clearNodeValues() const
@@ -52,9 +65,14 @@ void GenomeBase::clearNodeValues() const
     }
 }
 
-void GenomeBase::setInputNodeValues(const std::vector<float>& values) const
+void GenomeBase::setInputNodeValues(const std::vector<float>& values, float biasNodeValue) const
 {
-    assert(values.size() == (m_biasNode.isValid() ? (m_network->getInputNodes().size() - 1 ) : m_network->getInputNodes().size()));
+    assert(values.size() == m_network->getInputNodes().size());
+
+    if (m_biasNode.isValid())
+    {
+        m_network->setNodeValue(m_biasNode, biasNodeValue);
+    }
 
     for (int i = 0; i < (int)values.size(); i++)
     {
@@ -97,9 +115,9 @@ void GenomeBase::setActivationAll(const Activation* activation)
     }
 }
 
-void GenomeBase::evaluate(const std::vector<float>& inputNodeValues) const
+void GenomeBase::evaluate(const std::vector<float>& inputNodeValues, float biasNodeValue) const
 {
-    setInputNodeValues(inputNodeValues);
+    setInputNodeValues(inputNodeValues, biasNodeValue);
     evaluate();
 }
 

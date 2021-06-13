@@ -43,10 +43,6 @@ namespace NEAT
         // Returns the number of genomes which could be selected by this selector.
         inline int getNumGenomes() const { return m_numGenomes; }
 
-        void setSpeciesPopulations(int numGenomesToSelect);
-
-        inline bool hasSpeciesMoreThanOneMember() const { return m_hasSpeciesMoreThanOneMember; }
-
     protected:
         struct SpeciesData
         {
@@ -65,6 +61,10 @@ namespace NEAT
 
         auto selectGenomeImpl()->const GenomeData*;
 
+        void setSpeciesPopulations(int numGenomesToSelect);
+
+        inline bool hasSpeciesMoreThanOneMember() const { return m_hasSpeciesMoreThanOneMember; }
+
         void decrementPopulationOfCurrentSpecies();
 
         std::vector<SpeciesData> m_speciesData;
@@ -75,6 +75,7 @@ namespace NEAT
         // Indicates whether to skip stagnant species during selection or not.
         bool m_skipStagnantSpecies = true;
 
+        // True if there is at least one species that has more than one member.
         bool m_hasSpeciesMoreThanOneMember = false;
 
         // Probability to select two genomes from different species when selectTwoGenomes() is called.

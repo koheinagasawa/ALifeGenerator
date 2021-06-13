@@ -27,11 +27,11 @@ namespace NEAT
 
         // This should be called before creating a new generation.
         // This function will select a new representative genome for this species and clear all existing members.
-        void preNewGeneration(RandomGenerator* random = nullptr);
+        void preNewGeneration();
 
         // This should be called after creating a new generation.
         // This function will update stagnant count.
-        void postNewGeneration();
+        void postNewGeneration(RandomGenerator* random = nullptr);
 
         // Try to add the given genome to this species based on distance from its representative genome.
         // Return true if the genome is added to this species and otherwise return false.

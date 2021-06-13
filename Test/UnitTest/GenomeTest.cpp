@@ -59,6 +59,25 @@ TEST(Genome, CreateGenome)
         const EdgeId e2 = genome2.getInnovations()[i];
         EXPECT_EQ(e1, e2);
     }
+
+    // Create a genome with a bias node.
+    innovCounter.reset();
+    cinfo.m_createBiasNode = true;
+    Genome genome3(cinfo);
+
+    const Genome::Network* network3 = genome3.getNetwork();
+
+    EXPECT_TRUE(genome3.validate());
+    EXPECT_EQ(network3->getInputNodes().size(), 2);
+    EXPECT_EQ(network3->getNumNodes(), 5);
+    EXPECT_EQ(network3->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network3->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
+    EXPECT_EQ(network3->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::BIAS);
+    EXPECT_EQ(network3->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network3->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::OUTPUT);
+    EXPECT_EQ(network3->getNumEdges(), 6);
+    EXPECT_EQ(network3->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome3.getInnovations().size(), 6);
 }
 
 TEST(Genome, ModifyGenome)
@@ -90,13 +109,21 @@ TEST(Genome, ModifyGenome)
     NodeId newNode;
     EdgeId newEdge1, newEdge2, newEdge3;
 
+    genome.accessNetwork()->setWeight(EdgeId(0), 0.5f);
+
     // Add a new node
     genome.addNodeAt(EdgeId(0), newNode, newEdge1, newEdge2);
     EXPECT_NE(newNode, NodeId::invalid());
     EXPECT_NE(newEdge1, EdgeId::invalid());
     EXPECT_NE(newEdge2, EdgeId::invalid());
+    EXPECT_FALSE(genome.isEdgeEnabled(EdgeId(0)));
+    EXPECT_TRUE(genome.isEdgeEnabled(newEdge1));
+    EXPECT_TRUE(genome.isEdgeEnabled(newEdge2));
+    EXPECT_EQ(network->getEdge(newEdge1).getWeight(), 1.0f);
+    EXPECT_EQ(network->getEdge(newEdge2).getWeight(), 0.5f);
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNumEdges(), 6);
+    EXPECT_EQ(genome.getNumEnabledEdges(), 5);
     EXPECT_EQ(genome.getInnovations().size(), 6);
     EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
@@ -116,10 +143,19 @@ TEST(Genome, ModifyGenome)
     EXPECT_TRUE(network->isConnected(NodeId(3), newNode));
     EXPECT_EQ(network->getNumNodes(), 5);
     EXPECT_EQ(network->getNumEdges(), 7);
+    EXPECT_EQ(genome.getNumEnabledEdges(), 6);
     EXPECT_EQ(genome.getInnovations().size(), 7);
     EXPECT_TRUE(network->hasEdge(newEdge3));
+    EXPECT_TRUE(genome.isEdgeEnabled(newEdge3));
     EXPECT_EQ(network->getWeight(newEdge3), 3.f);
-    EXPECT_TRUE(network->isEdgeEnabled(newEdge3));
+    EXPECT_TRUE(genome.isEdgeEnabled(newEdge3));
+
+    // Remove an edge
+    genome.removeEdge(newEdge2);
+    EXPECT_FALSE(network->hasEdge(newEdge2));
+    EXPECT_EQ(network->getNumNodes(), 5);
+    EXPECT_EQ(network->getNumEdges(), 6);
+    EXPECT_EQ(genome.getNumEnabledEdges(), 5);
 }
 
 TEST(Genome, ReassignInnovation)
@@ -212,7 +248,7 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    Genome::Activation activation = [](float value) { return value * 2.f; };
+    Activation activation = [](float value) { return value * 2.f; };
     cinfo.m_defaultActivation = &activation;
     Genome genome(cinfo);
 
@@ -234,7 +270,7 @@ TEST(Genome, EvaluateGenome)
     genome.setEdgeWeight(EdgeId(0), 0.5f);
 
     // Change activation
-    Genome::Activation activation2([](float value) { return value >= 3.f ? 1.f : 0.f; });
+    Activation activation2([](float value) { return value >= 3.f ? 1.f : 0.f; });
     genome.setActivationAll(&activation2);
 
     // Evaluate the network again.

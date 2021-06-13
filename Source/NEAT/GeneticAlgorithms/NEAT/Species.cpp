@@ -22,23 +22,14 @@ Species::Species(CGenomePtr initialMember, float fitness)
     m_members.push_back(initialMember);
 }
 
-void Species::preNewGeneration(RandomGenerator* randomIn)
+void Species::preNewGeneration()
 {
-    // Select a new representative
-    if(getNumMembers() > 0)
-    {
-        RandomGenerator* random = randomIn ? randomIn : &PseudoRandom::getInstance();
-        int index = random->randomInteger(0, m_members.size() - 1);
-        CGenomePtr representative = m_members[index];
-        m_representative = *representative.get();
-    }
-
     m_members.clear();
     m_bestFitness = 0.f;
     m_bestGenome = nullptr;
 }
 
-void Species::postNewGeneration()
+void Species::postNewGeneration(RandomGenerator* randomIn)
 {
     if (m_bestFitness <= m_previousBestFitness)
     {
@@ -50,6 +41,15 @@ void Species::postNewGeneration()
         // There is improvement. Reset stagnant count.
         m_previousBestFitness = m_bestFitness;
         m_stagnantCount = 0;
+    }
+
+    // Select a new representative
+    if (getNumMembers() > 0)
+    {
+        RandomGenerator* random = randomIn ? randomIn : &PseudoRandom::getInstance();
+        int index = random->randomInteger(0, m_members.size() - 1);
+        CGenomePtr representative = m_members[index];
+        m_representative = *representative.get();
     }
 }
 

@@ -175,7 +175,7 @@ void Generation::postUpdateGeneration()
     for (auto& itr : m_species)
     {
         SpeciesPtr& s = itr.second;
-        s->preNewGeneration(m_randomGenerator);
+        s->preNewGeneration();
     }
 
     using CGenomePtr = std::shared_ptr<const Genome>;
@@ -228,10 +228,13 @@ void Generation::postUpdateGeneration()
     for (auto& itr : m_species)
     {
         SpeciesPtr& s = itr.second;
-        s->postNewGeneration();
+        s->postNewGeneration(m_randomGenerator);
 
-        bool reproducible = s->getStagnantGenerationCount() < m_params.m_maxStagnantCount;
-        s->setReproducible(reproducible);
+        if (m_species.size() > 1)
+        {
+            bool reproducible = s->getStagnantGenerationCount() < m_params.m_maxStagnantCount;
+            s->setReproducible(reproducible);
+        }
     }
 
     // Sort genomes by species id.

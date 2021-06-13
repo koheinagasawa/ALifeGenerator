@@ -24,7 +24,11 @@ struct Node : public NodeBase
 struct Edge : public EdgeBase
 {
     Edge() = default;
-    Edge(NodeId inNode, NodeId outNode) : m_inNode(inNode), m_outNode(outNode) {}
+    Edge(NodeId inNode, NodeId outNode, float weight = 0.f)
+        : m_inNode(inNode)
+        , m_outNode(outNode)
+        , m_weight(weight)
+    {}
 
     virtual NodeId getInNode() const { return m_inNode; }
     virtual NodeId getOutNode() const { return m_outNode; }
@@ -65,25 +69,37 @@ TEST(NeuralNetwork, CreateInvalidNetworks)
         NN nn(nodes, edges2);
         EXPECT_FALSE(nn.validate());
     }
+}
+
+TEST(NeuralNetwork, CreateCircularNetwork)
+{
+    NN::Nodes nodes;
+    NN::Edges edges;
+
+    NodeId inNode(0);
+    NodeId outNode(1);
+
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
+    edges.insert({ EdgeId(0), Edge(inNode, outNode) });
 
     // Circular network
-    {
-        NodeId node1(2);
-        NodeId node2(3);
-        NodeId node3(4);
-        nodes.insert({ node1, Node() });
-        nodes.insert({ node2, Node() });
-        nodes.insert({ node3, Node() });
+    NodeId node1(2);
+    NodeId node2(3);
+    NodeId node3(4);
+    nodes.insert({ node1, Node() });
+    nodes.insert({ node2, Node() });
+    nodes.insert({ node3, Node() });
 
-        edges.insert({ EdgeId(1), Edge(inNode, node1) });
-        edges.insert({ EdgeId(2), Edge(node1, node2) });
-        edges.insert({ EdgeId(3), Edge(node2, node3) });
-        edges.insert({ EdgeId(4), Edge(node3, node1) });
-        edges.insert({ EdgeId(5), Edge(node3, outNode) });
+    edges.insert({ EdgeId(1), Edge(inNode, node1) });
+    edges.insert({ EdgeId(2), Edge(node1, node2) });
+    edges.insert({ EdgeId(3), Edge(node2, node3) });
+    edges.insert({ EdgeId(4), Edge(node3, node1) });
+    edges.insert({ EdgeId(5), Edge(node3, outNode) });
 
-        NN nn(nodes, edges);
-        EXPECT_TRUE(nn.validate());
-    }
+    NN nn(nodes, edges);
+    EXPECT_TRUE(nn.allowsCircularNetwork());
+    EXPECT_TRUE(nn.validate());
 }
 
 TEST(NeuralNetwork, CreateMinimumNetwork)
@@ -101,27 +117,68 @@ TEST(NeuralNetwork, CreateMinimumNetwork)
     NN::Edges edges;
     edges.insert({ edge, Edge(inNode, outNode) });
 
-    // Create a network.
-    NN nn(nodes, edges);
+    {
+        // Create a network.
+        NN nn(nodes, edges);
 
-    EXPECT_TRUE(nn.validate());
+        EXPECT_TRUE(nn.validate());
 
-    EXPECT_TRUE(nn.hasNode(inNode));
-    EXPECT_TRUE(nn.hasNode(outNode));
-    EXPECT_FALSE(nn.hasNode(NodeId(2)));
+        EXPECT_TRUE(nn.hasNode(inNode));
+        EXPECT_TRUE(nn.hasNode(outNode));
+        EXPECT_FALSE(nn.hasNode(NodeId(2)));
 
-    EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
-    EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 1);
-    EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
-    EXPECT_TRUE(nn.isConnected(inNode, outNode));
+        EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
+        EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 1);
+        EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
+        EXPECT_TRUE(nn.isConnected(inNode, outNode));
+        EXPECT_TRUE(nn.isConnected(outNode, inNode));
 
-    EXPECT_EQ(nn.getNumNodes(), 2);
-    EXPECT_EQ(nn.getNumEdges(), 1);
+        EXPECT_EQ(nn.getNumNodes(), 2);
+        EXPECT_EQ(nn.getNumEdges(), 1);
 
-    EXPECT_TRUE(nn.hasEdge(edge));
-    EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
-    EXPECT_EQ(nn.getInNode(edge), inNode);
-    EXPECT_EQ(nn.getOutNode(edge), outNode);
+        EXPECT_TRUE(nn.hasEdge(edge));
+        EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
+        EXPECT_EQ(nn.getInNode(edge), inNode);
+        EXPECT_EQ(nn.getOutNode(edge), outNode);
+
+        // Input and output nodes are empty unless they are specified explicitly by constructor.
+        EXPECT_EQ(nn.getInputNodes().size(), 0);
+        EXPECT_EQ(nn.getOutputNodes().size(), 0);
+    }
+
+    {
+        // Create a network with input and output nodes.
+        std::vector<NodeId> inputNodes;
+        inputNodes.push_back(inNode);
+        std::vector<NodeId> outputNodes;
+        outputNodes.push_back(outNode);
+        NN nn(nodes, edges, inputNodes, outputNodes);
+
+        EXPECT_TRUE(nn.validate());
+
+        EXPECT_TRUE(nn.hasNode(inNode));
+        EXPECT_TRUE(nn.hasNode(outNode));
+        EXPECT_FALSE(nn.hasNode(NodeId(2)));
+
+        EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
+        EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 1);
+        EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
+        EXPECT_TRUE(nn.isConnected(inNode, outNode));
+        EXPECT_TRUE(nn.isConnected(outNode, inNode));
+
+        EXPECT_EQ(nn.getNumNodes(), 2);
+        EXPECT_EQ(nn.getNumEdges(), 1);
+
+        EXPECT_TRUE(nn.hasEdge(edge));
+        EXPECT_FALSE(nn.hasEdge(EdgeId(1)));
+        EXPECT_EQ(nn.getInNode(edge), inNode);
+        EXPECT_EQ(nn.getOutNode(edge), outNode);
+
+        EXPECT_EQ(nn.getInputNodes().size(), 1);
+        EXPECT_EQ(nn.getInputNodes()[0], inNode);
+        EXPECT_EQ(nn.getOutputNodes().size(), 1);
+        EXPECT_EQ(nn.getOutputNodes()[0], outNode);
+    }
 }
 
 TEST(NeuralNetwork, GetSetNodeValues)
@@ -175,4 +232,377 @@ TEST(NeuralNetwork, GetSetEdgeWeights)
     EXPECT_EQ(nn.getWeight(edgeId), 10.f);
     nn.setWeight(edgeId, 12.f);
     EXPECT_EQ(nn.getWeight(edgeId), 12.f);
+}
+
+TEST(NeuralNetwork, AddNode)
+{
+    // Set up node and edges.
+    NodeId inNode(0);
+    NodeId outNode(1);
+
+    NN::Nodes nodes;
+    nodes.insert({ inNode, Node() });
+    nodes.insert({ outNode, Node() });
+
+    EdgeId edge(0);
+
+    NN::Edges edges;
+    edges.insert({ edge, Edge(inNode, outNode, 0.5f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(inNode);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(outNode);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(nn.validate());
+    EXPECT_EQ(nn.getNumNodes(), 2);
+    EXPECT_EQ(nn.getNumEdges(), 1);
+    EXPECT_EQ(nn.getWeight(edge), 0.5f);
+
+    // Try to add a node at an edge which doesn't exist.
+    NodeId newNode(2);
+    EdgeId newIncomingEdge(1);
+    EdgeId newOutgoingEdge(2);
+    nn.addNodeAt(EdgeId(1), newNode, newIncomingEdge, newOutgoingEdge);
+    EXPECT_EQ(nn.getNumNodes(), 2);
+    EXPECT_EQ(nn.getNumEdges(), 1);
+
+    // Add one node
+    nn.addNodeAt(edge, newNode, newIncomingEdge, newOutgoingEdge);
+
+    EXPECT_TRUE(nn.hasNode(inNode));
+    EXPECT_TRUE(nn.hasNode(outNode));
+    EXPECT_TRUE(nn.hasNode(newNode));
+    EXPECT_TRUE(nn.hasEdge(edge));
+    EXPECT_TRUE(nn.hasEdge(newIncomingEdge));
+    EXPECT_TRUE(nn.hasEdge(newOutgoingEdge));
+    EXPECT_EQ(nn.getWeight(edge), 0.5f);
+    EXPECT_EQ(nn.getWeight(newIncomingEdge), 1.0f);
+    EXPECT_EQ(nn.getWeight(newOutgoingEdge), 1.0f);
+    EXPECT_EQ(nn.getNumNodes(), 3);
+    EXPECT_EQ(nn.getNumEdges(), 3);
+    EXPECT_EQ(nn.getInNode(edge), inNode);
+    EXPECT_EQ(nn.getOutNode(edge), outNode);
+    EXPECT_EQ(nn.getInNode(newIncomingEdge), inNode);
+    EXPECT_EQ(nn.getOutNode(newIncomingEdge), newNode);
+    EXPECT_EQ(nn.getInNode(newOutgoingEdge), newNode);
+    EXPECT_EQ(nn.getOutNode(newOutgoingEdge), outNode);
+    EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
+    EXPECT_EQ(nn.getIncomingEdges(newNode).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(newNode)[0], newIncomingEdge);
+    EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 2);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[1], newOutgoingEdge);
+
+    // Add one more node
+    NodeId newNode2(3);
+    EdgeId newIncomingEdge2(3), newOutgoingEdge2(4);
+    nn.addNodeAt(newOutgoingEdge, newNode2, newIncomingEdge2, newOutgoingEdge2);
+
+    EXPECT_TRUE(nn.hasNode(inNode));
+    EXPECT_TRUE(nn.hasNode(outNode));
+    EXPECT_TRUE(nn.hasNode(newNode));
+    EXPECT_TRUE(nn.hasNode(newNode2));
+    EXPECT_TRUE(nn.hasEdge(edge));
+    EXPECT_TRUE(nn.hasEdge(newOutgoingEdge));
+    EXPECT_TRUE(nn.hasEdge(newIncomingEdge2));
+    EXPECT_TRUE(nn.hasEdge(newOutgoingEdge2));
+    EXPECT_EQ(nn.getWeight(newIncomingEdge), 1.f);
+    EXPECT_EQ(nn.getWeight(newIncomingEdge2), 1.f);
+    EXPECT_EQ(nn.getWeight(newOutgoingEdge2), 1.f);
+    EXPECT_EQ(nn.getNumNodes(), 4);
+    EXPECT_EQ(nn.getNumEdges(), 5);
+    EXPECT_EQ(nn.getInNode(edge), inNode);
+    EXPECT_EQ(nn.getOutNode(edge), outNode);
+    EXPECT_EQ(nn.getInNode(newOutgoingEdge), newNode);
+    EXPECT_EQ(nn.getOutNode(newOutgoingEdge), outNode);
+    EXPECT_EQ(nn.getInNode(newIncomingEdge2), newNode);
+    EXPECT_EQ(nn.getOutNode(newIncomingEdge2), newNode2);
+    EXPECT_EQ(nn.getInNode(newOutgoingEdge2), newNode2);
+    EXPECT_EQ(nn.getOutNode(newOutgoingEdge2), outNode);
+    EXPECT_EQ(nn.getIncomingEdges(inNode).size(), 0);
+    EXPECT_EQ(nn.getIncomingEdges(newNode).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(newNode)[0], newIncomingEdge);
+    EXPECT_EQ(nn.getIncomingEdges(newNode2).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(newNode2)[0], newIncomingEdge2);
+    EXPECT_EQ(nn.getIncomingEdges(outNode).size(), 3);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[0], edge);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[1], newOutgoingEdge);
+    EXPECT_EQ(nn.getIncomingEdges(outNode)[2], newOutgoingEdge2);
+}
+
+TEST(NeuralNetwork, AddEdge)
+{
+    // Set up node and edges.
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    NN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    NN::Edges edges;
+    edges.insert({ edge1, Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, Edge(hiddenNode2, outNode2, 0.5f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(nn.validate());
+    EXPECT_EQ(nn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+
+    // Add an edge.
+    EdgeId edge5(5);
+    EXPECT_TRUE(nn.addEdgeAt(inNode1, hiddenNode2, edge5, 0.1f));
+    EXPECT_TRUE(nn.hasEdge(edge5));
+    EXPECT_EQ(nn.getNumEdges(), ++numEdges);
+    EXPECT_EQ(nn.getWeight(edge5), 0.1f);
+    EXPECT_EQ(nn.getInNode(edge5), inNode1);
+    EXPECT_EQ(nn.getOutNode(edge5), hiddenNode2);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode2).size(), 2);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode2)[0], edge2);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode2)[1], edge5);
+
+    // Try to add an edge at nodes which are already connected.
+    {
+        EdgeId e(6);
+        EXPECT_FALSE(nn.addEdgeAt(inNode1, hiddenNode1, e, 0.5f));
+        EXPECT_EQ(nn.getNumEdges(), numEdges);
+        EXPECT_FALSE(nn.hasEdge(e));
+    }
+
+    // Try to add an edge going from an outputNode.
+    {
+        EdgeId e6(6);
+        EXPECT_TRUE(nn.addEdgeAt(outNode1, inNode2, e6, 0.1f));
+        EXPECT_EQ(nn.getNumEdges(), ++numEdges);
+        EXPECT_TRUE(nn.hasEdge(e6));
+        EXPECT_EQ(nn.getIncomingEdges(inNode2).size(), 1);
+        EdgeId e7(7);
+        EXPECT_TRUE(nn.addEdgeAt(outNode2, hiddenNode1, e7, 0.1f));
+        EXPECT_EQ(nn.getNumEdges(), ++numEdges);
+        EXPECT_TRUE(nn.hasEdge(e7));
+    }
+
+    // Add an edge going into an inputNode.
+    {
+        EdgeId e(8);
+        EXPECT_TRUE(nn.addEdgeAt(inNode1, inNode2, e, 0.2f));
+        EXPECT_TRUE(nn.hasEdge(e));
+        EXPECT_EQ(nn.getNumEdges(), ++numEdges);
+        EXPECT_EQ(nn.getIncomingEdges(inNode2).size(), 2);
+    }
+
+    // Try to add an edge at a node which doesn't exit.
+    {
+        EdgeId e(9);
+        EXPECT_FALSE(nn.addEdgeAt(hiddenNode1, NodeId(6), e, 0.1f));
+        EXPECT_EQ(nn.getNumEdges(), numEdges);
+        EXPECT_FALSE(nn.hasEdge(e));
+        EXPECT_FALSE(nn.addEdgeAt(NodeId(7), outNode1, e, 0.1f));
+        EXPECT_EQ(nn.getNumEdges(), numEdges);
+        EXPECT_FALSE(nn.hasEdge(e));
+    }
+
+    // Try to add an edge which creates a circle.
+    {
+        EdgeId e(9);
+        EXPECT_TRUE(nn.addEdgeAt(hiddenNode2, inNode1, e, 0.1f));
+        EXPECT_EQ(nn.getNumEdges(), ++numEdges);
+        EXPECT_TRUE(nn.hasEdge(e));
+        EXPECT_EQ(nn.getIncomingEdges(inNode1).size(), 1);
+    }
+}
+
+TEST(NeuralNetwork, ReplaceEdge)
+{
+    // Set up node and edges.
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    NN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    NN::Edges edges;
+    edges.insert({ edge1, Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, Edge(hiddenNode2, outNode2, 0.5f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(nn.validate());
+    EXPECT_EQ(nn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+
+    // Replace an edge.
+    EdgeId edge5(5);
+    nn.replaceEdgeId(edge1, edge5);
+    EXPECT_TRUE(nn.validate());
+    EXPECT_FALSE(nn.hasEdge(edge1));
+    EXPECT_TRUE(nn.hasEdge(edge5));
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode1).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode1)[0], edge5);
+}
+
+TEST(NeuralNetwork, RemoveEdge)
+{
+    // Set up node and edges.
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    NN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    NN::Edges edges;
+    edges.insert({ edge1, Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, Edge(hiddenNode2, outNode2, 0.5f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(nn.validate());
+    EXPECT_EQ(nn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+
+    // Remove an edge.
+    nn.removeEdge(edge1);
+    EXPECT_TRUE(nn.validate());
+    EXPECT_FALSE(nn.hasEdge(edge1));
+    EXPECT_EQ(nn.getNumEdges(), numEdges - 1);
+    EXPECT_EQ(nn.getIncomingEdges(hiddenNode1).size(), 0);
+}
+
+TEST(NeuralNetwork, ReplaceNode)
+{
+    // Set up node and edges.
+    NodeId inNode1(0);
+    NodeId inNode2(1);
+    NodeId outNode1(2);
+    NodeId outNode2(3);
+    NodeId hiddenNode1(4);
+    NodeId hiddenNode2(5);
+
+    NN::Nodes nodes;
+    nodes.insert({ inNode1, Node() });
+    nodes.insert({ inNode2, Node() });
+    nodes.insert({ outNode1, Node() });
+    nodes.insert({ outNode2, Node() });
+    nodes.insert({ hiddenNode1, Node() });
+    nodes.insert({ hiddenNode2, Node() });
+
+    EdgeId edge1(1);
+    EdgeId edge2(2);
+    EdgeId edge3(3);
+    EdgeId edge4(4);
+
+    NN::Edges edges;
+    edges.insert({ edge1, Edge(inNode1, hiddenNode1, 0.5f) });
+    edges.insert({ edge2, Edge(inNode2, hiddenNode2, 0.5f) });
+    edges.insert({ edge3, Edge(hiddenNode1, outNode1, 0.5f) });
+    edges.insert({ edge4, Edge(hiddenNode2, outNode2, 0.5f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(inNode1);
+    inputNodes.push_back(inNode2);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(outNode1);
+    outputNodes.push_back(outNode2);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    EXPECT_TRUE(nn.validate());
+    EXPECT_EQ(nn.getNumNodes(), 6);
+    int numEdges = 4;
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+
+    // Replace a node.
+    NodeId newNode(6);
+    nn.replaceNodeId(outNode1, newNode);
+    EXPECT_TRUE(nn.validate());
+    EXPECT_TRUE(nn.hasNode(newNode));
+    EXPECT_FALSE(nn.hasNode(outNode1));
+    EXPECT_EQ(nn.getNumNodes(), 6);
+    EXPECT_EQ(nn.getNumEdges(), numEdges);
+    EXPECT_EQ(nn.getIncomingEdges(newNode).size(), 1);
+    EXPECT_EQ(nn.getIncomingEdges(newNode)[0], edge3);
+    EXPECT_EQ(nn.getOutNode(edge3), newNode);
+    EXPECT_EQ(nn.getOutputNodes().size(), 2);
+    EXPECT_TRUE(nn.getOutputNodes()[0] == newNode || nn.getOutputNodes()[1] == newNode);
 }

@@ -7,21 +7,6 @@
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 
-GenomeBase::Node::Node(Type type)
-    : m_type(type)
-{
-}
-
-float GenomeBase::Node::getValue() const
-{
-    return m_value;
-}
-
-void GenomeBase::Node::setValue(float value)
-{
-    m_value = m_activation ? m_activation->activate(value) : value;
-}
-
 GenomeBase::GenomeBase(const Activation* defaultActivation)
     : m_defaultActivation(defaultActivation)
 {
@@ -96,7 +81,7 @@ void GenomeBase::setActivation(NodeId nodeId, const Activation* activation)
     assert(m_network.get());
     assert(!m_network->getNode(nodeId).isInputOrBias());
 
-    m_network->accessNode(nodeId).m_activation = activation;
+    m_network->accessNode(nodeId).setActivation(activation);
 }
 
 void GenomeBase::setActivationAll(const Activation* activation)
@@ -130,6 +115,6 @@ void GenomeBase::evaluate() const
 void GenomeBase::setNodeTypeAndActivation(NodeId nodeId, Node::Type type, const Activation* activation)
 {
     Node& node = m_network->accessNode(nodeId);
-    node.m_type = type;
-    node.m_activation = activation;
+    node.setNodeType(type);
+    node.setActivation(activation);
 }

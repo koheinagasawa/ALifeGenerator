@@ -19,6 +19,8 @@ struct EdgeBase
     virtual float getWeight() const = 0;
     virtual void setWeight(float weight) = 0;
 
+    virtual bool isEnabled() const { return true; }
+
     // Copy internal state of the edge (e.g. weight) without copying in node and out node ids.
     virtual void copyState(const EdgeBase* other) {}
 };
@@ -69,7 +71,7 @@ struct SwitchableEdge : public DefaultEdge
     // Copy internal state of the edge (e.g. weight) without copying in node and out node ids.
     virtual void copyState(const EdgeBase* other) override;
 
-    inline bool isEnabled() const { return m_enabled; }
+    virtual bool isEnabled() const override { return m_enabled; }
     inline void setEnabled(bool enable) { m_enabled = enable; }
 
     // Return the weight. Return 0 if this edge is disabled.

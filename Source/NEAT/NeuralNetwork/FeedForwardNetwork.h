@@ -252,7 +252,14 @@ bool FeedForwardNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::u
 
     for (EdgeId e : this->getIncomingEdges(id))
     {
-        if (hasCircularEdgesRecursive(this->m_edges.at(e).getInNode(), visitedNodes))
+        const Edge& edge = this->m_edges.at(e);
+
+        if (!edge.isEnabled())
+        {
+            continue;
+        }
+
+        if (hasCircularEdgesRecursive(edge.getInNode(), visitedNodes))
         {
             return true;
         }

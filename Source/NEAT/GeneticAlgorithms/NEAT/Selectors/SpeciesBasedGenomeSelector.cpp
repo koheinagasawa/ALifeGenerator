@@ -99,11 +99,11 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
         }
     }
 
-    // Sort species data in the best fitness order
-    std::sort(m_speciesData.begin(), m_speciesData.end(), [](const SpeciesData& s1, const SpeciesData& s2)
-        {
-            return s1.m_species->getBestFitness() > s2.m_species->getBestFitness();
-        });
+    //// Sort species data in the best fitness order
+    //std::sort(m_speciesData.begin(), m_speciesData.end(), [](const SpeciesData& s1, const SpeciesData& s2)
+    //    {
+    //        return s1.m_species->getBestFitness() > s2.m_species->getBestFitness();
+    //    });
 
     // Remove the least fit genomes in each species from selection
     for (auto& sData : m_speciesData)

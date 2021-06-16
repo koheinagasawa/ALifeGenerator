@@ -30,6 +30,9 @@ public:
     // Create a copy of this network.
     virtual auto clone() const->std::shared_ptr<NeuralNetwork<Node, Edge>> override;
 
+    // Return type of this network.
+    virtual NeuralNetworkType getType() const override { return NeuralNetworkType::FEED_FORWARD; }
+
     // Feed forward network shouldn't have circular connections.
     virtual bool allowsCircularNetwork() const override { return false; }
 

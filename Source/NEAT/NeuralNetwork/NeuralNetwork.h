@@ -18,6 +18,7 @@
 
 enum class NeuralNetworkType
 {
+    GENERAL,
     FEED_FORWARD,
     RECURRENT,
 };
@@ -63,6 +64,9 @@ public:
 
     // Return true if this network can have circular edge connection.
     virtual bool allowsCircularNetwork() const { return true; }
+
+    // Return type of this network.
+    virtual NeuralNetworkType getType() const { return NeuralNetworkType::GENERAL; }
 
     //
     // Node Queries

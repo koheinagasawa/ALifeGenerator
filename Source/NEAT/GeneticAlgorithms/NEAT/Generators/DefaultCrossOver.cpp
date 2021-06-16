@@ -198,11 +198,20 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Create a new network.
-    Genome::NetworkPtr network = std::make_shared<Network>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
+    Genome::NetworkPtr network;
+    switch (network1->getType())
+    {
+    case NeuralNetworkType::FEED_FORWARD:
+        network = std::make_shared<FeedForwardNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
+        break;
+    default:
+        assert("Network type is not supported.");
+        break;
+    }
 
     // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
     // Disable those edges one by one until we have a valid network.
-    if (!allowCircularNetwork)
+    if (network->getType() == NeuralNetworkType::FEED_FORWARD)
     {
         auto* ffn = static_cast<FeedForwardNetwork<Genome::Node, SwitchableEdge>*>(network.get());
         while (ffn->hasCircularEdges())

@@ -9,6 +9,7 @@
 #include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 #include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
+#include <NEAT/NeuralNetwork/RecurrentNetwork.h>
 
 using namespace NEAT;
 
@@ -204,8 +205,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     case NeuralNetworkType::FEED_FORWARD:
         network = std::make_shared<FeedForwardNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
         break;
+    case NeuralNetworkType::RECURRENT:
+        network = std::make_shared<RecurrentNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
+        break;
     default:
-        assert("Network type is not supported.");
+        network = std::make_shared<NeuralNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
         break;
     }
 

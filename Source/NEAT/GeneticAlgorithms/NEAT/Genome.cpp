@@ -7,6 +7,7 @@
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
+#include <NEAT/NeuralNetwork/RecurrentNetwork.h>
 
 #include <algorithm>
 
@@ -103,9 +104,13 @@ Genome::Genome(const Cinfo& cinfo)
         break;
     }
     case NeuralNetworkType::RECURRENT:
+    {
+        m_network = std::make_shared<RecurrentNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
+        break;
+    }
     default:
     {
-        assert("Not supported yet.");
+        m_network = std::make_shared<NeuralNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
         break;
     }
     }

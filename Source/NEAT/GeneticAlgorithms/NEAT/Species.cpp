@@ -61,7 +61,6 @@ bool Species::tryAddGenome(CGenomePtr genome, float fitness, float distanceThres
     if (distance <= distanceThreshold)
     {
         addGenome(genome, fitness);
-
         return true;
     }
 

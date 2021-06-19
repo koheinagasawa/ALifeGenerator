@@ -15,12 +15,12 @@ public:
     // Type declarations.
     using GenomeDatas = GenerationBase::GenomeDatas;
     using GenomeData = GenerationBase::GenomeData;
-
+    
     enum SelectionMode
     {
-        NONE,
-        SELECT_ONE_GENOME,
-        SELECT_TWO_GENOMES
+        NONE,               // Invalid mode
+        SELECT_ONE_GENOME,  // Select one genome
+        SELECT_TWO_GENOMES  // Select two different genomes at once
     };
 
     // This function should be called before the first selection.

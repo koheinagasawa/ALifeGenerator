@@ -29,9 +29,7 @@ namespace NEAT
         virtual bool shouldGenomesProtected() const { return true; }
 
     protected:
-        const SpeciesList* m_species = nullptr; // The Species.
-
-        // Minimum numbers of members in a species to copy its champion.
-        float m_minMembersInSpeciesToCopyChampion;
+        const SpeciesList* m_species = nullptr;     // The Species.
+        float m_minMembersInSpeciesToCopyChampion;  // Minimum numbers of members in a species to copy its champion.
     };
 }

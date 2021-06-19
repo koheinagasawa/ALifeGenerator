@@ -28,6 +28,9 @@ public:
     GenomeBase(const GenomeBase& other);
     void operator= (const GenomeBase& other);
 
+    // Create a clone of this genome.
+    virtual std::shared_ptr<GenomeBase> clone() const;
+
     //
     // Network
     //
@@ -61,7 +64,7 @@ public:
     // Node interface
     //
 
-    // Clear all values stored in nodes.
+    // Clear all values stored in nodes to zero.
     void clearNodeValues() const;
 
     // Set values of input nodes.
@@ -69,7 +72,7 @@ public:
     void setInputNodeValues(const std::vector<float>& values, float biasNodeValue = 0.f) const;
 
     // Set value of bias node.
-    void setBiasNodeValue(float value);
+    void setBiasNodeValue(float value) const;
 
     // Get node id of the bias node.
     inline NodeId getBiasNode() const { return m_biasNode; }
@@ -102,10 +105,7 @@ public:
     void evaluate() const;
 
 protected:
-    // Set type and activation func of a node.
-    void setNodeTypeAndActivation(NodeId node, Node::Type type, const Activation* activation);
-
     NetworkPtr m_network;                   // The network.
-    NodeId m_biasNode;
     const Activation* m_defaultActivation;  // Activation assigned to new Node by default.
+    NodeId m_biasNode;                      // The bias node.
 };

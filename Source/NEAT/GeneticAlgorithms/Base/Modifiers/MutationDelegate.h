@@ -17,14 +17,14 @@ public:
     {
         struct NewEdgeInfo
         {
+            EdgeId m_edgeId;
             NodeId m_sourceInNode;
             NodeId m_sourceOutNode;
-            EdgeId m_newEdge;
         };
 
         struct NewNodeInfo
         {
-            NodeId m_newNode;
+            NodeId m_nodeId;
             EdgeId m_previousEdgeId;
             EdgeId m_newIncomingEdgeId;
             EdgeId m_newOutgoingEdgeId;
@@ -33,10 +33,9 @@ public:
         void clear();
 
         static constexpr int MAX_NUM_NEW_EDGES = 3;
-        NewEdgeInfo m_newEdges[MAX_NUM_NEW_EDGES];  // Info of newly added edges.
-        NewNodeInfo m_newNode;                      // Info of newly added node.
-        int m_numNodesAdded;
-        int m_numEdgesAdded;
+        NewEdgeInfo m_newEdgeInfos[MAX_NUM_NEW_EDGES];  // Info of newly added edges.
+        NewNodeInfo m_newNodeInfo;                      // Info of newly added node.
+        int m_numEdgesAdded;                            // The number of newly added edges.
     };
 
     // Mutate a single genome. There are three ways of mutation.

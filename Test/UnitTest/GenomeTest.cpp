@@ -327,11 +327,11 @@ TEST(Genome, CalcGenomesDistance)
         DefaultMutation::MutationOut mutOut;
 
         mutator.mutate(&genome1, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
         mutator.m_params.m_addEdgeMutationRate = 1.0f;
         mutator.mutate(&genome1, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
 
         EXPECT_TRUE(genome1.validate());
@@ -340,7 +340,7 @@ TEST(Genome, CalcGenomesDistance)
 
         mutator.m_params.m_addEdgeMutationRate = 0.0f;
         mutator.mutate(&genome2, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
 
         EXPECT_TRUE(genome2.validate());

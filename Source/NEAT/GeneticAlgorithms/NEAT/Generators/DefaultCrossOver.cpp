@@ -64,8 +64,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             edge.setEnabled(true);
 
             // Disable the edge at a certain probability if either parent's edge is already disable
-            const bool disabled = !edgeA.isEnabled() || (genomeB && !genomeB->isEdgeEnabled(edgeId));
-            if (disabled)
+            if (!edgeA.isEnabled() || (genomeB && !genomeB->isEdgeEnabled(edgeId)))
             {
                 if (random.randomReal01() < m_params.m_disablingEdgeRate)
                 {
@@ -73,8 +72,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 }
                 else
                 {
-                    if (!sameFitnessDisjoint)
+                    if (!allowCircularNetwork && !sameFitnessDisjoint)
                     {
+                        // Remember the edge which might be disabled in the parents but is enabled now.
+                        // When fitness of the parents are the same (sameFitnessDisjoint == true), we don't need to
+                        // store the edge because we will store it in disjointEnableEdges array below.
                         enabledEdges.push_back(edgeId);
                     }
                 }
@@ -136,6 +138,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         // Add all remaining excess edges
         if (!sameFittingScore)
         {
+            // Only take edges of the more fit genome.
             const bool isSameFitnessDisjoint = false;
             while (curIdx1 < innovations1.size())
             {
@@ -144,6 +147,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         }
         else
         {
+            // Take edges from both genomes when they have the same fitness.
             const bool isSameFitnessDisjoint = true;
             while (curIdx1 < innovations1.size())
             {
@@ -166,12 +170,14 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
             const NodeId inNode = edge.getInNode();
             const NodeId outNode = edge.getOutNode();
 
+            // Add in node.
             if (addedNodes.find(inNode) == addedNodes.end())
             {
                 newGenomeNodes.insert({ inNode, network1->hasNode(inNode) ? network1->getNode(inNode) : network2->getNode(inNode) });
                 addedNodes.insert(inNode);
             }
 
+            // Add out node.
             if (addedNodes.find(outNode) == addedNodes.end())
             {
                 newGenomeNodes.insert({ outNode, network1->hasNode(outNode) ? network1->getNode(outNode) : network2->getNode(outNode) });
@@ -180,7 +186,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         }
     }
 
-    // Add input, output and hidden nodes
+    // Add input, output and bias nodes in case we are missing any of them.
     {
         for (NodeId node : genome1.getNetwork()->getInputNodes())
         {
@@ -213,8 +219,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
         break;
     }
 
-    // If the new network is not valid, it is likely that the network became circular because some edges were enabled or due to disjoint edges.
-    // Disable those edges one by one until we have a valid network.
+    // In case of feed forward network, the child genome might have circular connections because some edges were enabled or due to disjoint edges inherited from the less fit genome.
+    // Disable those edges one by one until we have no circular connection.
     if (network->getType() == NeuralNetworkType::FEED_FORWARD)
     {
         auto* ffn = static_cast<FeedForwardNetwork<Genome::Node, SwitchableEdge>*>(network.get());
@@ -253,10 +259,15 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
 
     const int numGenomesToCrossover = std::min(numRemaningGenomes, (int)(numTotalGenomes * m_params.m_numCrossOverGenomesRate));
 
-    bool result = genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::SELECT_TWO_GENOMES);
-
-    if (!result)
+    if (numGenomesToCrossover <= 0)
     {
+        // Nothing to select.
+        return;
+    }
+
+    if(!genomeSelector->preSelection(numGenomesToCrossover, GenomeSelector::SELECT_TWO_GENOMES))
+    {
+        // Setting up genome selector was failed. Abort.
         return;
     }
 
@@ -264,33 +275,30 @@ void DefaultCrossOver::generate(int numTotalGenomes, int numRemaningGenomes, Gen
     m_generatedGenomes.clear();
     m_generatedGenomes.reserve(numGenomesToCrossover);
 
-    if (numGenomesToCrossover <= 0)
-    {
-        return;
-    }
-
     // Perform cross-over.
     for (int i = 0; i < numGenomesToCrossover; i++)
     {
         const GenomeData* g1 = nullptr;
         const GenomeData* g2 = nullptr;
 
-        // Select two genomes.
-        genomeSelector->selectTwoGenomes(g1, g2);
-        assert(g1 && g2);
-
         bool isSameFitness = false;
 
-        // Swap g1 and g2 so that g1 has higher fitness
-        const float fitness1 = g1->getFitness();
-        const float fitness2 = g2->getFitness();
-        if (fitness1 < fitness2)
+        // Select two genomes.
         {
-            std::swap(g1, g2);
-        }
-        else if (fitness1 == fitness2)
-        {
-            isSameFitness = true;
+            genomeSelector->selectTwoGenomes(g1, g2);
+            assert(g1 && g2);
+
+            // Swap g1 and g2 so that g1 has higher fitness
+            const float fitness1 = g1->getFitness();
+            const float fitness2 = g2->getFitness();
+            if (fitness1 < fitness2)
+            {
+                std::swap(g1, g2);
+            }
+            else if (fitness1 == fitness2)
+            {
+                isSameFitness = true;
+            }
         }
 
         // Cross-over.

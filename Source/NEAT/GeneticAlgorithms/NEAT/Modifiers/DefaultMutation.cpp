@@ -42,7 +42,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         {
             if (random->randomReal01() <= m_params.m_weightMutationNewValRate)
             {
-                // Assign a completely new random weight.
+                // Assign a new random weight.
                 network->setWeight(edgeId, random->randomReal(m_params.m_weightMutationValMin, m_params.m_weightMutationValMax));
             }
             else
@@ -66,10 +66,10 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
         if (edges.size() > 1)
         {
-            // Select an edge to remove randomly.
+            // Select a random edge to remove.
             int index = random->randomInteger(0, edges.size() - 1);
 
-            // Find EdgeId of the edge to remove.
+            // Find EdgeId of the edge.
             EdgeId edgeToRemove;
             {
                 int i = 0;
@@ -83,6 +83,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 }
             }
 
+            // Check if removing the edge will isolate an output node from the network. If so, don't remove it.
             NodeId outNodeId = network->getOutNode(edgeToRemove);
             if (network->getNode(outNodeId).getNodeType() != GenomeBase::Node::Type::OUTPUT ||
                 network->getIncomingEdges(outNodeId).size() > 1)
@@ -112,13 +113,9 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         {
             const Genome::Edge& edge = entry.second;
             // We cannot add a new node at disable edges or edges from bias nodes
-            if (edge.isEnabled())
+            if (edge.isEnabled() && (network->getNode(edge.getInNode()).getNodeType() != GenomeBase::Node::Type::BIAS))
             {
-                const GenomeBase::Node& node = network->getNode(edge.getInNode());
-                if (node.getNodeType() != GenomeBase::Node::Type::BIAS)
-                {
-                    edgeCandidates.push_back(entry.first);
-                }
+                edgeCandidates.push_back(entry.first);
             }
         }
     }
@@ -167,7 +164,6 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 {
                     nodeCandidates.push_back({ n1Id, n2Id });
                 }
-
             }
         }
     }
@@ -178,10 +174,11 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         assert(numNewEdges < MutationOut::MAX_NUM_NEW_EDGES);
 
         // Store information of newly added edge.
-        MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdges[numNewEdges++];
+        MutationOut::NewEdgeInfo& newEdgeInfo = mutationOut.m_newEdgeInfos[numNewEdges++];
         newEdgeInfo.m_sourceInNode = network->getInNode(newEdge);
         newEdgeInfo.m_sourceOutNode = network->getOutNode(newEdge);
-        newEdgeInfo.m_newEdge = newEdge;
+        newEdgeInfo.m_edgeId = newEdge;
+        mutationOut.m_numEdgesAdded++;
     };
 
     // 2. Add a node at a random edge
@@ -196,12 +193,10 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         newEdgeAdded(newIncomingEdge);
         newEdgeAdded(newOutgoingEdge);
 
-        mutationOut.m_numNodesAdded++;
-        mutationOut.m_newNode.m_newNode = newNode;
-        mutationOut.m_newNode.m_previousEdgeId = edgeToAddNode;
-        mutationOut.m_newNode.m_newIncomingEdgeId = newIncomingEdge;
-        mutationOut.m_newNode.m_newOutgoingEdgeId = newOutgoingEdge;
-        mutationOut.m_numEdgesAdded += 2;
+        mutationOut.m_newNodeInfo.m_nodeId = newNode;
+        mutationOut.m_newNodeInfo.m_previousEdgeId = edgeToAddNode;
+        mutationOut.m_newNodeInfo.m_newIncomingEdgeId = newIncomingEdge;
+        mutationOut.m_newNodeInfo.m_newOutgoingEdgeId = newOutgoingEdge;
     }
 
     assert(network->validate());
@@ -227,8 +222,6 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         if (newEdge.isValid())
         {
             newEdgeAdded(newEdge);
-
-            mutationOut.m_numEdgesAdded++;
         }
     }
 
@@ -251,33 +244,33 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
     // If so, assign the same innovation id to it.
     // We iterate over the newly added nodes and check if there's any mutations with the same structural change.
     // Note that we don't need to check newly added edges between existing nodes because it is already guaranteed
-    // that edges of the same structure get the same innovation id by NEAT::InnovationCounter
-    if (mutationOut.m_numNodesAdded > 0)
+    // that edges of the same structure get the same innovation id by NEAT::InnovationCounter.
+    if (mutationOut.m_newNodeInfo.m_nodeId.isValid())
     {
-        MutationOut::NewNodeInfo& newNode = mutationOut.m_newNode;
+        const MutationOut::NewNodeInfo& newNode = mutationOut.m_newNodeInfo;
         EdgeId prevEdge = newNode.m_previousEdgeId;
-        for (int i = 0; i < (int)m_mutations.size(); i++)
+        int i = 0;
+        for (; i < (int)m_mutations.size(); i++)
         {
             const MutationOut& mout2 = m_mutations[i];
-            const MutationOut::NewNodeInfo& newNode2 = mout2.m_newNode;
+            const MutationOut::NewNodeInfo& newNode2 = mout2.m_newNodeInfo;
 
-            if (mout2.m_numNodesAdded > 0 && mout2.m_newNode.m_previousEdgeId == prevEdge)
+            if (mout2.m_newNodeInfo.m_nodeId.isValid() && mout2.m_newNodeInfo.m_previousEdgeId == prevEdge)
             {
-                genome->reassignNodeId(newNode.m_newNode, newNode2.m_newNode);
+                // The mutation is identical. Reassign IDs.
+                genome->reassignNodeId(newNode.m_nodeId, newNode2.m_nodeId);
                 genome->reassignInnovation(newNode.m_newIncomingEdgeId, newNode2.m_newIncomingEdgeId);
                 genome->reassignInnovation(newNode.m_newOutgoingEdgeId, newNode2.m_newOutgoingEdgeId);
-                newNode.m_newNode = newNode2.m_newNode;
-                newNode.m_newIncomingEdgeId = newNode2.m_newIncomingEdgeId;
-                newNode.m_newOutgoingEdgeId = newNode2.m_newOutgoingEdgeId;
 
                 assert(genome->validate());
                 break;
             }
         }
-    }
 
-    if (mutationOut.m_numEdgesAdded != 0 || mutationOut.m_numNodesAdded != 0)
-    {
-        m_mutations.push_back(mutationOut);
+        if (i == (int)m_mutations.size())
+        {
+            // Identical mutation wasn't found. Add the mutation to the list.
+            m_mutations.push_back(mutationOut);
+        }
     }
 }

@@ -84,21 +84,27 @@ void Generation::init(const Cinfo& cinfo)
         }
     }
 
-    m_generators.reserve(3);
+    // Create generators.
+    {
+        m_generators.reserve(3);
 
-    // Create champion selector.
-    m_speciesChampionSelectorGenerator = std::make_shared<SpeciesChampionSelector>(cinfo.m_minMembersInSpeciesToCopyChampion);
-    m_generators.push_back(m_speciesChampionSelectorGenerator);
+        // Create champion selector.
+        m_speciesChampSelector = std::make_shared<SpeciesChampionSelector>(cinfo.m_minMembersInSpeciesToCopyChampion);
+        m_generators.push_back(m_speciesChampSelector);
 
-    // Create cross-over delegate.
-    m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
+        // Create cross-over delegate.
+        m_generators.push_back(std::make_unique<DefaultCrossOver>(cinfo.m_crossOverParams));
 
-    // Create genome cloner
-    m_generators.push_back(std::make_unique<GenomeCloner<Genome>>());
+        // Create genome cloner.
+        m_generators.push_back(std::make_unique<GenomeCloner<Genome>>());
+    }
 
-    // Create mutate delegate.
-    m_mutator = std::make_shared<DefaultMutation>(cinfo.m_mutationParams);
-    m_modifiers.push_back(m_mutator);
+    // Create modifiers.
+    {
+        // Create mutator.
+        m_mutator = std::make_shared<DefaultMutation>(cinfo.m_mutationParams);
+        m_modifiers.push_back(m_mutator);
+    }
 
     // Calculate initial fitness of genomes.
     calcFitness();
@@ -106,8 +112,10 @@ void Generation::init(const Cinfo& cinfo)
 
 auto Generation::getGenomesInFitnessOrder() const->GenomeDatas
 {
+    // Copy genomes.
     GenomeDatas genomesOut = *m_genomes;
 
+    // Sort copied genomes.
     std::sort(genomesOut.begin(), genomesOut.end(), [](const GenomeData& a, const GenomeData& b)
         {
             return a.getFitness() > b.getFitness();
@@ -121,11 +129,13 @@ auto Generation::getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr
     std::vector<SpeciesPtr> speciesOut;
     speciesOut.reserve(m_species.size());
 
+    // Copy species.
     for (auto itr : m_species)
     {
         speciesOut.push_back(itr.second);
     }
 
+    // Sort copied species.
     std::sort(speciesOut.begin(), speciesOut.end(), [](const SpeciesPtr& s1, const SpeciesPtr& s2)
         {
             return s1->getBestFitness() > s2->getBestFitness();
@@ -137,7 +147,7 @@ auto Generation::getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr
 void Generation::preUpdateGeneration()
 {
     // Update species in the champion selector.
-    m_speciesChampionSelectorGenerator->updateSpecies(getAllSpecies());
+    m_speciesChampSelector->updateSpecies(getAllSpecies());
 
     // Clear mutator.
     m_mutator->reset();
@@ -230,6 +240,9 @@ void Generation::postUpdateGeneration()
         SpeciesPtr& s = itr.second;
         s->postNewGeneration(m_randomGenerator);
 
+        // Mark stagnant species non-reproducible.
+        // We don't do it if there is only one species because genome selection in the next generation
+        // relied on that there is at least one reproducible species.
         if (m_species.size() > 1)
         {
             bool reproducible = s->getStagnantGenerationCount() < m_params.m_maxStagnantCount;

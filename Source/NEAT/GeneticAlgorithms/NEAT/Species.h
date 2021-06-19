@@ -40,18 +40,25 @@ namespace NEAT
         // Add a genome to this species without checking its distance from the representative.
         void addGenome(CGenomePtr genome, float fitness);
 
+        // Return the best genome in this species.
         inline auto getBestGenome() const->CGenomePtr { return m_bestGenome; }
 
+        // Return the best fitness of this species.
         inline float getBestFitness() const { return m_bestFitness; }
 
+        // Return the number of genomes in this species.
         inline int getNumMembers() const { return m_members.size(); }
 
+        // Return the count of stagnant generations.
         inline int getStagnantGenerationCount() const { return m_stagnantCount; }
 
+        // Return member genomes.
         inline auto getMembers() const->const std::vector<CGenomePtr>& { return m_members; }
 
+        // Set reproducibility of this spacies.
         inline void setReproducible(bool enable) { m_reproducible = enable; }
 
+        // Return true if this species is reproducible.
         inline bool isReproducible() const { return m_reproducible; }
 
     protected:

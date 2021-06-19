@@ -53,14 +53,14 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
 
         // Mutate genome1 three times.
         mutator.mutate(&genome1, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
         mutator.mutate(&genome1, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
         mutator.m_params.m_addEdgeMutationRate = 1.0f;
         mutator.mutate(&genome1, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
 
         EXPECT_TRUE(genome1.validate());
@@ -70,7 +70,7 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         // Mutate genome2 once.
         mutator.m_params.m_addEdgeMutationRate = 0.0f;
         mutator.mutate(&genome2, mutOut);
-        EXPECT_EQ(mutOut.m_numNodesAdded, 1);
+        EXPECT_TRUE(mutOut.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
 
         EXPECT_TRUE(genome2.validate());
@@ -79,7 +79,7 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
     }
 
     // Disable one edge in genome2.
-    const EdgeId disabledEdge = mutOut.m_newEdges[0].m_newEdge;
+    const EdgeId disabledEdge = mutOut.m_newEdgeInfos[0].m_edgeId;
     genome2.setEdgeEnabled(disabledEdge, false);
 
     // Set up cross over.

@@ -13,7 +13,6 @@ class FeedForwardNetwork : public NeuralNetwork<Node, Edge>
 {
 public:
     // Type Declarations
-
     using Base = NeuralNetwork<Node, Edge>;
     using Nodes = Base::Nodes;
     using Edges = Base::Edges;
@@ -21,8 +20,6 @@ public:
     using EdgeIds = Base::EdgeIds;
     using NodeData = Base::NodeData;
     using NodeDatas = Base::NodeDatas;
-
-    // Constructors
 
     // Constructor from network information
     FeedForwardNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes);
@@ -45,9 +42,8 @@ public:
     virtual bool validate() const;
 
 protected:
+    // Return true if a new edge can be added between inNode and outNode.
     virtual bool canAddEdgeAt(NodeId inNode, NodeId outNode) const override;
-
-    bool canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const;
 
     // Data used evaluation
     struct EvaluationData
@@ -67,8 +63,9 @@ protected:
         std::vector<NodeState> m_nodeStates; // Status of each node.
     };
 
+    // Recursive functions used internally.
+    bool canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const;
     void evaluateNodeRecursive(NodeId id, EvaluationData& data);
-
     bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
 };
 
@@ -94,6 +91,7 @@ bool FeedForwardNetwork<Node, Edge>::canAddEdgeAtRecursive(NodeId outNode, NodeI
         return true;
     }
 
+    // Follow edges backward and check we never see outNode.
     for (EdgeId e : node.m_incomingEdges)
     {
         NodeId n = this->getInNode(e);
@@ -131,28 +129,13 @@ bool FeedForwardNetwork<Node, Edge>::canAddEdgeAt(NodeId inNode, NodeId outNode)
 }
 
 template <typename Node, typename Edge>
-void FeedForwardNetwork<Node, Edge>::evaluate()
-{
-    assert(validate());
-
-    // Initialize evaluation data
-    EvaluationData data(this);
-
-    // Evaluate output nodes
-    for (NodeId id : this->m_outputNodes)
-    {
-        evaluateNodeRecursive(id, data);
-    }
-}
-
-template <typename Node, typename Edge>
 void FeedForwardNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData& data)
 {
     NodeData& node = this->m_nodes[id];
 
     if (node.m_incomingEdges.empty())
     {
-        // This is input/bias node. Don't update the value.
+        // This node doesn't have any incoming edges. Do nothing.
         return;
     }
 
@@ -178,8 +161,24 @@ void FeedForwardNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, Evaluation
         sumValue += this->getNode(inNodeId).getValue() * this->getWeight(incomingId);
     }
 
+    // Set the node value and update its state.
     data.setNodeState(id, EvaluationData::NodeState::EVALUATED);
     node.m_node.setValue(sumValue);
+}
+
+template <typename Node, typename Edge>
+void FeedForwardNetwork<Node, Edge>::evaluate()
+{
+    assert(validate());
+
+    // Initialize evaluation data
+    EvaluationData data(this);
+
+    // Evaluate output nodes
+    for (NodeId id : this->m_outputNodes)
+    {
+        evaluateNodeRecursive(id, data);
+    }
 }
 
 template <typename Node, typename Edge>
@@ -247,16 +246,18 @@ bool FeedForwardNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::u
 {
     if (visitedNodes.find(id) != visitedNodes.end())
     {
-        // Already visited this node.
+        // Already visited this node. We found a circle.
         return true;
     }
 
     visitedNodes.insert(id);
 
+    // Follow edges backward and see if we visit the same node more than once.
     for (EdgeId e : this->getIncomingEdges(id))
     {
         const Edge& edge = this->m_edges.at(e);
 
+        // Ignore disabled edges.
         if (!edge.isEnabled())
         {
             continue;

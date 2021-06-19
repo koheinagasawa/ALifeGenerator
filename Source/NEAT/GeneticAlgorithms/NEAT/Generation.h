@@ -23,6 +23,8 @@ namespace NEAT
         using Genomes = std::vector<GenomePtr>;
         using SpeciesPtr = std::shared_ptr<Species>;
         using SpeciesList = std::unordered_map<SpeciesId, SpeciesPtr>;
+        using SpeciesChampionSelectorPtr = std::shared_ptr<class SpeciesChampionSelector>;
+        using MutatorPtr = std::shared_ptr<class DefaultMutation>;
 
         // Parameters used for generation.
         struct GenerationParams
@@ -94,10 +96,10 @@ namespace NEAT
         auto getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr>;
 
         // Returns pointer to a species.
-        inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return m_species.find(id) != m_species.end() ? m_species.at(id) : nullptr; }
+        inline auto getSpecies(SpeciesId id) const->const SpeciesPtr { return (m_species.find(id) != m_species.end()) ? m_species.at(id) : nullptr; }
 
         // Returns SpeciesId of the genome.
-        inline auto getSpecies(GenomeId genomeId) const->SpeciesId { return m_genomesSpecies.find(genomeId) != m_genomesSpecies.end() ? m_genomesSpecies.at(genomeId) : SpeciesId::invalid(); }
+        inline auto getSpecies(GenomeId genomeId) const->SpeciesId { return (m_genomesSpecies.find(genomeId) != m_genomesSpecies.end()) ? m_genomesSpecies.at(genomeId) : SpeciesId::invalid(); }
 
         // Returns true if the species can reproduce descendants to the next generation.
         bool isSpeciesReproducible(SpeciesId speciesId) const;
@@ -116,8 +118,8 @@ namespace NEAT
     protected:
         SpeciesList m_species;                                      // The list of Species.
         std::unordered_map<GenomeId, SpeciesId> m_genomesSpecies;   // A map between genome and species.
-        UniqueIdCounter<SpeciesId> m_speciesIdGenerator;
-        std::shared_ptr<class SpeciesChampionSelector> m_speciesChampionSelectorGenerator; // Generator to select species champion.
-        std::shared_ptr<class DefaultMutation> m_mutator; // Genome mutator.
+        UniqueIdCounter<SpeciesId> m_speciesIdGenerator;            // Id generator for species.
+        SpeciesChampionSelectorPtr m_speciesChampSelector;          // Generator to select species champion.
+        MutatorPtr m_mutator;                                       // Genome mutator.
     };
 }

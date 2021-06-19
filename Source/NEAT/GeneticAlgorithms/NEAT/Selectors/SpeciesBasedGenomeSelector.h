@@ -52,40 +52,36 @@ namespace NEAT
             inline float getSumFitness() const { return m_cumulativeFitnesses.back(); }
             inline int getNumGenomes() const { return (int)m_genomes.size(); }
 
-            int m_population = 0; // Distributed population of this species.
-            int m_remainingPopulation = 0; // Remaining of the distributed population.
-            GenomeDataPtrs m_genomes; // Members of the species.
-            SpeciesPtr m_species; // The species.
-            std::vector<float> m_cumulativeFitnesses; // Cumulative sum of fitness of the members.
+            std::vector<float> m_cumulativeFitnesses;   // Cumulative sum of fitness of the members.
+            SpeciesPtr m_species;                       // The species.
+            GenomeDataPtrs m_genomes;                   // Member genomes of the species.
+            int m_population = 0;                       // Distributed population of this species.
+            int m_remainingPopulation = 0;              // Remaining of the distributed population.
         };
 
+        // Implementation of genome selection.
         auto selectGenomeImpl()->const GenomeData*;
 
-        void setSpeciesPopulations(int numGenomesToSelect);
+        // Set the entire population for all the species and distribute it to each species based on their fitness and size.
+        void distributeSpeciesPopulations(int numGenomesToSelect);
 
+        // Return true if there is at least one species that has more than one member.
         inline bool hasSpeciesMoreThanOneMember() const { return m_hasSpeciesMoreThanOneMember; }
 
         void decrementPopulationOfCurrentSpecies();
 
-        std::vector<SpeciesData> m_speciesData;
+    protected:
+        std::vector<SpeciesData> m_speciesData;         // The species data.
+        SelectionMode m_mode;
         int m_currentSpeciesDataIndex = -1;
         float m_totalFitness = 0.f;
         int m_numGenomes = 0;
+        
+        bool m_hasSpeciesMoreThanOneMember = false;     // True if there is at least one species that has more than one member.
+        float m_interSpeciesSelectionRate = 0.001f;     // Probability to select two genomes from different species when selectTwoGenomes() is called.
+        int m_numInterSpeciesSelection = 0;             // The number of genomes to select by inter species selection.
+        std::vector<float> m_cumulativeSpeciesFitness;  // Cumulative fitness of all the species.
 
-        // Indicates whether to skip stagnant species during selection or not.
-        bool m_skipStagnantSpecies = true;
-
-        // True if there is at least one species that has more than one member.
-        bool m_hasSpeciesMoreThanOneMember = false;
-
-        // Probability to select two genomes from different species when selectTwoGenomes() is called.
-        float m_interSpeciesSelectionRate = 0.001f;
-        int m_numInterSpeciesSelection = 0;
-        std::vector<float> m_cumulativeSpeciesFitness;
-
-        SelectionMode m_mode;
-
-        // Random generator.
-        PseudoRandom& m_random;
+        PseudoRandom& m_random;                         // Random generator.
     };
 }

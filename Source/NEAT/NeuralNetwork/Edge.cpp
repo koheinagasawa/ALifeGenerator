@@ -59,11 +59,6 @@ SwitchableEdge::SwitchableEdge(NodeId inNode, NodeId outNode, float weight, bool
 {
 }
 
-SwitchableEdge::SwitchableEdge()
-    : m_enabled(false)
-{
-}
-
 void SwitchableEdge::operator=(const SwitchableEdge& other)
 {
     this->DefaultEdge::operator=(other);

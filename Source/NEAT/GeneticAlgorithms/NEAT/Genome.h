@@ -21,10 +21,13 @@ namespace NEAT
             NodeId m_inNode;
             NodeId m_outNode;
 
-            inline bool operator==(const EdgeEntry& other) const { return m_inNode == other.m_inNode && m_outNode == other.m_outNode; }
+            inline bool operator==(const EdgeEntry& other) const
+            {
+                return m_inNode == other.m_inNode && m_outNode == other.m_outNode;
+            }
         };
 
-        // The specialized hash function
+        // The specialized hash function for EdgeEntry.
         struct EdgeEntryHash
         {
             inline std::size_t operator() (const InnovationCounter::EdgeEntry& entry) const
@@ -33,6 +36,7 @@ namespace NEAT
             }
         };
 
+        // Default constructor.
         InnovationCounter() = default;
 
         // Return a new node id.
@@ -45,17 +49,15 @@ namespace NEAT
         void reset();
 
     protected:
+        // Prohibit copying.
         InnovationCounter(const InnovationCounter&) = delete;
         void operator=(const InnovationCounter&) = delete;
 
-        // Counter of node ids.
-        UniqueIdCounter<NodeId> m_nodeIdCounter;
+        using HistroyMap = std::unordered_map<EdgeEntry, EdgeId, EdgeEntryHash>;
 
-        // Counter of innovation (edge) ids.
-        UniqueIdCounter<EdgeId> m_innovationIdCounter;
-
-        // History of all the innovations that ever happened before.
-        std::unordered_map<EdgeEntry, EdgeId, EdgeEntryHash> m_innovationHistory;
+        UniqueIdCounter<NodeId> m_nodeIdCounter;        // Counter of node ids.
+        UniqueIdCounter<EdgeId> m_innovationIdCounter;  // Counter of innovation (edge) ids.
+        HistroyMap m_innovationHistory;                 // History of all the innovations that ever happened before.
     };
 
     // Genome for NEAT
@@ -112,6 +114,9 @@ namespace NEAT
         Genome(const Genome& other);
         void operator= (const Genome& other);
 
+        // Create a clone of this genome.
+        virtual std::shared_ptr<GenomeBase> clone() const override;
+
         //
         // Network modification
         //
@@ -127,13 +132,6 @@ namespace NEAT
         // Remove an existing edge.
         void removeEdge(EdgeId edge);
 
-        //
-        // Innovation interface
-        //
-
-        // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
-        inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
-
         // Reassign node id to an existing node.
         // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
         void reassignNodeId(const NodeId originalId, const NodeId newId);
@@ -142,11 +140,18 @@ namespace NEAT
         // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
         void reassignInnovation(const EdgeId originalId, const EdgeId newId);
 
-        // Calculate and return distance between two genomes
-        static float calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params);
+        //
+        // Other functions
+        //
+
+        // Get innovations of this network. Returned list of innovation entries is sorted by innovation id.
+        inline auto getInnovations() const->const Network::EdgeIds& { return m_innovations; }
 
         // Return false if this genome contains any invalid data.
         bool validate() const;
+
+        // Calculate and return distance between two genomes.
+        static float calcDistance(const Genome& genome1, const Genome& genome2, const CalcDistParams& params);
 
     protected:
         Network::EdgeIds m_innovations;         // A list of innovations sorted by innovation id.

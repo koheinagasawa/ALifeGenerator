@@ -8,5 +8,3 @@
 
 #include <cassert>
 #include <Common/BaseType.h>
-
-#define DEBUG_SLOW

@@ -186,6 +186,7 @@
     <ClInclude Include="NeuralNetwork\Node.h" />
     <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
+    <ClInclude Include="NeuralNetwork\RecurrentNetwork.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />

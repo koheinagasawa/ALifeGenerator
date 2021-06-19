@@ -16,7 +16,7 @@ DECLARE_ID(GenomeId);
 class FitnessCalculatorBase
 {
 public:
-    virtual float calcFitness(const GenomeBase& genome) = 0;
+    virtual float calcFitness(const GenomeBase* genome) = 0;
 };
 
 // Base class of generation used for generic algorithms.
@@ -53,9 +53,9 @@ public:
         inline void setProtected(bool protect) { m_isProtected = protect; }
 
     protected:
-        GenomeBasePtr m_genome; // The genome.
-        float m_fitness = 0.f;  // Genome's fitness.
-        bool m_isProtected = false;
+        GenomeBasePtr m_genome;         // The genome.
+        float m_fitness = 0.f;          // Genome's fitness.
+        bool m_isProtected = false;     // Protected genome will not be modified and remain untouched in the next generation.
         GenomeId m_id;
 
         friend class GenerationBase;
@@ -75,9 +75,16 @@ public:
     // Calculate fitness of all the genomes.
     void calcFitness();
 
+    // Return the number of genomes.
     inline int getNumGenomes() const { return m_numGenomes; }
+
+    // Return fitness calculator.
     inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
+
+    // Return generation id.
     inline auto getId() const->GenerationId { return m_id; }
+
+    // Return genome data.
     inline auto getGenomeData() const->const GenomeDatas& { return *m_genomes; }
 
 protected:
@@ -95,15 +102,12 @@ protected:
     // Returns GenomeSelector. This GenomeSelector is used to pass GenomeGenerators in when we evolve a new generation.
     virtual auto createSelector()->GenomeSelectorPtr = 0;
 
-    // Called inside createNewGeneration().
-    void addGenome(GenomeBasePtr genome, bool protectGenome);
-
-    GeneratorPtrs m_generators;                 // Genome generators used to evolve generation.
-    ModifierPtrs m_modifiers;                   // Genome modifiers used to evolve generation.
-    FitnessCalculatorPtr m_fitnessCalculator;   // The fitness calculator.
-    GenomeDatasPtr m_genomes;                   // Genomes in the current generation.
-    GenomeDatasPtr m_prevGenGenomes;            // Genomes in the previous generation.
-    RandomGenerator* m_randomGenerator = nullptr;
-    int m_numGenomes;
-    GenerationId m_id;
+    GeneratorPtrs m_generators;                     // Genome generators used to evolve generation.
+    ModifierPtrs m_modifiers;                       // Genome modifiers used to evolve generation.
+    FitnessCalculatorPtr m_fitnessCalculator;       // The fitness calculator.
+    GenomeDatasPtr m_genomes;                       // Genomes in the current generation.
+    GenomeDatasPtr m_prevGenGenomes;                // Genomes in the previous generation.
+    RandomGenerator* m_randomGenerator = nullptr;   // Random generator.
+    int m_numGenomes;                               // The number of genomes.
+    GenerationId m_id;                              // Generation id incremented at every evolveGeneration() call.
 };

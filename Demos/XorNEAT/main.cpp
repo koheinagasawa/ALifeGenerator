@@ -13,7 +13,7 @@
 class XorFitnessCalculator : public FitnessCalculatorBase
 {
 public:
-    virtual float calcFitness(const GenomeBase& genome) override
+    virtual float calcFitness(const GenomeBase* genome) override
     {
         m_numEvaluations++;
         float score = 0.f;
@@ -28,30 +28,28 @@ public:
         return score * score;
     }
 
-    float evaluate(const GenomeBase& genome, bool input1, bool input2)
+    float evaluate(const GenomeBase* genome, bool input1, bool input2)
     {
-        genome.clearNodeValues();
-
         // Initialize values
         static std::vector<float> values;
         values.resize(2);
         values[0] = input1 ? 1.f : 0.f;
         values[1] = input2 ? 1.f : 0.f;
 
-        genome.evaluate(values, 1.0f);
+        genome->evaluate(values, 1.0f);
 
-        const GenomeBase::Network* network = genome.getNetwork();
+        const GenomeBase::Network* network = genome->getNetwork();
         return network->getNode(network->getOutputNodes()[0]).getValue();
     }
 
-    bool test(const std::shared_ptr<const GenomeBase>& genome)
+    bool test(const GenomeBase* genome)
     {
         bool result = true;
         // Test 4 patterns of XOR
-        result &= evaluate(*genome, false, false) < 0.5f;
-        result &= evaluate(*genome, false, true) >= 0.5f;
-        result &= evaluate(*genome, true, false) >= 0.5f;
-        result &= evaluate(*genome, true, true) < 0.5f;
+        result &= evaluate(genome, false, false) < 0.5f;
+        result &= evaluate(genome, false, true) >= 0.5f;
+        result &= evaluate(genome, true, false) >= 0.5f;
+        result &= evaluate(genome, true, true) < 0.5f;
 
         return result;
     }
@@ -104,12 +102,12 @@ int main()
             generation.evolveGeneration();
             const int numGeneration = generation.getId().val();
 
-            const Generation::GenomeData bestGenome = generation.getGenomesInFitnessOrder()[0];
-            if (fitnessCalc->test(bestGenome.getGenome()))
+            std::shared_ptr<const GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
+            if (fitnessCalc->test(bestGenome.get()))
             {
                 std::cout << "Solution Found at Generation " << numGeneration << "!" << std::endl;
 
-                const Genome::Network* network = bestGenome.getGenome()->getNetwork();
+                const Genome::Network* network = bestGenome->getNetwork();
 
                 // Get data for performance investigation
                 totalGenerations += numGeneration;
@@ -118,7 +116,7 @@ int main()
                     worstGenerations = numGeneration;
                 }
                 totalNumHiddenNodes += network->getNumNodes() - 4; // 4 is two inputs, one output and one bias
-                totalNumNondisabledConnections += bestGenome.getGenome()->getNumEnabledEdges();
+                totalNumNondisabledConnections += bestGenome->getNumEnabledEdges();
                 if (worstEvaluationCount < fitnessCalc->m_numEvaluations)
                 {
                     worstEvaluationCount = fitnessCalc->m_numEvaluations;

@@ -16,6 +16,7 @@
 #include <NEAT/NeuralNetwork/Node.h>
 #include <NEAT/NeuralNetwork/Edge.h>
 
+// Type of neural network
 enum class NeuralNetworkType
 {
     GENERAL,
@@ -112,14 +113,14 @@ public:
     // Return all the edges in the network.
     inline auto getEdges() const->const Edges& { return m_edges; }
 
+    // Return true if the edge id exists.
+    inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
+
     // Return read-only access to an edge in the network.
     inline auto getEdge(EdgeId id) const->const Edge& { return m_edges.at(id); }
 
     // Return read-write access to an edge in the network.
     inline auto accessEdge(EdgeId id)->Edge& { return m_edges[id]; }
-
-    // Return true if the edge id exists.
-    inline bool hasEdge(EdgeId id) const { return m_edges.find(id) != m_edges.end(); }
 
     // Get the in-node of the edge.
     inline auto getInNode(EdgeId id) const->NodeId;
@@ -381,6 +382,7 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
         }
     }
 
+    // Abort if we cannot add the edge here.
     if (!canAddEdgeAt(node1, node2))
     {
         return false;

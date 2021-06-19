@@ -31,8 +31,7 @@ public:
         NONE
     };
 
-    // Default constructor. This is used only by container of Node in Network class and users shouldn't call it.
-    // Use Node(Type type) instead.
+    // Default constructor.
     DefaultNode() = default;
 
     // Constructor with node type.

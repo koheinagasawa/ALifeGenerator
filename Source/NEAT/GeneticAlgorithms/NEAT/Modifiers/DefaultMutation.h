@@ -62,7 +62,7 @@ namespace NEAT
 
         void reset();
 
-        // Mutate a single genome. There are three ways of mutation.
+        // Mutate a single genome. There are four ways of mutation.
         // 1. Change weights of edges with a small perturbation.
         // 2. Remove a random existing edge.
         // 3. Add a new node at a random edge.
@@ -71,8 +71,12 @@ namespace NEAT
         virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) override;
 
         // Modifies the genomes by mutation.
+        // This functions appends the result of mutation to m_mutation.
+        // If the applied mutation is identical to what is already stored in m_mutation, the mutation will be modified 
+        // so that identical mutations have the same node/edge ids.
         virtual void modifyGenomes(GenomeBasePtr& genome) override;
 
+    public: 
         // The parameter.
         MutationParams m_params;
 

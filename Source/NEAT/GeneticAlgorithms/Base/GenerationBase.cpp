@@ -9,6 +9,10 @@
 #include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 #include <NEAT/GeneticAlgorithms/Base/Modifiers/GenomeModifier.h>
 
+//
+// GenerationBase::GenomeData
+//
+
 GenerationBase::GenomeData::GenomeData(GenomeBasePtr genome, GenomeId id)
     : m_genome(genome)
     , m_id(id)
@@ -22,6 +26,10 @@ void GenerationBase::GenomeData::init(GenomeBasePtr genome, bool isProtected, Ge
     m_isProtected = isProtected;
     m_id = id;
 }
+
+//
+// GenerationBase
+//
 
 GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator)
     : m_fitnessCalculator(fitnessCalc)
@@ -46,16 +54,19 @@ void GenerationBase::evolveGeneration()
     // Create a genome selector
     GenomeSelectorPtr selector = createSelector();
 
+    // Swap the current generation and the previous generation.
     std::swap(m_genomes, m_prevGenGenomes);
 
     // Allocate buffer of GenomeData if it's not there yet.
-    if (!m_genomes)
     {
-        m_genomes = std::make_shared<GenomeDatas>();
-    }
-    if (m_genomes->size() != numGenomes)
-    {
-        m_genomes->resize(numGenomes);
+        if (!m_genomes)
+        {
+            m_genomes = std::make_shared<GenomeDatas>();
+        }
+        if (m_genomes->size() != numGenomes)
+        {
+            m_genomes->resize(numGenomes);
+        }
     }
 
     int numGenomesToAdd = numGenomes;
@@ -68,10 +79,12 @@ void GenerationBase::evolveGeneration()
         //        so that it can generate all the remaining genomes.
         generator->generate(numGenomes, numGenomesToAdd, selector.get());
 
-        const bool protecteGenomes = generator->shouldGenomesProtected();
+        // Add generated genomes to the population.
+        const bool protectGenomes = generator->shouldGenomesProtected();
         for (auto& newGenome : generator->getGeneratedGenomes())
         {
-            addGenome(newGenome, protecteGenomes);
+            (*m_genomes)[m_numGenomes].init(newGenome, protectGenomes, GenomeId(m_numGenomes));
+            m_numGenomes++;
         }
 
         numGenomesToAdd -= generator->getNumGeneratedGenomes();
@@ -87,6 +100,7 @@ void GenerationBase::evolveGeneration()
 
         if (genomeData.isProtected())
         {
+            // Skip protected genome.
             continue;
         }
 
@@ -111,12 +125,6 @@ void GenerationBase::calcFitness()
 
     for (GenomeData& gd : *m_genomes)
     {
-        gd.setFitness(m_fitnessCalculator->calcFitness(*gd.getGenome()));
+        gd.setFitness(m_fitnessCalculator->calcFitness(gd.m_genome.get()));
     }
-}
-
-void GenerationBase::addGenome(GenomeBasePtr genome, bool protectGenome)
-{
-    (*m_genomes)[m_numGenomes].init(genome, protectGenome, GenomeId(m_numGenomes));
-    m_numGenomes++;
 }

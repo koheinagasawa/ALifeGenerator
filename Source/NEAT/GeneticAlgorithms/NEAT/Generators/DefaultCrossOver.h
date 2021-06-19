@@ -47,6 +47,7 @@ namespace NEAT
         // genomeSelector has to be already configured and available to select existing genomes.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
 
+    public:
         // The parameter.
         CrossOverParams m_params;
     };

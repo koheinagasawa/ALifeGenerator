@@ -13,13 +13,19 @@
 
 using namespace NEAT;
 
+//
+// InnovationCounter
+//
+
 EdgeId InnovationCounter::getEdgeId(const EdgeEntry& entry)
 {
     if (m_innovationHistory.find(entry) != m_innovationHistory.end())
     {
+        // This innovation already exists in the history. Return edgeId stored in the history.
         return m_innovationHistory.at(entry);
     }
 
+    // This is a new innovation. Create a new edge id and an entry to the history.
     EdgeId newEdge = m_innovationIdCounter.getNewId();
     m_innovationHistory[entry] = newEdge;
     return newEdge;
@@ -31,6 +37,10 @@ void InnovationCounter::reset()
     m_innovationIdCounter.reset();
     m_innovationHistory.clear();
 }
+
+//
+// Genome
+//
 
 Genome::Genome(const Cinfo& cinfo)
     : GenomeBase(cinfo.m_defaultActivation)
@@ -75,7 +85,7 @@ Genome::Genome(const Cinfo& cinfo)
         outputNodes.push_back(id);
     }
 
-    // Create fully connected edges between input nodes and output nodes.
+    // Create fully connected edges between input nodes (including bias node) and output nodes.
     // Input nodes are from 0 to numInputNodes and output nodes are from numInputNodes+1 to numNodes.
     const int numEdges = numInputNodes * cinfo.m_numOutputNodes;
     edges.reserve(numEdges);
@@ -116,20 +126,6 @@ Genome::Genome(const Cinfo& cinfo)
     }
 }
 
-Genome::Genome(const Genome& other)
-    : GenomeBase(other)
-    , m_innovations(other.m_innovations)
-    , m_innovIdCounter(other.m_innovIdCounter)
-{
-}
-
-void Genome::operator= (const Genome& other)
-{
-    assert(&m_innovIdCounter == &other.m_innovIdCounter);
-    this->GenomeBase::operator=(other);
-    m_innovations = other.m_innovations;
-}
-
 Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds& innovations)
     : GenomeBase(source)
     , m_innovations(innovations)
@@ -157,17 +153,36 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
 #endif
 }
 
+Genome::Genome(const Genome& other)
+    : GenomeBase(other)
+    , m_innovations(other.m_innovations)
+    , m_innovIdCounter(other.m_innovIdCounter)
+{
+}
+
+void Genome::operator= (const Genome& other)
+{
+    assert(&m_innovIdCounter == &other.m_innovIdCounter);
+    this->GenomeBase::operator=(other);
+    m_innovations = other.m_innovations;
+}
+
+std::shared_ptr<GenomeBase> Genome::clone() const
+{
+    return std::make_shared<Genome>(*this);
+}
+
 void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge)
 {
     assert(m_network->hasEdge(edgeId));
 
     // Create new ids.
     newNode = m_innovIdCounter.getNewNodeId();
-    NodeId inNode = m_network->getInNode(edgeId);
-    NodeId outNode = m_network->getOutNode(edgeId);
+    const NodeId inNode = m_network->getInNode(edgeId);
+    const NodeId outNode = m_network->getOutNode(edgeId);
 
-    InnovationCounter::EdgeEntry entry1{ inNode, newNode };
-    InnovationCounter::EdgeEntry entry2{ newNode, outNode };
+    const InnovationCounter::EdgeEntry entry1{ inNode, newNode };
+    const InnovationCounter::EdgeEntry entry2{ newNode, outNode };
 
     newIncomingEdge = m_innovIdCounter.getEdgeId(entry1);
     newOutgoingEdge = m_innovIdCounter.getEdgeId(entry2);
@@ -179,19 +194,25 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
     {
         Edge& dividedEdge = m_network->accessEdge(edgeId);
         const float weight = dividedEdge.getWeight();
-        dividedEdge.setEnabled(false);
+        dividedEdge.setEnabled(false); // Disable the divided edge.
 
+        // The new incoming edge gets weight 1, and the new outgoing edge takes the old weight.
         m_network->accessEdge(newIncomingEdge).setWeight(1.0f);
         m_network->accessEdge(newOutgoingEdge).setWeight(weight);
     }
 
-    // Set activation and mark it as a hidden node
-    setNodeTypeAndActivation(newNode, Node::Type::HIDDEN, m_defaultActivation);
+    // Mark the node node as hidden and set its activation.
+    {
+        Node& node = m_network->accessNode(newNode);
+        node.setNodeType(Node::Type::HIDDEN);
+        node.setActivation(m_defaultActivation);
+    }
 
     // Record the innovations.
     m_innovations.push_back(newIncomingEdge);
     m_innovations.push_back(newOutgoingEdge);
 
+    // Sort the innovations.
     std::sort(m_innovations.begin(), m_innovations.end());
 }
 
@@ -199,17 +220,19 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAd
 {
     if (m_network->isConnected(inNode, outNode))
     {
+        // Already connected.
         return EdgeId::invalid();
     }
 
     // Create a new id.
-    InnovationCounter::EdgeEntry entry{ inNode, outNode };
+    const InnovationCounter::EdgeEntry entry{ inNode, outNode };
     const EdgeId newEdge = m_innovIdCounter.getEdgeId(entry);
 
     // Add an edge.
     bool result = m_network->addEdgeAt(inNode, outNode, newEdge, weight);
     if (tryAddFlippedEdgeOnFail && !result)
     {
+        // Adding the edge failed. Try to add it by swapping inNode and outNode.
         result = m_network->addEdgeAt(outNode, inNode, newEdge, weight);
         assert(result);
     }
@@ -249,8 +272,6 @@ void Genome::removeEdge(EdgeId edge)
 void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
 {
     assert(m_network->hasNode(originalId) && !m_network->hasNode(newId));
-
-    const bool isInputNode = m_network->getNode(originalId).getNodeType() == Node::Type::INPUT;
 
     m_network->replaceNodeId(originalId, newId);
 
@@ -297,11 +318,12 @@ float Genome::calcDistance(const Genome& genome1, const Genome& genome2, const C
     const Network* network2 = genome2.getNetwork();
 
     float disjointFactor = params.m_disjointFactor;
+
     // Normalize disjoint factor
     {
         const int numEdges1 = network1->getNumEdges();
         const int numEdges2 = network2->getNumEdges();
-        const int numEdges = numEdges1 > numEdges2 ? numEdges1 : numEdges2;
+        const int numEdges = (numEdges1 > numEdges2) ? numEdges1 : numEdges2;
         if (numEdges >= params.m_edgeNormalizationThreshold)
         {
             disjointFactor /= (float)numEdges;

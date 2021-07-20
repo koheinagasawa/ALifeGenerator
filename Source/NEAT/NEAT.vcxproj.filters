@@ -41,6 +41,9 @@
     <ClCompile Include="NeuralNetwork\Edge.cpp">
       <Filter>NeuralNetwork</Filter>
     </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationLibrary.cpp">
+      <Filter>NeuralNetwork\Activations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Neat.h" />
@@ -98,9 +101,6 @@
     <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralNetwork\Activation.h">
-      <Filter>NeuralNetwork</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralNetwork\Node.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
@@ -109,6 +109,12 @@
     </ClInclude>
     <ClInclude Include="NeuralNetwork\RecurrentNetwork.h">
       <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Activations\Activation.h">
+      <Filter>NeuralNetwork\Activations</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h">
+      <Filter>NeuralNetwork\Activations</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +147,9 @@
     </Filter>
     <Filter Include="GeneticAlgorithms\NEAT\Modifiers">
       <UniqueIdentifier>{5ef60585-be26-4ee5-96ec-1f0e31d0390c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NeuralNetwork\Activations">
+      <UniqueIdentifier>{25415a11-dbb4-4843-acca-eaee3b5408da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

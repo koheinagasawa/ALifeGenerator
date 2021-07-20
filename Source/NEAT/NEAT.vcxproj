@@ -181,7 +181,8 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Selectors\SpeciesBasedGenomeSelector.h" />
     <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
-    <ClInclude Include="NeuralNetwork\Activation.h" />
+    <ClInclude Include="NeuralNetwork\Activations\Activation.h" />
+    <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h" />
     <ClInclude Include="NeuralNetwork\Edge.h" />
     <ClInclude Include="NeuralNetwork\Node.h" />
     <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h" />
@@ -189,6 +190,7 @@
     <ClInclude Include="NeuralNetwork\RecurrentNetwork.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationLibrary.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.cpp" />

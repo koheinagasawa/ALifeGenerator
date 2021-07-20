@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/NeuralNetwork/Activation.h>
+#include <NEAT/NeuralNetwork/Activations/Activation.h>
 
 DECLARE_ID(NodeId);
 

@@ -171,7 +171,7 @@ void SpeciesBasedGenomeSelector::distributeSpeciesPopulations(int numGenomesToSe
     {
         if (hasSpeciesMoreThanOneMember())
         {
-            m_numInterSpeciesSelection = (int)numGenomesToSelect * m_interSpeciesSelectionRate;
+            m_numInterSpeciesSelection = (int)(numGenomesToSelect * m_interSpeciesSelectionRate);
         }
         else
         {

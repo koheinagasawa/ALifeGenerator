@@ -6,8 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
-#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
-#include <NEAT/NeuralNetwork/RecurrentNetwork.h>
+#include <NEAT/NeuralNetwork/NeuralNetworkFactory.h>
 
 #include <algorithm>
 
@@ -106,24 +105,7 @@ Genome::Genome(const Cinfo& cinfo)
     }
 
     // Create the network
-    switch (cinfo.m_networkType)
-    {
-    case NeuralNetworkType::FEED_FORWARD:
-    {
-        m_network = std::make_shared<FeedForwardNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
-        break;
-    }
-    case NeuralNetworkType::RECURRENT:
-    {
-        m_network = std::make_shared<RecurrentNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
-        break;
-    }
-    default:
-    {
-        m_network = std::make_shared<NeuralNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
-        break;
-    }
-    }
+    m_network = NeuralNetworkFactory::createNeuralNetwork<Node, Edge>(cinfo.m_networkType, nodes, edges, inputNodes, outputNodes);
 }
 
 Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds& innovations)

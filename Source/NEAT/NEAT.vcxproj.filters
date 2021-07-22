@@ -122,6 +122,9 @@
     <ClInclude Include="GeneticAlgorithms\Base\Activations\ActivationProvider.h">
       <Filter>GeneticAlgorithms\Base\Activation</Filter>
     </ClInclude>
+    <ClInclude Include="NeuralNetwork\NeuralNetworkFactory.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GeneticAlgorithms">

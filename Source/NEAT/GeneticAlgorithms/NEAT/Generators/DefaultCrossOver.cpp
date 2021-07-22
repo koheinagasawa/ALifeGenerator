@@ -8,8 +8,7 @@
 #include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 #include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
-#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
-#include <NEAT/NeuralNetwork/RecurrentNetwork.h>
+#include <NEAT/NeuralNetwork/NeuralNetworkFactory.h>
 
 using namespace NEAT;
 
@@ -204,23 +203,15 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Create a new network.
-    Genome::NetworkPtr network;
-    switch (network1->getType())
-    {
-    case NeuralNetworkType::FEED_FORWARD:
-        network = std::make_shared<FeedForwardNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
-        break;
-    case NeuralNetworkType::RECURRENT:
-        network = std::make_shared<RecurrentNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
-        break;
-    default:
-        network = std::make_shared<NeuralNetwork<Genome::Node, SwitchableEdge>>(newGenomeNodes, newGenomeEdges, genome1.getNetwork()->getInputNodes(), genome1.getNetwork()->getOutputNodes());
-        break;
-    }
+    Genome::NetworkPtr network = NeuralNetworkFactory::createNeuralNetwork<Genome::Node, SwitchableEdge>(
+        network1->getType(),
+        newGenomeNodes, newGenomeEdges,
+        genome1.getNetwork()->getInputNodes(),
+        genome1.getNetwork()->getOutputNodes());
 
     // In case of feed forward network, the child genome might have circular connections because some edges were enabled or due to disjoint edges inherited from the less fit genome.
     // Disable those edges one by one until we have no circular connection.
-    if (network->getType() == NeuralNetworkType::FEED_FORWARD)
+    if (!network->allowsCircularNetwork())
     {
         auto* ffn = static_cast<FeedForwardNetwork<Genome::Node, SwitchableEdge>*>(network.get());
         while (ffn->hasCircularEdges())

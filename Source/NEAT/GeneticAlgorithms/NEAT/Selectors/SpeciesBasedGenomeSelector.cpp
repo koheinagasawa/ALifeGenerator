@@ -23,7 +23,7 @@ SpeciesBasedGenomeSelector::SpeciesData::SpeciesData(SpeciesPtr species)
 // SpeciesBasedGenomeSelector
 //
 
-SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genomeData, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random)
+SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genomeData, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, RandomGenerator* random)
     : GenomeSelector()
     , m_random(random ? *random : PseudoRandom::getInstance())
 {

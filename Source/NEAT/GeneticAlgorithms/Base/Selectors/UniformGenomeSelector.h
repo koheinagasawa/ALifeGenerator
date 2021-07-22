@@ -14,7 +14,7 @@ class UniformGenomeSelector : public GenomeSelector
 {
 public:
     // Constructor
-    UniformGenomeSelector(const GenomeDatas& genomes, PseudoRandom* random = nullptr);
+    UniformGenomeSelector(const GenomeDatas& genomes, RandomGenerator* random = nullptr);
 
     // Select a random genome.
     virtual auto selectGenome()->const GenomeData* override;
@@ -24,5 +24,5 @@ public:
 
 protected:
     const GenomeDatas* m_genomes = nullptr;
-    PseudoRandom& m_random;
+    RandomGenerator& m_random;
 };

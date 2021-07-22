@@ -23,7 +23,7 @@ namespace NEAT
         using GenomeDataPtrs = std::vector<const GenomeData*>;
 
         // Constructor
-        SpeciesBasedGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, PseudoRandom* random = nullptr);
+        SpeciesBasedGenomeSelector(const GenomeDatas& genomes, const SpeciesList& species, const GenomeSpeciesMap& genomeSpeciesMap, RandomGenerator* random = nullptr);
 
         // This function should be called before the first selection.
         virtual bool preSelection(int numGenomesToSelect, SelectionMode mode) override;
@@ -82,6 +82,6 @@ namespace NEAT
         int m_numInterSpeciesSelection = 0;             // The number of genomes to select by inter species selection.
         std::vector<float> m_cumulativeSpeciesFitness;  // Cumulative fitness of all the species.
 
-        PseudoRandom& m_random;                         // Random generator.
+        RandomGenerator& m_random;                      // Random generator.
     };
 }

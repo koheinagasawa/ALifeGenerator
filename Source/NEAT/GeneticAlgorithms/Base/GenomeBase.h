@@ -36,7 +36,7 @@ public:
     //
 
     inline auto getNetwork() const->const Network* { return m_network.get(); }
-    inline auto accessNetwork()->NetworkPtr { return m_network; }
+    inline auto accessNetwork() const->NetworkPtr { return m_network; }
 
     //
     // Edge interface
@@ -90,10 +90,6 @@ public:
     //
     // Evaluation
     //
-
-    // Evaluate this genome using the given input nodes.
-    // inputNodeValues has to be the same size as the number of input nodes (m_inputNodes) and has to be sorted in the same order as them.
-    void evaluate(const std::vector<float>& inputNodeValues, float biasNodeValue = 0.f) const;
 
     // Evaluate this genome using the current values of input nodes.
     void evaluate() const;

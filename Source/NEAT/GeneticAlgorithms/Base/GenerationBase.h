@@ -8,6 +8,7 @@
 
 #include <Common/PseudoRandom.h>
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
+#include <NEAT/NeuralNetwork/NeuralNetworkEvaluator.h>
 
 DECLARE_ID(GenerationId);
 DECLARE_ID(GenomeId);
@@ -16,7 +17,15 @@ DECLARE_ID(GenomeId);
 class FitnessCalculatorBase
 {
 public:
+    // This function has to be implemented to calculate fitness of a genome.
     virtual float calcFitness(const GenomeBase* genome) = 0;
+
+protected:
+    // This function can be called inside calcFitness() to evaluate a genome to assess its fitness.
+    void evaluateGenome(const GenomeBase* genome, const std::vector<float>& inputNodeValues, float biasNodeValue = 0.f);
+
+public:
+    NeuralNetworkEvaluator m_evaluator;
 };
 
 // Base class of generation used for generic algorithms.

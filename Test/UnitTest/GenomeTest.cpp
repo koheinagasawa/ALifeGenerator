@@ -258,7 +258,8 @@ TEST(Genome, EvaluateGenome)
     std::vector<float> inputs;
     inputs.push_back(1.f);
     inputs.push_back(2.f);
-    genome.evaluate(inputs);
+    genome.setInputNodeValues(inputs);
+    genome.evaluate();
 
     // Check the node values are expected.
     for (NodeId nodeId : outputNodes)

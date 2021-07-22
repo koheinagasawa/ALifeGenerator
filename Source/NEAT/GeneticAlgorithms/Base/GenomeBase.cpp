@@ -101,13 +101,6 @@ void GenomeBase::setActivationAll(const Activation* activation)
     }
 }
 
-void GenomeBase::evaluate(const std::vector<float>& inputNodeValues, float biasNodeValue) const
-{
-    clearNodeValues();
-    setInputNodeValues(inputNodeValues, biasNodeValue);
-    evaluate();
-}
-
 void GenomeBase::evaluate() const
 {
     assert(m_network.get());

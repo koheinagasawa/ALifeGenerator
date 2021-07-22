@@ -36,7 +36,7 @@ public:
         values[0] = input1 ? 1.f : 0.f;
         values[1] = input2 ? 1.f : 0.f;
 
-        genome->evaluate(values, 1.0f);
+        evaluateGenome(genome, values, 1.0f);
 
         const GenomeBase::Network* network = genome->getNetwork();
         return network->getNode(network->getOutputNodes()[0]).getValue();

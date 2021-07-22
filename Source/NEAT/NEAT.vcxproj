@@ -185,6 +185,7 @@
     <ClInclude Include="NeuralNetwork\Activations\Activation.h" />
     <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h" />
     <ClInclude Include="NeuralNetwork\Edge.h" />
+    <ClInclude Include="NeuralNetwork\NeuralNetworkEvaluator.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetworkFactory.h" />
     <ClInclude Include="NeuralNetwork\Node.h" />
     <ClInclude Include="NeuralNetwork\FeedForwardNetwork.h" />

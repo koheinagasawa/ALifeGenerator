@@ -22,16 +22,32 @@ public:
     using NodeDatas = Base::NodeDatas;
 
     // Constructor from network information
-    RecurrentNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes)
-        : Base(nodes, edges, inputNodes, outputNodes)
-    {}
+    RecurrentNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes);
 
     // Create a copy of this network.
-    auto clone() const->std::shared_ptr<NeuralNetwork<Node, Edge>> override { return std::make_shared<RecurrentNetwork>(*this); }
+    auto clone() const->std::shared_ptr<NeuralNetwork<Node, Edge>> override;
 
     // Return type of this network.
-    virtual NeuralNetworkType getType() const { return NeuralNetworkType::RECURRENT; }
+    virtual NeuralNetworkType getType() const override { return NeuralNetworkType::RECURRENT; }
 
-    // TODO
-
+    // Evaluates this network and calculate new values for each node.
+    virtual void evaluate() override;
 };
+
+template <typename Node, typename Edge>
+RecurrentNetwork<Node, Edge>::RecurrentNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes)
+    : Base(nodes, edges, inputNodes, outputNodes)
+{
+}
+
+template <typename Node, typename Edge>
+auto RecurrentNetwork<Node, Edge>::clone() const->std::shared_ptr<NeuralNetwork<Node, Edge>>
+{
+    return std::make_shared<RecurrentNetwork>(*this);
+}
+
+template <typename Node, typename Edge>
+void RecurrentNetwork<Node, Edge>::evaluate()
+{
+    // TODO
+}

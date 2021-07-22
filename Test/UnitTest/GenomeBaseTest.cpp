@@ -119,7 +119,9 @@ TEST(GenomeBase, GenomeBasicOperations)
     std::vector<float> inputValues;
     inputValues.push_back(1.f);
     inputValues.push_back(2.f);
-    genome.evaluate(inputValues);
+    genome.clearNodeValues();
+    genome.setInputNodeValues(inputValues);
+    genome.evaluate();
     EXPECT_EQ(genome.getNetwork()->getNode(NodeId(3)).getValue(), 80.f); // (2 * (1 * 2 + 2 * 4)) * 4 = 80
 
     // Clear node values

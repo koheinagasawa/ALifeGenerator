@@ -18,7 +18,7 @@ namespace
     public:
         virtual float calcFitness(const GenomeBase* genome) override
         {
-            genome->evaluate({ 1.f, 1.f, 1.f });
+            evaluateGenome(genome, { 1.f, 1.f, 1.f });
 
             const Genome::Network::NodeIds& outputNodes = genome->getNetwork()->getOutputNodes();
             float fitness = 0.f;

@@ -10,6 +10,17 @@
 #include <NEAT/GeneticAlgorithms/Base/Modifiers/GenomeModifier.h>
 
 //
+// FitnessCalculatorBase
+//
+
+void FitnessCalculatorBase::evaluateGenome(const GenomeBase* genome, const std::vector<float>& inputNodeValues, float biasNodeValue)
+{
+    genome->clearNodeValues();
+    genome->setInputNodeValues(inputNodeValues, biasNodeValue);
+    m_evaluator.evaluate(genome->accessNetwork().get());
+}
+
+//
 // GenerationBase::GenomeData
 //
 

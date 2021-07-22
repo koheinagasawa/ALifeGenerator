@@ -37,7 +37,7 @@ struct TypedIndex
     inline bool operator>(const TypedIndex& other) const { return m_val > other.m_val; }
     inline bool operator>=(const TypedIndex& other) const { return m_val >= other.m_val; }
 
-    inline bool isValid() const { return m_val != INVALID; }
+    inline bool isValid() const { return m_val != (TYPE)INVALID; }
 
     inline TYPE val() const { return m_val; }
 

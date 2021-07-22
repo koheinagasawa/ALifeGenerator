@@ -161,7 +161,6 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Add all nodes which are connected edges we've added above.
-    // [todo] We always inherit genome1's activation functions for all the nodes. Is there any way to select it based on fitness?
     {
         std::unordered_set<NodeId> addedNodes;
         for (auto& itr : newGenomeEdges)

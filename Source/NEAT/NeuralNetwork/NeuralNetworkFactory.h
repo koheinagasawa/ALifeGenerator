@@ -10,6 +10,7 @@
 #include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
 #include <NEAT/NeuralNetwork/RecurrentNetwork.h>
 
+// Factory class of NeuralNetwork
 class NeuralNetworkFactory
 {
 public:

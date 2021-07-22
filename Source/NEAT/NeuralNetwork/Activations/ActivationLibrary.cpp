@@ -31,7 +31,7 @@ void ActivationLibrary::unregisterActivation(ActivationId id)
     m_registry.erase(id);
 }
 
-auto ActivationLibrary::getActivation(ActivationId id)->ActivationPtr
+auto ActivationLibrary::getActivation(ActivationId id) const->ActivationPtr
 {
     if (isActivationIdValid(id))
     {
@@ -59,4 +59,15 @@ bool ActivationLibrary::hasActivation(ActivationPtr activation) const
 bool ActivationLibrary::isActivationIdValid(ActivationId id) const
 {
     return m_registry.find(id) != m_registry.end();
+}
+
+auto ActivationLibrary::getActivationIds() const->std::vector<ActivationId>
+{
+    std::vector<ActivationId> idsOut;
+    idsOut.reserve(getNumActivations());
+    for (auto& elem : m_registry)
+    {
+        idsOut.push_back(elem.first);
+    }
+    return idsOut;
 }

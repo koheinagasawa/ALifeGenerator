@@ -72,8 +72,10 @@ int main()
     genCinfo.m_genomeCinfo.m_numInputNodes = 2; // Two inputs for XOR.
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1;
     genCinfo.m_genomeCinfo.m_createBiasNode = true;
-    genCinfo.m_genomeCinfo.m_defaultActivation = &sigmoid;
+    genCinfo.m_genomeCinfo.m_initialActivation = &sigmoid;
     genCinfo.m_fitnessCalculator = fitnessCalc;
+    DefaultActivationProvider dap(&sigmoid);
+    genCinfo.m_mutationParams.m_activationProvider = &dap;
 
     // Variables for performance investigation
     const int maxGeneration = 200;

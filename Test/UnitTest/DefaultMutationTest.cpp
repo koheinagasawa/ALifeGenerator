@@ -21,7 +21,6 @@ TEST(DefaultMutation, MutateSingleGenome)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    cinfo.m_defaultActivation = &activation;
     Genome genome(cinfo);
 
     const Genome::Network* network = genome.getNetwork();
@@ -47,6 +46,8 @@ TEST(DefaultMutation, MutateSingleGenome)
     mutator.m_params.m_addEdgeMutationRate = 1.0f;
     mutator.m_params.m_addNodeMutationRate = 1.0f;
     mutator.m_params.m_removeEdgeMutationRate = 0.f;
+    DefaultActivationProvider dap(&activation);
+    mutator.m_params.m_activationProvider = &dap;
 
     DefaultMutation::MutationOut out;
 
@@ -245,7 +246,6 @@ TEST(DefaultMutation, MutateGeneration)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    cinfo.m_defaultActivation = &activation;
     GenomePtr genome1 = std::make_shared<Genome>(cinfo);
 
     // Verify the initial condition of the genome.

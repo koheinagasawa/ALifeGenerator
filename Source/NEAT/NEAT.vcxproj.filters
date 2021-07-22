@@ -41,8 +41,11 @@
     <ClCompile Include="NeuralNetwork\Edge.cpp">
       <Filter>NeuralNetwork</Filter>
     </ClCompile>
-    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationLibrary.cpp">
+    <ClCompile Include="NeuralNetwork\Activations\ActivationLibrary.cpp">
       <Filter>NeuralNetwork\Activations</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationProvider.cpp">
+      <Filter>GeneticAlgorithms\Base\Activation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +119,9 @@
     <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h">
       <Filter>NeuralNetwork\Activations</Filter>
     </ClInclude>
+    <ClInclude Include="GeneticAlgorithms\Base\Activations\ActivationProvider.h">
+      <Filter>GeneticAlgorithms\Base\Activation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GeneticAlgorithms">
@@ -150,6 +156,9 @@
     </Filter>
     <Filter Include="NeuralNetwork\Activations">
       <UniqueIdentifier>{25415a11-dbb4-4843-acca-eaee3b5408da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeneticAlgorithms\Base\Activation">
+      <UniqueIdentifier>{5b804d68-d2c5-4a0a-85e6-d2092bb75019}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

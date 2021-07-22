@@ -188,7 +188,8 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         const EdgeId edgeToAddNode = edgeCandidates[random->randomInteger(0, (int)edgeCandidates.size() - 1)];
         NodeId newNode;
         EdgeId newIncomingEdge, newOutgoingEdge;
-        genome->addNodeAt(edgeToAddNode, newNode, newIncomingEdge, newOutgoingEdge);
+        const Activation* activation = m_params.m_activationProvider ? m_params.m_activationProvider->getActivation() : nullptr;
+        genome->addNodeAt(edgeToAddNode, activation, newNode, newIncomingEdge, newOutgoingEdge);
 
         newEdgeAdded(newIncomingEdge);
         newEdgeAdded(newOutgoingEdge);

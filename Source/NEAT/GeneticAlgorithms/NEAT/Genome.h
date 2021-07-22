@@ -82,9 +82,9 @@ namespace NEAT
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter* m_innovIdCounter = nullptr;
 
-            // Default activation functions used during evaluation at each node.
+            // Activation functions for the initial network.
             // If it's nullptr, input values are merely passed as an output of the node.
-            const Activation* m_defaultActivation = nullptr;
+            const Activation* m_initialActivation = nullptr;
 
             // Type of the network.
             NeuralNetworkType m_networkType = NeuralNetworkType::FEED_FORWARD;
@@ -122,7 +122,7 @@ namespace NEAT
         //
 
         // Add a new node by dividing the edge at edgeId.
-        void addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge);
+        void addNodeAt(EdgeId edgeId, const Activation* activation, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge);
 
         // Add a new edge between inNode and outNode with weight.
         // When tryAddFlippedEdgeOnFail is true, after failing to add the original edge due to circular network,

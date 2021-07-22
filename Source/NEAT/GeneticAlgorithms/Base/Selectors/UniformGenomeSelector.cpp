@@ -10,7 +10,7 @@
 UniformGenomeSelector::UniformGenomeSelector(const GenomeDatas& genomes, RandomGenerator* random)
     : GenomeSelector()
     , m_genomes(&genomes)
-    , m_random(random ? *random : RandomGenerator::getInstance())
+    , m_random(random ? *random : PseudoRandom::getInstance())
 {
 }
 

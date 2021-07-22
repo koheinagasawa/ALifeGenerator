@@ -43,7 +43,7 @@ void InnovationCounter::reset()
 //
 
 Genome::Genome(const Cinfo& cinfo)
-    : GenomeBase(cinfo.m_defaultActivation)
+    : GenomeBase()
     , m_innovIdCounter(*cinfo.m_innovIdCounter)
 {
     assert(cinfo.m_numInputNodes > 0 && cinfo.m_numOutputNodes > 0);
@@ -81,7 +81,7 @@ Genome::Genome(const Cinfo& cinfo)
         // Create output nodes.
         NodeId id = m_innovIdCounter.getNewNodeId();
         nodes.insert({ id, Node(Node::Type::OUTPUT) });
-        nodes[id].setActivation(m_defaultActivation);
+        nodes[id].setActivation(cinfo.m_initialActivation);
         outputNodes.push_back(id);
     }
 
@@ -172,7 +172,7 @@ std::shared_ptr<GenomeBase> Genome::clone() const
     return std::make_shared<Genome>(*this);
 }
 
-void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge)
+void Genome::addNodeAt(EdgeId edgeId, const Activation* activation, NodeId& newNode, EdgeId& newIncomingEdge, EdgeId& newOutgoingEdge)
 {
     assert(m_network->hasEdge(edgeId));
 
@@ -205,7 +205,7 @@ void Genome::addNodeAt(EdgeId edgeId, NodeId& newNode, EdgeId& newIncomingEdge, 
     {
         Node& node = m_network->accessNode(newNode);
         node.setNodeType(Node::Type::HIDDEN);
-        node.setActivation(m_defaultActivation);
+        node.setActivation(activation);
     }
 
     // Record the innovations.

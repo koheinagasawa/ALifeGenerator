@@ -9,6 +9,7 @@
 #include <Common/PseudoRandom.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
 #include <NEAT/GeneticAlgorithms/Base/Modifiers/MutationDelegate.h>
+#include <NEAT/GeneticAlgorithms/Base/Activations/ActivationProvider.h>
 
 namespace NEAT
 {
@@ -51,6 +52,9 @@ namespace NEAT
 
             // Maximum weight for a new edge.
             float m_newEdgeMaxWeight = 10.f;
+
+            // Activation provider. If this is nullptr, you have to provide a default activation.
+            const ActivationProvider* m_activationProvider = nullptr;
 
             // Pseudo random generator. It can be null.
             RandomGenerator* m_random = nullptr;

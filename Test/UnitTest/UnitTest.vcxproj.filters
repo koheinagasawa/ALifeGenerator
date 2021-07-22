@@ -38,6 +38,9 @@
     <ClCompile Include="FeedForwardNetworkTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
+    <ClCompile Include="ActivationLibraryTest.cpp">
+      <Filter>UnitTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />

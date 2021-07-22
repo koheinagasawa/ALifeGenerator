@@ -22,7 +22,7 @@ public:
     using Edge = SwitchableEdge;
 
     // Constructor
-    GenomeBase(const Activation* defaultActivation);
+    GenomeBase() = default;
 
     // Copy constructor and operator.
     GenomeBase(const GenomeBase& other);
@@ -87,12 +87,6 @@ public:
     // Set activation of all nodes except input nodes.
     void setActivationAll(const Activation* activation);
 
-    // Get the default activation.
-    inline auto getDefaultActivation() const->const Activation* { return m_defaultActivation; }
-
-    // Set the default activation.
-    inline void setDefaultActivation(const Activation* activation) { m_defaultActivation = activation; }
-
     //
     // Evaluation
     //
@@ -106,6 +100,5 @@ public:
 
 protected:
     NetworkPtr m_network;                   // The network.
-    const Activation* m_defaultActivation;  // Activation assigned to new Node by default.
     NodeId m_biasNode;                      // The bias node.
 };

@@ -17,9 +17,7 @@ namespace
     class MyGenome : public GenomeBase
     {
     public:
-        MyGenome() : GenomeBase(&s_activation)
-        {
-        }
+        MyGenome() = default;
 
         void createNetwork(const Network::Nodes& nodes, const Network::Edges& edges)
         {
@@ -111,10 +109,7 @@ TEST(GenomeBase, GenomeBasicOperations)
     EXPECT_EQ(genome.getNetwork()->getNode(genome.getBiasNode()).getValue(), 1.f);
 
     // Test activation interface
-    EXPECT_EQ(genome.getDefaultActivation(), &s_activation);
     Activation newActivation = [](float value) { return value; };
-    genome.setDefaultActivation(&newActivation);
-    EXPECT_EQ(genome.getDefaultActivation(), &newActivation);
     genome.setActivationAll(&s_activation);
     genome.setActivation(NodeId(3), &newActivation);
 

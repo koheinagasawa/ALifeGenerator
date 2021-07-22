@@ -164,6 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GeneticAlgorithms\Base\Activations\ActivationProvider.h" />
     <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\GenomeCloner.h" />
@@ -190,7 +191,7 @@
     <ClInclude Include="NeuralNetwork\RecurrentNetwork.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationLibrary.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationProvider.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\Modifiers\MutationDelegate.cpp" />
@@ -208,6 +209,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork\Activations\ActivationLibrary.cpp" />
     <ClCompile Include="NeuralNetwork\Edge.cpp" />
     <ClCompile Include="NeuralNetwork\Node.cpp" />
   </ItemGroup>

@@ -112,7 +112,7 @@ TEST(Genome, ModifyGenome)
     genome.accessNetwork()->setWeight(EdgeId(0), 0.5f);
 
     // Add a new node
-    genome.addNodeAt(EdgeId(0), newNode, newEdge1, newEdge2);
+    genome.addNodeAt(EdgeId(0), nullptr, newNode, newEdge1, newEdge2);
     EXPECT_NE(newNode, NodeId::invalid());
     EXPECT_NE(newEdge1, EdgeId::invalid());
     EXPECT_NE(newEdge2, EdgeId::invalid());
@@ -249,7 +249,7 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
     Activation activation = [](float value) { return value * 2.f; };
-    cinfo.m_defaultActivation = &activation;
+    cinfo.m_initialActivation = &activation;
     Genome genome(cinfo);
 
     const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();

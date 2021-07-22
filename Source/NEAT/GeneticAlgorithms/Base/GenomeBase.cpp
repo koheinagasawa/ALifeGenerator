@@ -7,14 +7,9 @@
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 
-GenomeBase::GenomeBase(const Activation* defaultActivation)
-    : m_defaultActivation(defaultActivation)
-{
-}
 
 GenomeBase::GenomeBase(const GenomeBase& other)
-    : m_defaultActivation(other.m_defaultActivation)
-    , m_biasNode(other.m_biasNode)
+    : m_biasNode(other.m_biasNode)
 {
     // Copy the network
     m_network = other.m_network->clone();
@@ -22,7 +17,6 @@ GenomeBase::GenomeBase(const GenomeBase& other)
 
 void GenomeBase::operator= (const GenomeBase& other)
 {
-    m_defaultActivation = other.m_defaultActivation;
     m_biasNode = other.m_biasNode;
 
     // Copy the network

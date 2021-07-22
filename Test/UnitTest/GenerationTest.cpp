@@ -77,7 +77,6 @@ TEST(Generation, IncrementGeneration)
         cinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
         cinfo.m_genomeCinfo.m_numInputNodes = 3;
         cinfo.m_genomeCinfo.m_numOutputNodes = 3;
-        cinfo.m_genomeCinfo.m_defaultActivation = &activation;
         cinfo.m_maxWeight = 3.f;
         cinfo.m_minWeight = -3.f;
         cinfo.m_fitnessCalculator = std::make_shared<MyFitnessCalculator>();

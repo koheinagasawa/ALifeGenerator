@@ -43,6 +43,7 @@ public:
     {
         Node m_node;
         EdgeIds m_incomingEdges;
+        EdgeIds m_outgoingEdges;
     };
 
     using NodeDatas = std::unordered_map<NodeId, NodeData>;
@@ -90,6 +91,9 @@ public:
 
     // Get a list of incoming edges of the node.
     inline auto getIncomingEdges(NodeId id) const->EdgeIds;
+
+    // Get a list of incoming edges of the node.
+    inline auto getOutgoingEdges(NodeId id) const->EdgeIds;
 
     // Return true if the two nodes are connected.
     inline bool isConnected(NodeId node1, NodeId node2) const;
@@ -216,7 +220,7 @@ void NeuralNetwork<Node, Edge>::constructNodeData(const Nodes& nodes)
         m_nodes.insert({ itr.first, NodeData{ itr.second } });
     }
 
-    // Set incoming edges array in each node
+    // Set incoming edges and outgoing edges array in each node
     for (const auto& itr : m_edges)
     {
         const Edge& e = itr.second;
@@ -226,8 +230,15 @@ void NeuralNetwork<Node, Edge>::constructNodeData(const Nodes& nodes)
             WARN("Input edge contains invalid outNode value.");
             continue;
         }
-
         m_nodes[outNode].m_incomingEdges.push_back(itr.first);
+
+        NodeId inNode = e.getInNode();
+        if (!hasNode(inNode))
+        {
+            WARN("Input edge contains invalid inNode value.");
+            continue;
+        }
+        m_nodes[inNode].m_outgoingEdges.push_back(itr.first);
     }
 }
 
@@ -265,6 +276,12 @@ inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->EdgeId
 }
 
 template <typename Node, typename Edge>
+inline auto NeuralNetwork<Node, Edge>::getOutgoingEdges(NodeId id) const->EdgeIds
+{
+    return m_nodes.at(id).m_outgoingEdges;
+}
+
+template <typename Node, typename Edge>
 inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) const
 {
     assert(hasNode(node1) && hasNode(node2) && node1 != node2);
@@ -277,9 +294,9 @@ inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) c
         }
     }
 
-    for (EdgeId e : m_nodes.at(node2).m_incomingEdges)
+    for (EdgeId e : m_nodes.at(node1).m_outgoingEdges)
     {
-        if (getInNode(e) == node1)
+        if (getOutNode(e) == node2)
         {
             return true;
         }
@@ -346,9 +363,11 @@ bool NeuralNetwork<Node, Edge>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeI
     // Create a new node.
     NodeData newNode;
     newNode.m_incomingEdges.push_back(newIncomingEdgeId);
+    newNode.m_outgoingEdges.push_back(newOutgoingEdgeId);
     m_nodes.insert({ newNodeId, newNode });
 
-    // Update incoming edges of the out node.
+    // Update incoming edge and outgoing edge of the existing node.
+    m_nodes[edgeToDivide.getInNode()].m_outgoingEdges.push_back(newIncomingEdgeId);
     m_nodes[edgeToDivide.getOutNode()].m_incomingEdges.push_back(newOutgoingEdgeId);
 
     assert(validate());
@@ -369,8 +388,8 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
         return false;
     }
 
-    NodeData& outNodeData = m_nodes[node2];
-    EdgeIds& edgesToOutNode = outNodeData.m_incomingEdges;
+    EdgeIds& edgesFromInNode = m_nodes[node1].m_outgoingEdges;
+    EdgeIds& edgesToOutNode = m_nodes[node2].m_incomingEdges;
 
     // Check if there is already an edge between the two nodes.
     for (EdgeId eid : edgesToOutNode)
@@ -390,6 +409,7 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
 
     // Create a new edge
     m_edges.insert({ newEdgeId, Edge(node1, node2, weight) });
+    edgesFromInNode.push_back(newEdgeId);
     edgesToOutNode.push_back(newEdgeId);
     assert(validate());
 
@@ -466,15 +486,27 @@ void NeuralNetwork<Node, Edge>::removeEdge(EdgeId edgeId)
 
     const Edge& edge = m_edges.at(edgeId);
 
-    // Update incoming edges of output node
-    NodeData& outputNode = m_nodes[edge.getOutNode()];
-    EdgeIds& edgesToOutNode = outputNode.m_incomingEdges;
-    for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); itr++)
+    // Update incoming edges and outgoing edges of the in/out nodes
     {
-        if (*itr == edgeId)
+        EdgeIds& edgesFromInNode = m_nodes[edge.getInNode()].m_outgoingEdges;
+        for (auto itr = edgesFromInNode.begin(); itr != edgesFromInNode.end(); itr++)
         {
-            edgesToOutNode.erase(itr);
-            break;
+            if (*itr == edgeId)
+            {
+                edgesFromInNode.erase(itr);
+                break;
+            }
+        }
+    }
+    {
+        EdgeIds& edgesToOutNode = m_nodes[edge.getOutNode()].m_incomingEdges;
+        for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); itr++)
+        {
+            if (*itr == edgeId)
+            {
+                edgesToOutNode.erase(itr);
+                break;
+            }
         }
     }
 
@@ -500,15 +532,27 @@ void NeuralNetwork<Node, Edge>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
 
     const Edge& edge = m_edges.at(edgeId);
 
-    // Update incoming edges of output node
-    NodeData& outputNode = m_nodes[edge.getOutNode()];
-    EdgeIds& edgesToOutNode = outputNode.m_incomingEdges;
-    for (EdgeId& e : edgesToOutNode)
+    // Update incoming edges and outgoing edges of in/out nodes
     {
-        if (e == edgeId)
+        EdgeIds& edgesFromInNode = m_nodes[edge.getInNode()].m_outgoingEdges;
+        for (EdgeId& e : edgesFromInNode)
         {
-            e = newId;
-            break;
+            if (e == edgeId)
+            {
+                e = newId;
+                break;
+            }
+        }
+    }
+    {
+        EdgeIds& edgesToOutNode = m_nodes[edge.getOutNode()].m_incomingEdges;
+        for (EdgeId& e : edgesToOutNode)
+        {
+            if (e == edgeId)
+            {
+                e = newId;
+                break;
+            }
         }
     }
 
@@ -567,6 +611,17 @@ bool NeuralNetwork<Node, Edge>::validate() const
 
             std::unordered_set<EdgeId> edges;
             for (EdgeId e : getIncomingEdges(id))
+            {
+                if (!hasEdge(e)) return false;
+
+                // Make sure that the id is unique.
+                if (edges.find(e) != edges.end()) return false;
+                edges.insert(e);
+            }
+
+            edges.clear();
+
+            for (EdgeId e : getOutgoingEdges(id))
             {
                 if (!hasEdge(e)) return false;
 

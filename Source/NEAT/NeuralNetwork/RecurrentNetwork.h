@@ -8,6 +8,8 @@
 
 #include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
+#include <set>
+
 template <typename Node, typename Edge>
 class RecurrentNetwork : public NeuralNetwork<Node, Edge>
 {
@@ -29,9 +31,6 @@ public:
 
     // Return type of this network.
     virtual NeuralNetworkType getType() const override { return NeuralNetworkType::RECURRENT; }
-
-    // Evaluates this network and calculate new values for each node.
-    virtual void evaluate() override;
 };
 
 template <typename Node, typename Edge>
@@ -44,10 +43,4 @@ template <typename Node, typename Edge>
 auto RecurrentNetwork<Node, Edge>::clone() const->std::shared_ptr<NeuralNetwork<Node, Edge>>
 {
     return std::make_shared<RecurrentNetwork>(*this);
-}
-
-template <typename Node, typename Edge>
-void RecurrentNetwork<Node, Edge>::evaluate()
-{
-    // TODO
 }

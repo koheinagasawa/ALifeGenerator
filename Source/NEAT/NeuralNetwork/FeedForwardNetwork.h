@@ -36,36 +36,14 @@ public:
     // Return true if this network has circular connections.
     bool hasCircularEdges() const;
 
-    // Evaluates this network and calculate new values for each node.
-    virtual void evaluate() override;
-
     virtual bool validate() const;
 
 protected:
     // Return true if a new edge can be added between inNode and outNode.
     virtual bool canAddEdgeAt(NodeId inNode, NodeId outNode) const override;
 
-    // Data used evaluation
-    struct EvaluationData
-    {
-        enum class NodeState
-        {
-            NONE,
-            EVALUATED
-        };
-
-        EvaluationData(const FeedForwardNetwork* network);
-
-        inline NodeState getNodeState(NodeId id) const { return m_nodeStates[m_id2Index.at(id)]; }
-        inline void setNodeState(NodeId id, NodeState state) { m_nodeStates[m_id2Index.at(id)] = state; }
-
-        std::unordered_map<NodeId, int> m_id2Index; // Map between NodeId and its index in m_nodeStates.
-        std::vector<NodeState> m_nodeStates; // Status of each node.
-    };
-
     // Recursive functions used internally.
     bool canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const;
-    void evaluateNodeRecursive(NodeId id, EvaluationData& data);
     bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> visitedNodes) const;
 };
 
@@ -126,59 +104,6 @@ bool FeedForwardNetwork<Node, Edge>::canAddEdgeAt(NodeId inNode, NodeId outNode)
     }
 
     return canAddEdgeAtRecursive(outNode, inNode);
-}
-
-template <typename Node, typename Edge>
-void FeedForwardNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, EvaluationData& data)
-{
-    NodeData& node = this->m_nodes[id];
-
-    if (node.m_incomingEdges.empty())
-    {
-        // This node doesn't have any incoming edges. Do nothing.
-        return;
-    }
-
-    // Calculate value of this node by visiting all parent nodes.
-    float sumValue = 0;
-    for (EdgeId incomingId : node.m_incomingEdges)
-    {
-        if (this->getWeight(incomingId) == 0.f)
-        {
-            continue;
-        }
-
-        NodeId inNodeId = this->getInNode(incomingId);
-
-        // Recurse if we haven't evaluated this parent node yet.
-        // NOTE: We assume that the network doesn't have any circular edges.
-        if (data.getNodeState(inNodeId) != EvaluationData::NodeState::EVALUATED)
-        {
-            this->evaluateNodeRecursive(inNodeId, data);
-        }
-
-        // Add a value from this parent.
-        sumValue += this->getNode(inNodeId).getValue() * this->getWeight(incomingId);
-    }
-
-    // Set the node value and update its state.
-    data.setNodeState(id, EvaluationData::NodeState::EVALUATED);
-    node.m_node.setValue(sumValue);
-}
-
-template <typename Node, typename Edge>
-void FeedForwardNetwork<Node, Edge>::evaluate()
-{
-    assert(validate());
-
-    // Initialize evaluation data
-    EvaluationData data(this);
-
-    // Evaluate output nodes
-    for (NodeId id : this->m_outputNodes)
-    {
-        evaluateNodeRecursive(id, data);
-    }
 }
 
 template <typename Node, typename Edge>
@@ -299,18 +224,4 @@ bool FeedForwardNetwork<Node, Edge>::hasCircularEdges() const
     }
 
     return false;
-}
-
-template <typename Node, typename Edge>
-FeedForwardNetwork<Node, Edge>::EvaluationData::EvaluationData(const FeedForwardNetwork* network)
-{
-    const int numNodes = network->getNumNodes();
-    m_id2Index.reserve(numNodes);
-    int counter = 0;
-    for (const Base::NodeEntry& node : network->getNodes())
-    {
-        m_id2Index[node.first] = counter++;
-    }
-
-    m_nodeStates.resize(numNodes, NodeState::NONE);
 }

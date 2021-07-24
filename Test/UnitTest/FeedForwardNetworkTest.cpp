@@ -202,9 +202,15 @@ TEST(FeedForwardNetwork, EvaluateSimpleNetwork)
 
     EXPECT_TRUE(nn.validate());
 
-    nn.evaluate();
+    const float expectedValue = nodeVal1 * weight1 + nodeVal2 * weight2;
 
-    EXPECT_TRUE(std::abs((nn.getNode(outNode).getValue()) - (nodeVal1 * weight1 + nodeVal2 * weight2)) < 1e-5f);
+    // Evaluate
+    nn.evaluate();
+    EXPECT_TRUE(std::fabs((nn.getNode(outNode).getValue()) - expectedValue) < 1e-5f);
+
+    // Evaluating multiple times shouldn't change the result for feed forward network.
+    nn.evaluate();
+    EXPECT_TRUE(std::fabs((nn.getNode(outNode).getValue()) - expectedValue) < 1e-5f);
 }
 
 TEST(FeedForwardNetwork, AddEdge)

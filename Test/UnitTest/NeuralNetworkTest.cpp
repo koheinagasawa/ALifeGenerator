@@ -643,3 +643,124 @@ TEST(NeuralNetwork, ReplaceNode)
     EXPECT_EQ(nn.getOutputNodes().size(), 2);
     EXPECT_TRUE(nn.getOutputNodes()[0] == newNode || nn.getOutputNodes()[1] == newNode);
 }
+
+TEST(NeuralNetwork, Evaluate)
+{
+    // Create a NN looks like below
+
+    // 5.0 (0) -1.0-> (2) -(-3.0)-> (4)
+    //                              /
+    // 6.0 (1) -2.0-> (3) --- 4.0 -/
+
+    NodeId n0(0);
+    NodeId n1(1);
+    NodeId n2(2);
+    NodeId n3(3);
+    NodeId n4(4);
+
+    EdgeId e0(0);
+    EdgeId e1(1);
+    EdgeId e2(2);
+    EdgeId e3(3);
+
+    NN::Nodes nodes;
+    nodes.insert({ n0, Node(5.0f) });
+    nodes.insert({ n1, Node(6.0f) });
+    nodes.insert({ n2, Node(0.0f) });
+    nodes.insert({ n3, Node(0.0f) });
+    nodes.insert({ n4, Node(0.0f) });
+
+    NN::Edges edges;
+    edges.insert({ e0, Edge(n0, n2, 1.0f) });
+    edges.insert({ e1, Edge(n1, n3, 2.0f) });
+    edges.insert({ e2, Edge(n2, n4, -3.0f) });
+    edges.insert({ e3, Edge(n3, n4, 4.0f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(n0);
+    inputNodes.push_back(n1);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(n4);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    // Evaluate
+    nn.evaluate();
+
+    EXPECT_EQ(nn.getNode(n4).getValue(), 33.f); // -3 * (5 * 1) + 4 * (6 * 2) = 33.0f
+
+    // Evaluating multiple times shouldn't change the result for feed forward network.
+    nn.evaluate();
+
+    EXPECT_EQ(nn.getNode(n4).getValue(), 33.f);
+}
+
+TEST(NeuralNetwork, EvaluateRecurrent)
+{
+    // Create a NN looks like below
+
+    //                _9.0
+    //                \ /
+    // 5.0 (0) -1.0-> (2) -(-3.0)-> (4)
+    //
+    // 6.0 (1) -2.0-> (3) -4.0-> (5) -7.0-> (6)
+    //                 |____8.0___|
+
+    NodeId n0(0);
+    NodeId n1(1);
+    NodeId n2(2);
+    NodeId n3(3);
+    NodeId n4(4);
+    NodeId n5(5);
+    NodeId n6(6);
+
+    EdgeId e0(0);
+    EdgeId e1(1);
+    EdgeId e2(2);
+    EdgeId e3(3);
+    EdgeId e4(4);
+    EdgeId e5(5);
+    EdgeId e6(6);
+
+    NN::Nodes nodes;
+    nodes.insert({ n0, Node(5.0f) });
+    nodes.insert({ n1, Node(6.0f) });
+    nodes.insert({ n2, Node(0.0f) });
+    nodes.insert({ n3, Node(0.0f) });
+    nodes.insert({ n4, Node(0.0f) });
+    nodes.insert({ n5, Node(0.0f) });
+    nodes.insert({ n6, Node(0.0f) });
+
+    NN::Edges edges;
+    edges.insert({ e0, Edge(n0, n2, 1.0f) });
+    edges.insert({ e1, Edge(n2, n2, 9.0f) });
+    edges.insert({ e2, Edge(n2, n4, -3.0f) });
+    edges.insert({ e3, Edge(n1, n3, 2.0f) });
+    edges.insert({ e4, Edge(n3, n5, 4.0f) });
+    edges.insert({ e5, Edge(n5, n3, 8.0f) });
+    edges.insert({ e6, Edge(n5, n6, 7.0f) });
+
+    NN::NodeIds inputNodes;
+    inputNodes.push_back(n0);
+    inputNodes.push_back(n1);
+    NN::NodeIds outputNodes;
+    outputNodes.push_back(n4);
+    outputNodes.push_back(n6);
+
+    // Create a NeuralNetwork.
+    NN nn(nodes, edges, inputNodes, outputNodes);
+
+    // Evaluate
+    nn.evaluate();
+
+    EXPECT_EQ(nn.getNode(n4).getValue(), -15.f); // -3 * (5 * 1) = -15.0f
+    EXPECT_EQ(nn.getNode(n6).getValue(), 336.f); // 7 * (4 * (6 * 2)) = 336.f;
+    EXPECT_EQ(nn.getNode(n2).getValue(), 5.f); // 5 * 1 = 5.0f
+    EXPECT_EQ(nn.getNode(n5).getValue(), 48.f); // 4 * (6 * 2) = 336.f;
+
+    // Evaluate again
+    nn.evaluate();
+    EXPECT_EQ(nn.getNode(n4).getValue(), -150.f); // -3 * (5 * 1 + 9 * 5) = -150.0f
+    EXPECT_EQ(nn.getNode(n6).getValue(), 11088.f); // 7 * (4 * (6 * 2 + 48 * 8)) = 11088.f;
+}

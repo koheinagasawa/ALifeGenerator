@@ -183,6 +183,7 @@
     <ClInclude Include="GeneticAlgorithms\NEAT\Species.h" />
     <ClInclude Include="Neat.h" />
     <ClInclude Include="NeuralNetwork\Activations\Activation.h" />
+    <ClInclude Include="NeuralNetwork\Activations\ActivationFactory.h" />
     <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h" />
     <ClInclude Include="NeuralNetwork\Edge.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetworkEvaluator.h" />
@@ -210,6 +211,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork\Activations\ActivationFactory.cpp" />
     <ClCompile Include="NeuralNetwork\Activations\ActivationLibrary.cpp" />
     <ClCompile Include="NeuralNetwork\Edge.cpp" />
     <ClCompile Include="NeuralNetwork\Node.cpp" />

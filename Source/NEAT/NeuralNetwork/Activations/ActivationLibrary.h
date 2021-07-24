@@ -7,6 +7,7 @@
 #pragma once
 
 #include <NEAT/NeuralNetwork/Activations/Activation.h>
+#include <NEAT/NeuralNetwork/Activations/ActivationFactory.h>
 #include <Common/BaseType.h>
 
 #include <memory>
@@ -26,6 +27,9 @@ public:
 
     // Register a new activation function.
     auto registerActivation(ActivationPtr activation)->ActivationId;
+
+    // Batch register activations which can be created by ActivationFactory.
+    auto registerActivations(const std::vector<ActivationFacotry::Type>& types)->std::vector<ActivationId>;
 
     // Unregister an existing activation function.
     void unregisterActivation(ActivationId id);

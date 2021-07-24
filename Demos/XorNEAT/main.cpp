@@ -61,7 +61,7 @@ int main()
 {
     using namespace NEAT;
 
-    Activation sigmoid = Activation([](float value) { return 1.f / (1.f + exp(-4.9f * value)); });
+    Activation sigmoid = Activation([](float value) { return 1.f / (1.f + expf(-4.9f * value)); });
     sigmoid.m_name = "sigmoid";
 
 

@@ -47,6 +47,9 @@
     <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationProvider.cpp">
       <Filter>GeneticAlgorithms\Base\Activation</Filter>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork\Activations\ActivationFactory.cpp">
+      <Filter>NeuralNetwork\Activations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Neat.h" />
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="NeuralNetwork\NeuralNetworkEvaluator.h">
       <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\Activations\ActivationFactory.h">
+      <Filter>NeuralNetwork\Activations</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

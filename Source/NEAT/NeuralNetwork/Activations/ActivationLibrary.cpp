@@ -26,6 +26,18 @@ auto ActivationLibrary::registerActivation(ActivationPtr activation)->Activation
     return id;
 }
 
+auto ActivationLibrary::registerActivations(const std::vector<ActivationFacotry::Type>& types)->std::vector<ActivationId>
+{
+    std::vector<ActivationId> out;
+    out.reserve(types.size());
+    for (ActivationFacotry::Type t : types)
+    {
+        out.push_back(registerActivation(ActivationFacotry::create(t)));
+    }
+
+    return out;
+}
+
 void ActivationLibrary::unregisterActivation(ActivationId id)
 {
     m_registry.erase(id);

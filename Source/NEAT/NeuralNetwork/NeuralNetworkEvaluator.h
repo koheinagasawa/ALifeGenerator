@@ -22,15 +22,22 @@ public:
     template <typename Node, typename Edge>
     void evaluate(NeuralNetwork<Node, Edge>* network) const;
 
+    inline int getCurrentIteration() const { return m_currentItration; }
+
 public:
     EvaluationType m_type = EvaluationType::ITERATION;  // The method to evaluate network.
-    uint16_t m_evalIterations = 10;                     // The maximum number of iteration to run network.
+    int m_evalIterations = 10;                     // The maximum number of iteration to run network.
     float m_convergenceThreshold = 1E-3f;               // Threshold of convergence of output values. Only used for CONVERGE type.
+
+protected:
+    mutable int m_currentItration;
 };
 
 template <typename Node, typename Edge>
 void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
 {
+    m_currentItration = 0;
+
     if (network->allowsCircularNetwork())
     {
         // Network containing recursion.
@@ -47,13 +54,13 @@ void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
         }
 
         // Run evaluation multiple times.
-        for (uint16_t itr = 0; itr < m_evalIterations; itr++)
+        for (;m_currentItration < m_evalIterations; m_currentItration++)
         {
             network->evaluate();
 
             if (checkConvergence)
             {
-                if (itr > 0)
+                if (m_currentItration > 0)
                 {
                     // Check if the output values have been converged.
                     bool converged = true;

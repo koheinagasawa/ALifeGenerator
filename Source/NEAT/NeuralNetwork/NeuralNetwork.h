@@ -22,7 +22,6 @@ enum class NeuralNetworkType
 {
     GENERAL,
     FEED_FORWARD,
-    RECURRENT,
 };
 
 // Base class of neural network

@@ -110,9 +110,6 @@
     <ClInclude Include="NeuralNetwork\Edge.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralNetwork\RecurrentNetwork.h">
-      <Filter>NeuralNetwork</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralNetwork\Activations\Activation.h">
       <Filter>NeuralNetwork\Activations</Filter>
     </ClInclude>

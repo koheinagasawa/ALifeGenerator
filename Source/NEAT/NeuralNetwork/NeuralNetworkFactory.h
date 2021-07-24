@@ -8,7 +8,6 @@
 
 #include <NEAT/NeuralNetwork/NeuralNetwork.h>
 #include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
-#include <NEAT/NeuralNetwork/RecurrentNetwork.h>
 
 // Factory class of NeuralNetwork
 class NeuralNetworkFactory
@@ -26,8 +25,6 @@ public:
         {
         case NeuralNetworkType::FEED_FORWARD:
             return std::make_shared<FeedForwardNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
-        case NeuralNetworkType::RECURRENT:
-            return std::make_shared<RecurrentNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
         default:
             return std::make_shared<NeuralNetwork<Node, Edge>>(nodes, edges, inputNodes, outputNodes);
         }

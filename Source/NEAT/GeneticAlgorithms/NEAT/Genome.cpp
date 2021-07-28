@@ -6,6 +6,7 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <NEAT/GeneticAlgorithms/Base/Activations/ActivationProvider.h>
 #include <NEAT/NeuralNetwork/NeuralNetworkFactory.h>
 
 #include <algorithm>
@@ -80,7 +81,12 @@ Genome::Genome(const Cinfo& cinfo)
         // Create output nodes.
         NodeId id = m_innovIdCounter.getNewNodeId();
         nodes.insert({ id, Node(Node::Type::OUTPUT) });
-        nodes[id].setActivation(cinfo.m_initialActivation);
+        const Activation* initialActivation = nullptr;
+        if (cinfo.m_activationProvider)
+        {
+            initialActivation = cinfo.m_activationProvider->getActivation();
+        }
+        nodes[id].setActivation(initialActivation);
         outputNodes.push_back(id);
     }
 

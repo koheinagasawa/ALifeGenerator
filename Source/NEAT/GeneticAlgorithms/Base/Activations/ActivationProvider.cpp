@@ -12,14 +12,20 @@
 // DefaultActivationProvider
 //
 
-DefaultActivationProvider::DefaultActivationProvider(const Activation* defaultActivation)
+DefaultActivationProvider::DefaultActivationProvider(const Activation& defaultActivation)
     : m_defaultActivation(defaultActivation)
 {
 }
 
+DefaultActivationProvider::DefaultActivationProvider(const Activation::Func& func, const char* name)
+    : m_defaultActivation(func)
+{
+    m_defaultActivation.m_name = name;
+}
+
 auto DefaultActivationProvider::getActivation() const->const Activation*
 {
-    return m_defaultActivation;
+    return &m_defaultActivation;
 }
 
 //

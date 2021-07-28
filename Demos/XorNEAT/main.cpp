@@ -61,8 +61,7 @@ int main()
 {
     using namespace NEAT;
 
-    Activation sigmoid = Activation([](float value) { return 1.f / (1.f + expf(-4.9f * value)); });
-    sigmoid.m_name = "sigmoid";
+    DefaultActivationProvider sigmoid([](float value) { return 1.f / (1.f + expf(-4.9f * value)); }, "sigmoid");
 
 
     auto fitnessCalc = std::make_shared<XorFitnessCalculator>();
@@ -72,10 +71,9 @@ int main()
     genCinfo.m_genomeCinfo.m_numInputNodes = 2; // Two inputs for XOR.
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1;
     genCinfo.m_genomeCinfo.m_createBiasNode = true;
-    genCinfo.m_genomeCinfo.m_initialActivation = &sigmoid;
+    genCinfo.m_genomeCinfo.m_activationProvider = &sigmoid;
     genCinfo.m_fitnessCalculator = fitnessCalc;
-    DefaultActivationProvider dap(&sigmoid);
-    genCinfo.m_mutationParams.m_activationProvider = &dap;
+    genCinfo.m_mutationParams.m_activationProvider = &sigmoid;
 
     // Variables for performance investigation
     const int maxGeneration = 200;

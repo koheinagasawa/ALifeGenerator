@@ -248,8 +248,8 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_numInputNodes = 2;
     cinfo.m_numOutputNodes = 2;
     cinfo.m_innovIdCounter = &innovCounter;
-    Activation activation = [](float value) { return value * 2.f; };
-    cinfo.m_initialActivation = &activation;
+    DefaultActivationProvider activation([](float value) { return value * 2.f; });
+    cinfo.m_activationProvider = &activation;
     Genome genome(cinfo);
 
     const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();

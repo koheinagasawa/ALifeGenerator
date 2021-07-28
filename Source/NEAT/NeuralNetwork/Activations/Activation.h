@@ -18,6 +18,6 @@ struct Activation
 
     float activate(float value) const { return m_func(value); }
 
-    std::string m_name;
+    const char* m_name;
     const Func m_func;
 };

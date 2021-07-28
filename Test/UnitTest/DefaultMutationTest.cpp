@@ -46,7 +46,7 @@ TEST(DefaultMutation, MutateSingleGenome)
     mutator.m_params.m_addEdgeMutationRate = 1.0f;
     mutator.m_params.m_addNodeMutationRate = 1.0f;
     mutator.m_params.m_removeEdgeMutationRate = 0.f;
-    DefaultActivationProvider dap(&activation);
+    DefaultActivationProvider dap(activation);
     mutator.m_params.m_activationProvider = &dap;
 
     DefaultMutation::MutationOut out;

@@ -9,6 +9,8 @@
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
 #include <Common/UniqueIdCounter.h>
 
+class ActivationProvider;
+
 namespace NEAT
 {
     // Helper class to manager unique node id and innovation id (edge id).
@@ -82,9 +84,9 @@ namespace NEAT
             // The innovation counter. This has to be shared between all the genomes in one NEAT evaluation process.
             InnovationCounter* m_innovIdCounter = nullptr;
 
-            // Activation functions for the initial network.
+            // Activation provider for the initial network.
             // If it's nullptr, input values are merely passed as an output of the node.
-            const Activation* m_initialActivation = nullptr;
+            const ActivationProvider* m_activationProvider = nullptr;
 
             // Type of the network.
             NeuralNetworkType m_networkType = NeuralNetworkType::FEED_FORWARD;

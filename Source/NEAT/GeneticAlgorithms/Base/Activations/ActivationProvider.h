@@ -23,13 +23,17 @@ public:
 class DefaultActivationProvider : public ActivationProvider
 {
 public:
-    DefaultActivationProvider(const Activation* defaultActivation);
+    // Construct from Activation.
+    DefaultActivationProvider(const Activation& defaultActivation);
+
+    // Construct from activation function.
+    DefaultActivationProvider(const Activation::Func& func, const char* name = "activation");
 
     // Provides the default activation function.
     virtual auto getActivation() const->const Activation* override;
 
 protected:
-    const Activation* m_defaultActivation;
+    Activation m_defaultActivation;
 };
 
 // Activation provider which gives a random activation from library.

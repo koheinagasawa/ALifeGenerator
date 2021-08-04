@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
-#include <set>
 
 #include <Common/BaseType.h>
 #include <NEAT/NeuralNetwork/Node.h>
@@ -41,9 +40,25 @@ public:
     // Node and some additional data for shortcut access.
     struct NodeData
     {
+    public:
+        NodeData() = default;
+        NodeData(Node node) : m_node(node), m_state(EvalState::NONE) {}
+
         Node m_node;
         EdgeIds m_incomingEdges;
         EdgeIds m_outgoingEdges;
+
+    private:
+        // Intermediate data for evaluation
+        enum class EvalState : char
+        {
+            NONE,
+            EVALUATED
+        };
+
+        EvalState m_state;
+
+        friend class NeuralNetwork;
     };
 
     using NodeDatas = std::unordered_map<NodeId, NodeData>;
@@ -181,20 +196,6 @@ protected:
     // Construct m_nodes. This is called from constructor.
     void constructNodeData(const Nodes& nodes);
 
-    //
-    // Internal types for evaluation
-    //
-
-    // Intermediate data for evaluation
-    enum class NodeEvalState : char
-    {
-        NONE,
-        EVALUATED
-    };
-    using NodeIdSet = std::set<NodeId>;
-    using NodeEvalStates = std::unordered_map<NodeId, NodeEvalState>;
-    void evaluateNodeRecursive(NodeId id, NodeEvalStates& nodeEvalStates, NodeIdSet& pendingNodes);
-
     NodeDatas m_nodes; // Nodes of this network.
     Edges m_edges; // Edges of this network.
 
@@ -274,14 +275,8 @@ inline auto NeuralNetwork<Node, Edge>::accessNode(NodeId id)->Node&
 template <typename Node, typename Edge>
 inline void NeuralNetwork<Node, Edge>::setNodeValue(NodeId id, float value)
 {
-    if (hasNode(id))
-    {
-        m_nodes[id].m_node.setValue(value);
-    }
-    else
-    {
-        WARN("Trying to set a value for a node which doesn't exist.");
-    }
+    assert(hasNode(id));
+    m_nodes[id].m_node.setValue(value);
 }
 
 template <typename Node, typename Edge>
@@ -356,7 +351,7 @@ bool NeuralNetwork<Node, Edge>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeI
     assert(!hasNode(newNodeId) && !hasEdge(newIncomingEdgeId) && !hasEdge(newOutgoingEdgeId));
 
     // Make sure that edgeId exists.
-    if (!hasEdge(edgeId))
+    if(!hasEdge(edgeId))
     {
         WARN("Edge id doesn't exist.");
         return false;
@@ -596,63 +591,79 @@ void NeuralNetwork<Node, Edge>::evaluate()
     assert(validate());
 
     // Initialize node evaluation states.
-    NodeEvalStates evalStates;
-    for (const auto& entry : m_nodes)
+    for (auto& entry : m_nodes)
     {
-        evalStates[entry.first] = entry.second.m_incomingEdges.size() == 0 ? NodeEvalState::EVALUATED : NodeEvalState::NONE;
+        entry.second.m_state = entry.second.m_incomingEdges.size() == 0 ? NodeData::EvalState::EVALUATED : NodeData::EvalState::NONE;
     }
+
+    const bool circularNetwork = allowsCircularNetwork();
+
+    std::vector<NodeId> stack;
+    stack.reserve(4);
 
     // Evaluate output nodes.
-    for (NodeId id : this->m_outputNodes)
+    for (NodeId outputNodeId : this->m_outputNodes)
     {
-        NodeIdSet pendingNodes;
-        evaluateNodeRecursive(id, evalStates, pendingNodes);
-    }
-}
-
-template <typename Node, typename Edge>
-void NeuralNetwork<Node, Edge>::evaluateNodeRecursive(NodeId id, NodeEvalStates& nodeEvalStates, NodeIdSet& pendingNodes)
-{
-    NodeData& node = m_nodes[id];
-    assert(node.m_incomingEdges.size() > 0);
-
-    // Calculate value of this node by visiting all parent nodes.
-    float sumValue = 0;
-    for (EdgeId incomingId : node.m_incomingEdges)
-    {
-        if (getWeight(incomingId) == 0.f)
+        stack.clear();
+        stack.push_back(outputNodeId);
+        while(stack.size() > 0)
         {
-            continue;
-        }
+            NodeId id = stack.back();
+            NodeData& node = m_nodes[id];
+            assert(node.m_incomingEdges.size() > 0);
 
-        NodeId inNodeId = getInNode(incomingId);
-
-        if (pendingNodes.find(inNodeId) == pendingNodes.end())
-        {
-            // Recurse if we haven't evaluated this parent node yet.
-            if (nodeEvalStates.at(inNodeId) != NodeEvalState::EVALUATED)
+            // Calculate value of this node by visiting all parent nodes.
+            float sumValue = 0;
+            bool readyToEval = true;
+            for (EdgeId incomingId : node.m_incomingEdges)
             {
-                if (allowsCircularNetwork())
+                if (getWeight(incomingId) == 0.f)
                 {
-                    pendingNodes.insert(inNodeId);
+                    continue;
                 }
 
-                evaluateNodeRecursive(inNodeId, nodeEvalStates, pendingNodes);
+                NodeId inNodeId = getInNode(incomingId);
 
-                if (allowsCircularNetwork())
+                bool inNodeIsInStack = false;
+                if (circularNetwork)
                 {
-                    pendingNodes.erase(inNodeId);
+                    for (NodeId i : stack)
+                    {
+                        if (i == inNodeId)
+                        {
+                            inNodeIsInStack = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!inNodeIsInStack)
+                {
+                    // Recurse if we haven't evaluated this parent node yet.
+                    if (m_nodes.at(inNodeId).m_state != NodeData::EvalState::EVALUATED)
+                    {
+                        stack.push_back(inNodeId);
+                        readyToEval = false;
+                        continue;
+                    }
+                }
+
+                if (readyToEval)
+                {
+                    // Add a value from this parent.
+                    sumValue += getNode(inNodeId).getValue() * getWeight(incomingId);
                 }
             }
+
+            if (readyToEval)
+            {
+                // Set the node value and update its state.
+                m_nodes[id].m_state = NodeData::EvalState::EVALUATED;
+                node.m_node.setValue(sumValue);
+                stack.resize(stack.size() - 1);
+            }
         }
-
-        // Add a value from this parent.
-        sumValue += getNode(inNodeId).getValue() * getWeight(incomingId);
     }
-
-    // Set the node value and update its state.
-    nodeEvalStates[id] = NodeEvalState::EVALUATED;
-    node.m_node.setValue(sumValue);
 }
 
 template <typename Node, typename Edge>

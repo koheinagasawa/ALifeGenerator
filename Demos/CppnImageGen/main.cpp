@@ -113,23 +113,23 @@ public:
 
     static std::vector<rgb_t> getImage(const std::string& filename, int xDim, int yDim)
     {
+        Image imageOut;
         bitmap_image image(filename);
 
         if (!image)
         {
             printf("Error - Failed to open '%s'\n", filename.c_str());
-            return;
+            return imageOut;
         }
 
-        Image imageOut;
         imageOut.resize(xDim * yDim);
 
-        for (unsigned int x = 0; x < xDim; ++x)
+        for (int x = 0; x < xDim; ++x)
         {
-            for (unsigned int y = 0; y < yDim; ++y)
+            for (int y = 0; y < yDim; ++y)
             {
                 rgb_t& color = imageOut[x * xDim + y];
-                image.get_pixel(x, y, color);
+                image.get_pixel((unsigned)x, (unsigned)y, color);
             }
         }
 
@@ -178,6 +178,7 @@ int main()
     genCinfo.m_genomeCinfo.m_activationProvider = &activationProvider;
     genCinfo.m_mutationParams.m_activationProvider = &activationProvider;
     genCinfo.m_fitnessCalculator = fitnessCalculator;
+    genCinfo.m_numThreads = 16;
 
     const int maxGeneration = 1000;
 

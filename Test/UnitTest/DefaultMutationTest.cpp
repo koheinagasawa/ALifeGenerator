@@ -33,10 +33,10 @@ TEST(DefaultMutation, MutateSingleGenome)
 
     // All the weights should be 1.0
     {
-        const Genome::Network::Edges& edges = network->getEdges();
-        for (auto& itr : edges)
+        const auto& edges = network->getEdges();
+        for (const auto& edge : edges)
         {
-            EXPECT_EQ(network->getWeight(itr.first), 1.0);
+            EXPECT_EQ(network->getWeight(edge.getId()), 1.0);
         }
     }
 
@@ -100,8 +100,8 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(out.m_newNodeInfo.m_nodeId).getNodeType(), Genome::Node::Type::HIDDEN);
-    std::string str = network->getNode(out.m_newNodeInfo.m_nodeId).getActivationName();
-    EXPECT_EQ(str.compare("MyActivation"), 0);
+    std::string activationName("MyActivation");
+    EXPECT_EQ(activationName.compare(network->getNode(out.m_newNodeInfo.m_nodeId).getActivationName()), 0);
     EXPECT_EQ(network->getNumEdges(), 9);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
 
@@ -140,10 +140,10 @@ TEST(DefaultMutation, MutateSingleGenome)
 
         // Remember original edge weights
         std::unordered_map<EdgeId, float> originalWeights;
-        const Genome::Network::Edges& edges = network->getEdges();
-        for (auto& itr : edges)
+        const auto& edges = network->getEdges();
+        for (const auto& edge : edges)
         {
-            originalWeights.insert({ itr.first, genome.getEdgeWeightRaw(itr.first) });
+            originalWeights.insert({ edge.getId(), genome.getEdgeWeightRaw(edge.getId()) });
         }
 
         mutator.mutate(&genome, out);
@@ -151,12 +151,13 @@ TEST(DefaultMutation, MutateSingleGenome)
         EXPECT_TRUE(genome.validate());
 
         // Check the edge mutation was done expectedly.
-        for (auto& itr : edges)
+        for (const auto& edge : edges)
         {
-            if (genome.isEdgeEnabled(itr.first))
+            EdgeId id = edge.getId();
+            if (genome.isEdgeEnabled(id))
             {
-                float original = originalWeights.at(itr.first);
-                float weight = genome.getEdgeWeightRaw(itr.first);
+                float original = originalWeights.at(id);
+                float weight = genome.getEdgeWeightRaw(id);
                 EXPECT_TRUE((original * weight) > 0); // Check weight hasn't changed its sign.
                 original = std::abs(original);
                 weight = std::abs(weight);
@@ -184,12 +185,13 @@ TEST(DefaultMutation, MutateSingleGenome)
 
         EXPECT_TRUE(genome.validate());
 
-        const Genome::Network::Edges& edges = network->getEdges();
-        for (auto& itr : edges)
+        const auto& edges = network->getEdges();
+        for (const auto& edge : edges)
         {
-            if (genome.isEdgeEnabled(itr.first))
+            EdgeId id = edge.getId();
+            if (genome.isEdgeEnabled(id))
             {
-                EXPECT_EQ(genome.getEdgeWeightRaw(itr.first), 3.f);
+                EXPECT_EQ(genome.getEdgeWeightRaw(id), 3.f);
             }
         }
     }
@@ -261,10 +263,10 @@ TEST(DefaultMutation, MutateGeneration)
 
         // All the weights should be 1.0
         {
-            const Genome::Network::Edges& edges = network->getEdges();
-            for (auto& itr : edges)
+            const auto& edges = network->getEdges();
+            for (const auto& edge : edges)
             {
-                EXPECT_EQ(network->getWeight(itr.first), 1.0);
+                EXPECT_EQ(network->getWeight(edge.getId()), 1.0);
             }
         }
     }

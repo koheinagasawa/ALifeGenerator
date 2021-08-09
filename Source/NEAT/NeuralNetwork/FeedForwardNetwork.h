@@ -62,15 +62,15 @@ auto FeedForwardNetwork<Node, Edge>::clone() const->std::shared_ptr<NeuralNetwor
 template <typename Node, typename Edge>
 bool FeedForwardNetwork<Node, Edge>::canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const
 {
-    const NodeData& node = this->m_nodes.at(curNode);
+    const NodeData& node = this->getNodeData(curNode);
 
-    if (node.m_incomingEdges.empty())
+    if (node.getIncomingEdges().empty())
     {
         return true;
     }
 
     // Follow edges backward and check we never see outNode.
-    for (EdgeId e : node.m_incomingEdges)
+    for (EdgeId e : node.getIncomingEdges())
     {
         NodeId n = this->getInNode(e);
         if (n == outNode || !canAddEdgeAtRecursive(outNode, n))
@@ -130,9 +130,9 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
             nodes.insert(n);
 
             // Make sure that no edge has this node as its outNode.
-            for (const auto& itr : this->m_edges)
+            for (const auto& edge : this->m_edges)
             {
-                const Edge& e = itr.second;
+                const Edge& e = edge.m_edge;
                 if (e.getOutNode() == n) return false;
             }
         }
@@ -152,9 +152,9 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
             if (this->getIncomingEdges(n).empty()) return false;
 
             // Make sure that no edge has this node as its inNode.
-            for (const auto& itr : this->m_edges)
+            for (const auto& edge : this->m_edges)
             {
-                const Edge& e = itr.second;
+                const Edge& e = edge.m_edge;
                 if (e.getInNode() == n) return false;
             }
         }
@@ -180,7 +180,7 @@ bool FeedForwardNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::u
     // Follow edges backward and see if we visit the same node more than once.
     for (EdgeId e : this->getIncomingEdges(id))
     {
-        const Edge& edge = this->m_edges.at(e);
+        const Edge& edge = this->getEdge(e);
 
         // Ignore disabled edges.
         if (!edge.isEnabled())
@@ -202,9 +202,9 @@ bool FeedForwardNetwork<Node, Edge>::hasCircularEdges() const
 {
     std::unordered_set<NodeId> checkedNodes;
 
-    for (const auto& itr : this->m_nodes)
+    for (const auto& node : this->m_nodes)
     {
-        NodeId id = itr.first;
+        NodeId id = node.getId();
 
         if (checkedNodes.find(id) != checkedNodes.end())
         {

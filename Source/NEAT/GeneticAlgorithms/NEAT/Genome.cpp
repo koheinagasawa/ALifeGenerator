@@ -125,9 +125,9 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
     {
         // Make sure that the network has the same number of input nodes as the source.
         int numInputNodes = 0;
-        for (auto itr : network->getNodes())
+        for (const auto& nodeData : network->getNodes())
         {
-            if (itr.second.m_node.getNodeType() == Node::Type::INPUT)
+            if (nodeData.m_node.getNodeType() == Node::Type::INPUT)
             {
                 numInputNodes++;
             }

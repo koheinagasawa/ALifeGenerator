@@ -100,7 +100,8 @@ TEST(DefaultMutation, MutateSingleGenome)
     EXPECT_EQ(network->getInputNodes().size(), 2);
     EXPECT_EQ(network->getNumNodes(), 6);
     EXPECT_EQ(network->getNode(out.m_newNodeInfo.m_nodeId).getNodeType(), Genome::Node::Type::HIDDEN);
-    EXPECT_EQ(network->getNode(out.m_newNodeInfo.m_nodeId).getActivationName(), "MyActivation");
+    std::string str = network->getNode(out.m_newNodeInfo.m_nodeId).getActivationName();
+    EXPECT_EQ(str.compare("MyActivation"), 0);
     EXPECT_EQ(network->getNumEdges(), 9);
     EXPECT_EQ(network->getOutputNodes().size(), 2);
 

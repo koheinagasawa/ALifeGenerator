@@ -14,7 +14,7 @@
 using namespace NEAT;
 
 Generation::Generation(const Cinfo& cinfo)
-    : GenerationBase(GenerationId(0), cinfo.m_numGenomes, cinfo.m_fitnessCalculator, cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
+    : GenerationBase(GenerationId(0), cinfo.m_numGenomes, cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
     , m_params(cinfo.m_generationParams)
 {
     // Allocate a buffer for genomes of the first generation.
@@ -33,7 +33,7 @@ Generation::Generation(const Cinfo& cinfo)
 
         // Randomize edge weights.
         const Genome::Network* network = genome->getNetwork();
-        for (auto itr : network->getEdges())
+        for (const auto& itr : network->getEdges())
         {
             genome->setEdgeWeight(itr.first, m_randomGenerator->randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
         }
@@ -46,7 +46,7 @@ Generation::Generation(const Cinfo& cinfo)
 }
 
 Generation::Generation(const Genomes& genomes, const Cinfo& cinfo)
-    : GenerationBase(GenerationId(0), (int)genomes.size(), cinfo.m_fitnessCalculator, cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
+    : GenerationBase(GenerationId(0), (int)genomes.size(), cinfo.m_random ? cinfo.m_random : &PseudoRandom::getInstance())
     , m_params(cinfo.m_generationParams)
 {
     assert((int)genomes.size() == m_numGenomes);
@@ -67,6 +67,8 @@ Generation::Generation(const Genomes& genomes, const Cinfo& cinfo)
 }
 void Generation::init(const Cinfo& cinfo)
 {
+    createFitnessCalculators(cinfo.m_fitnessCalculator, cinfo.m_numThreads);
+
     // Create one species.
     {
         // Select a genome randomly and use it as representative of the species.
@@ -146,6 +148,8 @@ auto Generation::getAllSpeciesInBestFitnessOrder() const->std::vector<SpeciesPtr
 
 void Generation::preUpdateGeneration()
 {
+    GenerationBase::preUpdateGeneration();
+
     // Update species in the champion selector.
     m_speciesChampSelector->updateSpecies(getAllSpecies());
 
@@ -161,6 +165,8 @@ void Generation::preUpdateGeneration()
 
 void Generation::postUpdateGeneration()
 {
+    GenerationBase::postUpdateGeneration();
+
     // Speciation
 
     // Remove stagnant species first.

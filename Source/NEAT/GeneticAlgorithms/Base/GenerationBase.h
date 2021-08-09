@@ -17,8 +17,13 @@ DECLARE_ID(GenomeId);
 class FitnessCalculatorBase
 {
 public:
+    using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
+
     // This function has to be implemented to calculate fitness of a genome.
     virtual float calcFitness(const GenomeBase* genome) = 0;
+
+    // Return a clone of this calculator.
+    virtual FitnessCalcPtr clone() const = 0;
 
 protected:
     // This function can be called inside calcFitness() to evaluate a genome to assess its fitness.
@@ -36,6 +41,7 @@ public:
     using GenomeBasePtr = std::shared_ptr<GenomeBase>;
     using CGenomeBasePtr = std::shared_ptr<const GenomeBase>;
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
+    using FitnessCalculators = std::vector<FitnessCalcPtr>;
     using GeneratorPtr = std::shared_ptr<class GenomeGenerator>;
     using GeneratorPtrs = std::vector<GeneratorPtr>;
     using ModifierPtr = std::shared_ptr<class GenomeModifier>;
@@ -87,8 +93,8 @@ public:
     // Return the number of genomes.
     inline int getNumGenomes() const { return m_numGenomes; }
 
-    // Return fitness calculator.
-    inline auto getFitnessCalculator() const->const FitnessCalculatorBase& { return *m_fitnessCalculator; }
+    // Return fitness calculators.
+    inline auto getFitnessCalculators() const->const FitnessCalculators& { return m_fitnessCalculators; }
 
     // Return generation id.
     inline auto getId() const->GenerationId { return m_id; }
@@ -102,7 +108,10 @@ protected:
     using FitnessCalculatorPtr = std::shared_ptr<FitnessCalculatorBase>;
 
     // Constructor
-    GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator);
+    GenerationBase(GenerationId id, int numGenomes, RandomGenerator* randomGenerator);
+
+    // Create fitness calculators for each thread by copying fitnessCalc.
+    void createFitnessCalculators(FitnessCalcPtr fitnessCalc, int numThreads);
 
     // Called before/after generation of genomes inside evolveGeneration().
     virtual void preUpdateGeneration() {}
@@ -113,7 +122,7 @@ protected:
 
     GeneratorPtrs m_generators;                     // Genome generators used to evolve generation.
     ModifierPtrs m_modifiers;                       // Genome modifiers used to evolve generation.
-    FitnessCalculatorPtr m_fitnessCalculator;       // The fitness calculator.
+    FitnessCalculators m_fitnessCalculators;        // The fitness calculator. There is a one calculator per thread.
     GenomeDatasPtr m_genomes;                       // Genomes in the current generation.
     GenomeDatasPtr m_prevGenGenomes;                // Genomes in the previous generation.
     RandomGenerator* m_randomGenerator = nullptr;   // Random generator.

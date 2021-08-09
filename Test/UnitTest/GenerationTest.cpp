@@ -28,6 +28,11 @@ namespace
             }
             return std::max(0.f, fitness);
         }
+
+        virtual FitnessCalcPtr clone() const override
+        {
+            return std::make_shared<MyFitnessCalculator>();
+        }
     };
 }
 

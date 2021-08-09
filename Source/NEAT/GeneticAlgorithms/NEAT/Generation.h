@@ -61,6 +61,9 @@ namespace NEAT
             // Fitness calculator.
             FitnessCalcPtr m_fitnessCalculator;
 
+            // The number of threads available for evolution.
+            int m_numThreads = 1;
+
             // Parameters used for mutation.
             DefaultMutation::MutationParams m_mutationParams;
 

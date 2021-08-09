@@ -13,6 +13,7 @@
 class XorFitnessCalculator : public FitnessCalculatorBase
 {
 public:
+
     virtual float calcFitness(const GenomeBase* genome) override
     {
         m_numEvaluations++;
@@ -28,10 +29,15 @@ public:
         return score * score;
     }
 
+    virtual FitnessCalcPtr clone() const override
+    {
+        return std::make_shared<XorFitnessCalculator>();
+    }
+
     float evaluate(const GenomeBase* genome, bool input1, bool input2)
     {
         // Initialize values
-        static std::vector<float> values;
+        std::vector<float> values;
         values.resize(2);
         values[0] = input1 ? 1.f : 0.f;
         values[1] = input2 ? 1.f : 0.f;
@@ -74,6 +80,7 @@ int main()
     genCinfo.m_genomeCinfo.m_activationProvider = &sigmoid;
     genCinfo.m_fitnessCalculator = fitnessCalc;
     genCinfo.m_mutationParams.m_activationProvider = &sigmoid;
+    genCinfo.m_numThreads = 1;
 
     // Variables for performance investigation
     const int maxGeneration = 200;
@@ -90,7 +97,6 @@ int main()
     {
         std::cout << "Starting Run" << run << "..." << std::endl;
 
-        fitnessCalc->m_numEvaluations = 0;
         InnovationCounter innovCounter;
         genCinfo.m_genomeCinfo.m_innovIdCounter = &innovCounter;
 
@@ -117,11 +123,18 @@ int main()
                 }
                 totalNumHiddenNodes += network->getNumNodes() - 4; // 4 is two inputs, one output and one bias
                 totalNumNondisabledConnections += bestGenome->getNumEnabledEdges();
-                if (worstEvaluationCount < fitnessCalc->m_numEvaluations)
+
+                int numEvaluation = 0;
+                for (const auto& calc : generation.getFitnessCalculators())
                 {
-                    worstEvaluationCount = fitnessCalc->m_numEvaluations;
+                    numEvaluation += static_cast<const XorFitnessCalculator*>(calc.get())->m_numEvaluations;
                 }
-                totalEvaluationCount += fitnessCalc->m_numEvaluations;
+
+                if (worstEvaluationCount < numEvaluation)
+                {
+                    worstEvaluationCount = numEvaluation;
+                }
+                totalEvaluationCount += numEvaluation;
 
                 break;
             }

@@ -12,40 +12,22 @@
 #include <bitmap_image.hpp>
 #include <sstream>
 
+using Image = std::vector<rgb_t>;
+
 class ImageMatchingFitnessCalculator : public FitnessCalculatorBase
 {
 public:
-    ImageMatchingFitnessCalculator(int xDim, int yDim)
+    ImageMatchingFitnessCalculator(const Image& refImage, int xDim, int yDim)
         : m_xDim(xDim)
         , m_yDim(yDim)
+        , m_referenceImage(refImage)
     {
         m_generatedImage.resize(xDim * yDim);
-        m_referenceImage.resize(xDim * yDim);
     }
 
     inline int coords2index(unsigned int x, unsigned int y)
     {
         return x * m_xDim + y;
-    }
-
-    void setReferenceImage(const std::string& filename)
-    {
-        bitmap_image image(filename);
-
-        if (!image)
-        {
-            printf("Error - Failed to open '%s'\n", filename.c_str());
-            return;
-        }
-
-        for (unsigned int x = 0; x < m_xDim; ++x)
-        {
-            for (unsigned int y = 0; y < m_yDim; ++y)
-            {
-                rgb_t& color = m_referenceImage[coords2index(x, y)];
-                image.get_pixel(x, y, color);
-            }
-        }
     }
 
     void outputImage(const std::string& filename)
@@ -124,11 +106,41 @@ public:
         return 255.f - diff;
     }
 
+    virtual FitnessCalcPtr clone() const override
+    {
+        return std::make_shared<ImageMatchingFitnessCalculator>(m_referenceImage, m_xDim, m_yDim);
+    }
+
+    static std::vector<rgb_t> getImage(const std::string& filename, int xDim, int yDim)
+    {
+        bitmap_image image(filename);
+
+        if (!image)
+        {
+            printf("Error - Failed to open '%s'\n", filename.c_str());
+            return;
+        }
+
+        Image imageOut;
+        imageOut.resize(xDim * yDim);
+
+        for (unsigned int x = 0; x < xDim; ++x)
+        {
+            for (unsigned int y = 0; y < yDim; ++y)
+            {
+                rgb_t& color = imageOut[x * xDim + y];
+                image.get_pixel(x, y, color);
+            }
+        }
+
+        return imageOut;
+    }
+
 protected:
     const unsigned int m_xDim;
     const unsigned int m_yDim;
-    std::vector<rgb_t> m_generatedImage;
-    std::vector<rgb_t> m_referenceImage;
+    const Image& m_referenceImage;
+    Image m_generatedImage;
 };
 
 int main()
@@ -155,9 +167,8 @@ int main()
 
     RandomActivationProvider activationProvider(activationLib);
 
-    auto fitnessCalculator = std::make_shared<ImageMatchingFitnessCalculator>(300, 300);
-
-    fitnessCalculator->setReferenceImage("Resource/CppnRefImage.bmp");
+    Image refImage = ImageMatchingFitnessCalculator::getImage("Resource/CppnRefImage.bmp", 300, 300);
+    auto fitnessCalculator = std::make_shared<ImageMatchingFitnessCalculator>(refImage, 300, 300);
 
     NEAT::Generation::Cinfo genCinfo;
     genCinfo.m_numGenomes = 150;

@@ -9,6 +9,8 @@
 #include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 #include <NEAT/GeneticAlgorithms/Base/Modifiers/GenomeModifier.h>
 
+#include <omp.h>
+
 //
 // FitnessCalculatorBase
 //
@@ -42,14 +44,21 @@ void GenerationBase::GenomeData::init(GenomeBasePtr genome, bool isProtected, Ge
 // GenerationBase
 //
 
-GenerationBase::GenerationBase(GenerationId id, int numGenomes, FitnessCalcPtr fitnessCalc, RandomGenerator* randomGenerator)
-    : m_fitnessCalculator(fitnessCalc)
-    , m_randomGenerator(randomGenerator)
+GenerationBase::GenerationBase(GenerationId id, int numGenomes, RandomGenerator* randomGenerator)
+    : m_randomGenerator(randomGenerator)
     , m_numGenomes(numGenomes)
     , m_id(id)
 {
     assert(m_numGenomes > 0);
-    assert(m_fitnessCalculator);
+}
+
+void GenerationBase::createFitnessCalculators(FitnessCalcPtr fitnessCalc, int numThreads)
+{
+    m_fitnessCalculators.resize(numThreads);
+    for (FitnessCalcPtr& calc : m_fitnessCalculators)
+    {
+        calc = fitnessCalc->clone();
+    }
 }
 
 void GenerationBase::evolveGeneration()
@@ -59,6 +68,7 @@ void GenerationBase::evolveGeneration()
     assert(m_generators.size() > 0);
     const int numGenomes = getNumGenomes();
     assert(numGenomes > 1);
+    assert(m_fitnessCalculators.size() > 0 && m_fitnessCalculators[0]);
 
     preUpdateGeneration();
 
@@ -132,10 +142,46 @@ void GenerationBase::evolveGeneration()
 
 void GenerationBase::calcFitness()
 {
-    assert(m_fitnessCalculator);
+    assert(m_fitnessCalculators.size() > 0 && m_fitnessCalculators[0]);
 
-    for (GenomeData& gd : *m_genomes)
+    const int numThreads = (int)m_fitnessCalculators.size();
+    if (numThreads > 1)
     {
-        gd.setFitness(m_fitnessCalculator->calcFitness(gd.m_genome.get()));
+        // Multi-threaded evaluation
+
+        // Distribute evaluation tasks to each thread.
+        int genomesPerThread = (int)(m_genomes->size() / numThreads);
+
+        #pragma omp parallel for
+        for (int threadId = 0; threadId < numThreads; threadId++)
+        {
+            FitnessCalcPtr calculator = m_fitnessCalculators[threadId];
+            const int offset = threadId * genomesPerThread;
+            for (int i = 0; i < genomesPerThread; i++)
+            {
+                GenomeData& gd = (*m_genomes)[i + offset];
+                gd.setFitness(calculator->calcFitness(gd.m_genome.get()));
+            }
+        }
+
+        // Run remaining evaluation tasks.
+        const int offset = numThreads * genomesPerThread;
+        #pragma omp parallel for
+        for (int i = offset; i < (int)m_genomes->size(); i++)
+        {
+            const int threadId = i - offset;
+            assert(threadId < (int)m_fitnessCalculators.size());
+            GenomeData& gd = (*m_genomes)[i];
+            gd.setFitness(m_fitnessCalculators[threadId]->calcFitness(gd.m_genome.get()));
+        }
+    }
+    else
+    {
+        // Single-threaded evaluation
+        FitnessCalcPtr calculator = m_fitnessCalculators[0];
+        for (GenomeData& gd : *m_genomes)
+        {
+            gd.setFitness(calculator->calcFitness(gd.m_genome.get()));
+        }
     }
 }

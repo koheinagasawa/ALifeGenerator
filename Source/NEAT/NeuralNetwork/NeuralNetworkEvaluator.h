@@ -26,7 +26,7 @@ public:
 
 public:
     EvaluationType m_type = EvaluationType::ITERATION;  // The method to evaluate network.
-    int m_evalIterations = 10;                     // The maximum number of iteration to run network.
+    int m_evalIterations = 10;                          // The maximum number of iteration to run network.
     float m_convergenceThreshold = 1E-3f;               // Threshold of convergence of output values. Only used for CONVERGE type.
 
 protected:

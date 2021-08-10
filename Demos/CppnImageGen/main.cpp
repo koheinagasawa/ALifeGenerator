@@ -23,6 +23,7 @@ public:
         , m_referenceImage(refImage)
     {
         m_generatedImage.resize(xDim * yDim);
+        m_evaluator.m_evalIterations = 3;
     }
 
     inline int coords2index(unsigned int x, unsigned int y)
@@ -175,6 +176,7 @@ int main()
     genCinfo.m_genomeCinfo.m_numInputNodes = 2; // XY coordinates
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1; // Gray scale value of the pixel
     genCinfo.m_genomeCinfo.m_createBiasNode = true;
+    genCinfo.m_genomeCinfo.m_networkType = NeuralNetworkType::GENERAL;
     genCinfo.m_genomeCinfo.m_activationProvider = &activationProvider;
     genCinfo.m_mutationParams.m_activationProvider = &activationProvider;
     genCinfo.m_fitnessCalculator = fitnessCalculator;

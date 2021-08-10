@@ -31,9 +31,9 @@ std::shared_ptr<GenomeBase> GenomeBase::clone() const
 int GenomeBase::getNumEnabledEdges() const
 {
     int num = 0;
-    for (auto& itr : m_network->getEdges())
+    for (const auto& edge : m_network->getEdges())
     {
-        if (itr.second.isEnabled())
+        if (edge.m_edge.isEnabled())
         {
             num++;
         }
@@ -43,9 +43,9 @@ int GenomeBase::getNumEnabledEdges() const
 
 void GenomeBase::clearNodeValues() const
 {
-    for (auto itr : m_network->getNodes())
+    for (auto& node : m_network->accessNodes())
     {
-        m_network->accessNode(itr.first).setValue(0.f);
+        node.m_node.setValue(0.f);
     }
 }
 
@@ -90,9 +90,9 @@ void GenomeBase::setActivationAll(const Activation* activation)
     assert(m_network.get());
 
     // Set activation for all hidden and output nodes.
-    for (auto itr : m_network->getNodes())
+    for (auto& nodeData : m_network->accessNodes())
     {
-        Node& node = m_network->accessNode(itr.first);
+        Node& node = nodeData.m_node;
         const Node::Type nodeType = node.getNodeType();
         if (nodeType == Node::Type::HIDDEN || nodeType == Node::Type::OUTPUT)
         {

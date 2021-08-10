@@ -35,9 +35,9 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     int numNewEdges = 0;
 
     // 1. Change weights of edges with a small perturbation.
-    for (const Genome::Network::EdgeEntry& edge : network->getEdges())
+    for (const auto& edge : network->getEdges())
     {
-        EdgeId edgeId = edge.first;
+        EdgeId edgeId = edge.getId();
         if (random->randomReal01() <= m_params.m_weightMutationRate)
         {
             if (random->randomReal01() <= m_params.m_weightMutationNewValRate)
@@ -62,7 +62,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     // 2. Remove a random existing edge.
     if (random->randomReal01() < m_params.m_removeEdgeMutationRate)
     {
-        const Genome::Network::Edges& edges = network->getEdges();
+        const auto& edges = network->getEdges();
 
         if (edges.size() > 1)
         {
@@ -77,7 +77,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 {
                     if (i == index)
                     {
-                        edgeToRemove = itr->first;
+                        edgeToRemove = itr->getId();
                         break;
                     }
                 }
@@ -109,13 +109,13 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     if (addNewNode)
     {
         edgeCandidates.reserve(network->getNumEdges());
-        for (const Genome::Network::EdgeEntry& entry : network->getEdges())
+        for (const auto& edgeData : network->getEdges())
         {
-            const Genome::Edge& edge = entry.second;
+            const Genome::Edge& edge = edgeData.m_edge;
             // We cannot add a new node at disable edges or edges from bias nodes
             if (edge.isEnabled() && (network->getNode(edge.getInNode()).getNodeType() != GenomeBase::Node::Type::BIAS))
             {
-                edgeCandidates.push_back(entry.first);
+                edgeCandidates.push_back(edgeData.getId());
             }
         }
     }
@@ -129,7 +129,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         nodeCandidates.reserve(nodeDatas.size() / 2);
         for (auto n1Itr = nodeDatas.cbegin(); n1Itr != nodeDatas.cend(); n1Itr++)
         {
-            NodeId n1Id = n1Itr->first;
+            NodeId n1Id = n1Itr->getId();
             const Genome::Node& n1 = network->getNode(n1Id);
 
             assert(n1.getNodeType() != Genome::Node::Type::NONE);
@@ -138,7 +138,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             n2Itr++;
             for (; n2Itr != nodeDatas.cend(); n2Itr++)
             {
-                NodeId n2Id = n2Itr->first;
+                NodeId n2Id = n2Itr->getId();
                 const Genome::Node& n2 = network->getNode(n2Id);
 
                 assert(n1.getNodeType() != Genome::Node::Type::NONE);

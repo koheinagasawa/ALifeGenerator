@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <stdio.h>
 
-// #define DEBUG_SLOW
+ #define DEBUG_SLOW
 
 #define WARN(str, ...) printf(str##"\n", __VA_ARGS__);
 
@@ -19,10 +19,10 @@ template <typename TYPE = uint32_t, int INVALID = -1>
 struct TypedIndex
 {
     // Constructors
-    TypedIndex() : m_val(INVALID) {}
-    TypedIndex(TYPE val) : m_val(val) {}
-    TypedIndex(const TypedIndex& other) : m_val(other.m_val) {}
-    TypedIndex(TypedIndex&& other) : m_val(other.m_val) { other.m_val = INVALID; }
+    inline TypedIndex() : m_val(INVALID) {}
+    inline TypedIndex(TYPE val) : m_val(val) {}
+    inline TypedIndex(const TypedIndex& other) : m_val(other.m_val) {}
+    inline TypedIndex(TypedIndex&& other) : m_val(other.m_val) { other.m_val = INVALID; }
 
     // Operators
     inline void operator=(TYPE val) { m_val = val; }

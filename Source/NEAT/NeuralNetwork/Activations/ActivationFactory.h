@@ -21,7 +21,6 @@ public:
         BIPOLAR_SIGMOID,
         RELU,
         GAUSSIAN,
-        LINEAR,
         ABSOLUTE,
         SINE,
         COSINE,

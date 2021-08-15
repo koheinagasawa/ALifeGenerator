@@ -31,10 +31,6 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out = std::make_shared<Activation>([](float val) { return expf(-val * val); });
         out->m_name = "gaussian";
         break;
-    case LINEAR:
-        out = std::make_shared<Activation>([](float val) { return val; });
-        out->m_name = "linear";
-        break;
     case ABSOLUTE:
         out = std::make_shared<Activation>([](float val) { return fabsf(val); });
         out->m_name = "abs";

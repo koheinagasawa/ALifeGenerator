@@ -73,11 +73,15 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         if (nd.m_node.getNodeType() != DefaultNode::Type::BIAS && nd.m_node.getNodeType() != DefaultNode::Type::INPUT)
         {
             // Update activation function.
-            nd.m_node.setActivation(m_params.m_activationProvider->getActivation());
+            const Activation* activation = m_params.m_activationProvider->getActivation();
+            if (activation->m_id != nd.m_node.getActivationId())
+            {
+                nd.m_node.setActivation(activation);
 
-            // Reset node id and ids of all the connected edges.
-            genome->reassignNewNodeIdAndConnectedEdgeIds(nd.getId());
-            nodeActivationMutated = nd.getId();
+                // Reset node id and ids of all the connected edges.
+                genome->reassignNewNodeIdAndConnectedEdgeIds(nd.getId());
+                nodeActivationMutated = nd.getId();
+            }
         }
     }
 

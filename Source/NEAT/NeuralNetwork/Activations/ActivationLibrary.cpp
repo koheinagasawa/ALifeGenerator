@@ -19,10 +19,11 @@ auto ActivationLibrary::registerActivation(ActivationPtr activation)->Activation
         return ActivationId::invalid();
     }
 
-    m_registry[m_nextActivationId] = activation;
-
     ActivationId id = m_nextActivationId;
-    m_nextActivationId = m_nextActivationId.m_val + 1;
+    activation->m_id = id;
+    m_registry[id] = activation;
+
+    m_nextActivationId = id.m_val + 1;
     return id;
 }
 

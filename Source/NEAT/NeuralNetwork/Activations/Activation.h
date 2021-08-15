@@ -6,8 +6,11 @@
 
 #pragma once
 
+#include <Common/BaseType.h>
 #include <functional>
 #include <string>
+
+DECLARE_ID(ActivationId, uint8_t);
 
 // Wrapper struct for activation function.
 struct Activation
@@ -20,4 +23,5 @@ struct Activation
 
     const char* m_name;
     const Func m_func;
+    ActivationId m_id = 0;
 };

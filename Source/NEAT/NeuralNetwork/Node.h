@@ -44,7 +44,8 @@ public:
     virtual void setValue(float value) override;
 
     inline void setActivation(const Activation* activation) { m_activation = activation; }
-    inline auto getActivationName() const->const char* { return m_activation->m_name; }
+    inline auto getActivationName() const->const char* { return m_activation ? m_activation->m_name : nullptr; }
+    inline auto getActivationId() const->ActivationId { return m_activation ? m_activation->m_id : ActivationId::invalid(); }
 
     inline void setNodeType(Type type) { m_type = type; }
     inline Type getNodeType() const { return m_type; }

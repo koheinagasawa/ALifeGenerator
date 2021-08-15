@@ -13,13 +13,11 @@
 #include <memory>
 #include <unordered_map>
 
-DECLARE_ID(ActivationId, uint8_t);
-
 // Library of activation functions.
 class ActivationLibrary
 {
 public:
-    using ActivationPtr = std::shared_ptr<const Activation>;
+    using ActivationPtr = std::shared_ptr<Activation>;
     using ActivationMap = std::unordered_map<ActivationId, ActivationPtr>;
 
     // Constructor.

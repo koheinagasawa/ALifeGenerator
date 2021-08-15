@@ -266,6 +266,27 @@ void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
     assert(validate());
 }
 
+void Genome::reassignNewNodeIdAndConnectedEdgeIds(const NodeId originalId)
+{
+    NodeId newNodeId = m_innovIdCounter.getNewNodeId();
+    reassignNodeId(originalId, newNodeId);
+    const Network::EdgeIds incomingEdges = m_network->getIncomingEdges(newNodeId);
+    for (const EdgeId edge : incomingEdges)
+    {
+        InnovationCounter::EdgeEntry entry{ m_network->getInNode(edge), newNodeId };
+        EdgeId newEdgeId = m_innovIdCounter.getEdgeId(entry);
+        reassignInnovation(edge, newEdgeId);
+    }
+
+    const Network::EdgeIds outgoingEdges = m_network->getOutgoingEdges(newNodeId);
+    for (const EdgeId edge : outgoingEdges)
+    {
+        InnovationCounter::EdgeEntry entry{ newNodeId, m_network->getOutNode(edge) };
+        EdgeId newEdgeId = m_innovIdCounter.getEdgeId(entry);
+        reassignInnovation(edge, newEdgeId);
+    }
+}
+
 void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)
 {
     assert(m_network->hasEdge(originalId) && !m_network->hasEdge(newId));
@@ -289,7 +310,7 @@ void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)
     {
         if (*itr == originalId)
         {
-            m_innovations.erase((itr+1).base());
+            m_innovations.erase((itr + 1).base());
             break;
         }
     }

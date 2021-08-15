@@ -25,6 +25,7 @@ public:
         struct NewNodeInfo
         {
             NodeId m_nodeId;
+            ActivationId m_activationId;
             EdgeId m_previousEdgeId;
             EdgeId m_newIncomingEdgeId;
             EdgeId m_newOutgoingEdgeId;

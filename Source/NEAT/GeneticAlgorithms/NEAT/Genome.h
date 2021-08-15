@@ -138,7 +138,11 @@ namespace NEAT
         // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
         void reassignNodeId(const NodeId originalId, const NodeId newId);
 
-        // Reassign innovation id to an existing edge.
+        // Reassign a new node id to an existing node.
+        // This functionality should be only used by mutator for mutating activation of a node.
+        void reassignNewNodeIdAndConnectedEdgeIds(const NodeId originalId);
+
+        // Reassign an innovation id to an existing edge.
         // This functionality should be only used when there is the same structural mutation in more than one genomes in the same generation.
         void reassignInnovation(const EdgeId originalId, const EdgeId newId);
 

@@ -59,7 +59,31 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
     Genome* genome = static_cast<Genome*>(genomeInOut);
 
-    // 2. Remove a random existing edge.
+    // 2. Change activation of a random node.
+    NodeId nodeActivationMutated = NodeId::invalid();
+    if (m_params.m_activationProvider && random->randomReal01() < m_params.m_changeActivationRate)
+    {
+        auto& nodes = network->accessNodes();
+
+        // Select a random node.
+        int index = random->randomInteger(0, nodes.size() - 1);
+        Genome::Network::NodeData& nd = nodes[index];
+        NodeId nodeId = nd.getId();
+
+        if (nd.m_node.getNodeType() != DefaultNode::Type::BIAS && nd.m_node.getNodeType() != DefaultNode::Type::INPUT)
+        {
+            // Update activation function.
+            nd.m_node.setActivation(m_params.m_activationProvider->getActivation());
+
+            // Reset node id and ids of all the connected edges.
+            genome->reassignNewNodeIdAndConnectedEdgeIds(nd.getId());
+            nodeActivationMutated = nd.getId();
+        }
+    }
+
+    assert(network->validate());
+
+    // 3. Remove a random existing edge.
     if (random->randomReal01() < m_params.m_removeEdgeMutationRate)
     {
         const auto& edges = network->getEdges();
@@ -94,7 +118,9 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         }
     }
 
-    // 3. 4. Add a new node and edge
+    assert(network->validate());
+
+    // 4. 5. Add a new node and edge
 
     // Decide whether we add a new node/edge
     const bool addNewNode = random->randomReal01() < m_params.m_addNodeMutationRate;
@@ -112,8 +138,12 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         for (const auto& edgeData : network->getEdges())
         {
             const Genome::Edge& edge = edgeData.m_edge;
-            // We cannot add a new node at disable edges or edges from bias nodes
-            if (edge.isEnabled() && (network->getNode(edge.getInNode()).getNodeType() != GenomeBase::Node::Type::BIAS))
+            NodeId inNode = edge.getInNode();
+            NodeId outNode = edge.getOutNode();
+            // We cannot add a new node at disable edges or edges from bias nodes.
+            // We also skip node which mutated activation function in order to avoid applying multiple mutations to a single node at once.
+            if (edge.isEnabled() && (network->getNode(inNode).getNodeType() != GenomeBase::Node::Type::BIAS) &&
+                (!nodeActivationMutated.isValid() || (inNode != nodeActivationMutated && outNode != nodeActivationMutated)))
             {
                 edgeCandidates.push_back(edgeData.getId());
             }
@@ -130,6 +160,12 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         for (auto n1Itr = nodeDatas.cbegin(); n1Itr != nodeDatas.cend(); n1Itr++)
         {
             NodeId n1Id = n1Itr->getId();
+            if (n1Id == nodeActivationMutated)
+            {
+                // Skip node which mutated activation function in order to avoid applying multiple mutations to a single node at once.
+                continue;
+            }
+
             const Genome::Node& n1 = network->getNode(n1Id);
 
             assert(n1.getNodeType() != Genome::Node::Type::NONE);
@@ -139,6 +175,12 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             for (; n2Itr != nodeDatas.cend(); n2Itr++)
             {
                 NodeId n2Id = n2Itr->getId();
+                if (n2Id == nodeActivationMutated)
+                {
+                    // Skip node which mutated activation function in order to avoid applying multiple mutations to a single node at once.
+                    continue;
+                }
+
                 const Genome::Node& n2 = network->getNode(n2Id);
 
                 assert(n1.getNodeType() != Genome::Node::Type::NONE);
@@ -181,7 +223,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         mutationOut.m_numEdgesAdded++;
     };
 
-    // 2. Add a node at a random edge
+    // 4. Add a node at a random edge
     if (!edgeCandidates.empty())
     {
         // Select a random edge from candidates
@@ -195,6 +237,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         newEdgeAdded(newOutgoingEdge);
 
         mutationOut.m_newNodeInfo.m_nodeId = newNode;
+        mutationOut.m_newNodeInfo.m_activationId = activation ? activation->m_id : ActivationId::invalid();
         mutationOut.m_newNodeInfo.m_previousEdgeId = edgeToAddNode;
         mutationOut.m_newNodeInfo.m_newIncomingEdgeId = newIncomingEdge;
         mutationOut.m_newNodeInfo.m_newOutgoingEdgeId = newOutgoingEdge;
@@ -202,7 +245,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
     assert(network->validate());
 
-    // 3. Add an edge between random nodes
+    // 5. Add an edge between random nodes
     if (!nodeCandidates.empty())
     {
         // Select a random node pair.
@@ -249,6 +292,7 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
     if (mutationOut.m_newNodeInfo.m_nodeId.isValid())
     {
         const MutationOut::NewNodeInfo& newNode = mutationOut.m_newNodeInfo;
+        ActivationId activation = newNode.m_activationId;
         EdgeId prevEdge = newNode.m_previousEdgeId;
         int i = 0;
         for (; i < (int)m_mutations.size(); i++)
@@ -256,7 +300,7 @@ void DefaultMutation::modifyGenomes(GenomeBasePtr& genomeIn)
             const MutationOut& mout2 = m_mutations[i];
             const MutationOut::NewNodeInfo& newNode2 = mout2.m_newNodeInfo;
 
-            if (mout2.m_newNodeInfo.m_nodeId.isValid() && mout2.m_newNodeInfo.m_previousEdgeId == prevEdge)
+            if (mout2.m_newNodeInfo.m_nodeId.isValid() && mout2.m_newNodeInfo.m_previousEdgeId == prevEdge && mout2.m_newNodeInfo.m_activationId == activation)
             {
                 // The mutation is identical. Reassign IDs.
                 genome->reassignNodeId(newNode.m_nodeId, newNode2.m_nodeId);

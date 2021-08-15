@@ -53,6 +53,9 @@ namespace NEAT
             // Maximum weight for a new edge.
             float m_newEdgeMaxWeight = 10.f;
 
+            // Probability of assigning a new activation.
+            float m_changeActivationRate = 0.01f;
+
             // Activation provider. If this is nullptr, you have to provide a default activation.
             const ActivationProvider* m_activationProvider = nullptr;
 
@@ -67,10 +70,11 @@ namespace NEAT
         void reset();
 
         // Mutate a single genome. There are four ways of mutation.
-        // 1. Change weights of edges with a small perturbation.
-        // 2. Remove a random existing edge.
-        // 3. Add a new node at a random edge.
-        // 4. Connect random two nodes by a new edge.
+        // 1. Change weights of edges and activation of nodes.
+        // 2. Change activation of a random node.
+        // 3. Remove a random existing edge.
+        // 4. Add a new node at a random edge.
+        // 5. Connect random two nodes by a new edge.
         // Probability of mutation and other parameters are controlled by MutationParams. See its comments for more details.
         virtual void mutate(GenomeBase* genomeInOut, MutationOut& mutationOut) override;
 

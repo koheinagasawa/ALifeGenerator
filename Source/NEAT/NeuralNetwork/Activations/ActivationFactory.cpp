@@ -36,7 +36,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "linear";
         break;
     case ABSOLUTE:
-        out = std::make_shared<Activation>([](float val) { return std::abs(val); });
+        out = std::make_shared<Activation>([](float val) { return fabsf(val); });
         out->m_name = "abs";
         break;
     case SINE:
@@ -81,8 +81,43 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "spike";
         break;
     case INVERSE:
-        out = std::make_shared<Activation>([](float val) { return -val; });
+        out = std::make_shared<Activation>([](float val) { return 1.0f/val; });
         out->m_name = "inverse";
+        break;
+    case IDENTITY:
+        out = std::make_shared<Activation>([](float val) { return val; });
+        out->m_name = "identity";
+        break;
+    case CLAMPED:
+        out = std::make_shared<Activation>([](float val)
+            {
+                return val < 0.f ? 0.f : (val > 1.f ? 1.f : val);
+            });
+        out->m_name = "clamped";
+        break;
+    case LOGARITHMIC:
+        out = std::make_shared<Activation>([](float val) { return logf(val); });
+        out->m_name = "log";
+        break;
+    case EXPONENTIAL:
+        out = std::make_shared<Activation>([](float val) { return expf(val); });
+        out->m_name = "exp";
+        break;
+    case HAT:
+        out = std::make_shared<Activation>([](float val) 
+            {
+                float valAbs = fabsf(val);
+                return valAbs < 1.f ? 1 - valAbs : 0.f;
+            });
+        out->m_name = "hat";
+        break;
+    case SQUARE:
+        out = std::make_shared<Activation>([](float val) { return val * val; });
+        out->m_name = "square";
+        break;
+    case CUBE:
+        out = std::make_shared<Activation>([](float val) { return val * val * val; });
+        out->m_name = "cube";
         break;
     default:
         WARN("Invalid activation type.");

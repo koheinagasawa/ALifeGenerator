@@ -31,6 +31,13 @@ public:
         STEP,
         SPIKE,
         INVERSE,
+        IDENTITY,
+        CLAMPED,
+        LOGARITHMIC,
+        EXPONENTIAL,
+        HAT,
+        SQUARE,
+        CUBE
     };
 
     // Create an activation of the type.

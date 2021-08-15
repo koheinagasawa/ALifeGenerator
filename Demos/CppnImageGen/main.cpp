@@ -88,7 +88,7 @@ public:
     bool test(const GenomeBase* genome)
     {
         float fitness = calcFitness(genome);
-        return fitness > 200.f;
+        return fitness > 240.f;
     }
 
     virtual float calcFitness(const GenomeBase* genome) override
@@ -163,6 +163,13 @@ int main()
         activationTypes.push_back(ActivationFacotry::STEP);
         activationTypes.push_back(ActivationFacotry::SPIKE);
         activationTypes.push_back(ActivationFacotry::INVERSE);
+        activationTypes.push_back(ActivationFacotry::IDENTITY);
+        activationTypes.push_back(ActivationFacotry::CLAMPED);
+        activationTypes.push_back(ActivationFacotry::LOGARITHMIC);
+        activationTypes.push_back(ActivationFacotry::EXPONENTIAL);
+        activationTypes.push_back(ActivationFacotry::HAT);
+        activationTypes.push_back(ActivationFacotry::SQUARE);
+        activationTypes.push_back(ActivationFacotry::CUBE);
         activationLib.registerActivations(activationTypes);
     }
 

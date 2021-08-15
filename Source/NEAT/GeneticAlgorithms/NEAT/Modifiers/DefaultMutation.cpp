@@ -70,12 +70,13 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         Genome::Network::NodeData& nd = nodes[index];
         NodeId nodeId = nd.getId();
 
+        // We don't change activation functions for input and bias nodes.
         if (nd.m_node.getNodeType() != DefaultNode::Type::BIAS && nd.m_node.getNodeType() != DefaultNode::Type::INPUT)
         {
-            // Update activation function.
             const Activation* activation = m_params.m_activationProvider->getActivation();
             if (activation->m_id != nd.m_node.getActivationId())
             {
+                // Update activation function.
                 nd.m_node.setActivation(activation);
 
                 // Reset node id and ids of all the connected edges.

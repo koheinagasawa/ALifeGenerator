@@ -127,5 +127,6 @@ protected:
     GenomeDatasPtr m_prevGenGenomes;                // Genomes in the previous generation.
     RandomGenerator* m_randomGenerator = nullptr;   // Random generator.
     int m_numGenomes;                               // The number of genomes.
+    float m_bestFitness = 0;                        // The best fitness in this generation.
     GenerationId m_id;                              // Generation id incremented at every evolveGeneration() call.
 };

@@ -9,6 +9,8 @@
 #include <NEAT/GeneticAlgorithms/Base/Generators/GenomeGenerator.h>
 #include <NEAT/GeneticAlgorithms/NEAT/Species.h>
 
+#include <limits>
+
 namespace NEAT
 {
     // GenomeSelector which selects the best genome (champion) in a species.
@@ -20,7 +22,8 @@ namespace NEAT
 
         SpeciesChampionSelector(float minMembersInSpeciesToCopyChampion);
 
-        inline void updateSpecies(const SpeciesList& species) { m_species = &species; }
+        // Update species and the best fitness
+        void updateSpecies(const SpeciesList& species, float bestFitness = std::numeric_limits<float>::max());
 
         // Generate new genomes by copying the champion in major species without modifying them.
         virtual void generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* genomeSelector) override;
@@ -30,6 +33,7 @@ namespace NEAT
 
     protected:
         const SpeciesList* m_species = nullptr;     // The Species.
+        float m_bestFitness;                        // The best fitness of the generation.
         float m_minMembersInSpeciesToCopyChampion;  // Minimum numbers of members in a species to copy its champion.
     };
 }

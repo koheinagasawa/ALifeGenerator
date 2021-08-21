@@ -14,6 +14,12 @@ SpeciesChampionSelector::SpeciesChampionSelector(float minMembersInSpeciesToCopy
 {
 }
 
+void SpeciesChampionSelector::updateSpecies(const SpeciesList& species, float bestFitness)
+{
+    m_species = &species;
+    m_bestFitness = bestFitness;
+}
+
 void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenomes, GenomeSelector* /*genomeSelector*/)
 {
     assert(numTotalGenomes >= numRemaningGenomes);
@@ -52,10 +58,18 @@ void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenom
             continue;
         }
 
-        if (species->getNumMembers() >= m_minMembersInSpeciesToCopyChampion)
+        Species::CGenomePtr best = species->getBestGenome();
+        if (best)
         {
-            Species::CGenomePtr best = species->getBestGenome();
-            if (best)
+            const float fitness = species->getBestFitness();
+
+            if (fitness >= m_bestFitness)
+            {
+                m_generatedGenomes.push_back(std::make_shared<Genome>(*best));
+                continue;
+            }
+
+            if (species->getNumMembers() >= m_minMembersInSpeciesToCopyChampion)
             {
                 // Copy the champion.
                 GenomePtr copiedGenome = std::make_shared<Genome>(*best);
@@ -67,7 +81,6 @@ void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenom
                 else
                 {
                     // We cannot select all the champions. Sort them by fitness and only select good ones.
-                    const float fitness = species->getBestFitness();
 
                     if (fitnesses.size() == 0)
                     {
@@ -79,16 +92,19 @@ void SpeciesChampionSelector::generate(int numTotalGenomes, int numRemaningGenom
                     // Find the place where this genome can go in the sorted order by fitness.
                     auto gItr = m_generatedGenomes.begin();
                     auto fItr = fitnesses.begin();
-                    for(; fItr != fitnesses.end(); gItr++, fItr++)
+                    for (; fItr != fitnesses.end(); gItr++, fItr++)
                     {
                         if (fitness > *fItr)
                         {
                             fitnesses.insert(fItr, fitness);
                             m_generatedGenomes.insert(gItr, copiedGenome);
 
-                            // Remove the worst genome and its fitness.
-                            fitnesses.pop_back();
-                            m_generatedGenomes.pop_back();
+                            if ((int)m_generatedGenomes.size() > numRemaningGenomes)
+                            {
+                                // Remove the worst genome and its fitness.
+                                fitnesses.pop_back();
+                                m_generatedGenomes.pop_back();
+                            }
                             break;
                         }
                     }

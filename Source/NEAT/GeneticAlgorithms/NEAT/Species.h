@@ -55,7 +55,7 @@ namespace NEAT
         // Return member genomes.
         inline auto getMembers() const->const std::vector<CGenomePtr>& { return m_members; }
 
-        // Set reproducibility of this spacies.
+        // Set reproducibility of this species.
         inline void setReproducible(bool enable) { m_reproducible = enable; }
 
         // Return true if this species is reproducible.

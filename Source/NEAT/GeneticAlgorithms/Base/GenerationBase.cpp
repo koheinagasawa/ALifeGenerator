@@ -140,9 +140,24 @@ void GenerationBase::evolveGeneration()
     m_id = GenerationId(m_id.val() + 1);
 }
 
+namespace
+{
+    inline float calcFitnessImpl(const GenomeBase* genome, FitnessCalculatorBase* calculator, float& bestFitness)
+    {
+        float fitness = calculator->calcFitness(genome);
+        if (fitness > bestFitness)
+        {
+            bestFitness = fitness;
+        }
+        return fitness;
+    }
+}
+
 void GenerationBase::calcFitness()
 {
     assert(m_fitnessCalculators.size() > 0 && m_fitnessCalculators[0]);
+
+    m_bestFitness = 0;
 
     const int numThreads = (int)m_fitnessCalculators.size();
     if (numThreads > 1)
@@ -160,7 +175,7 @@ void GenerationBase::calcFitness()
             for (int i = 0; i < genomesPerThread; i++)
             {
                 GenomeData& gd = (*m_genomes)[i + offset];
-                gd.setFitness(calculator->calcFitness(gd.m_genome.get()));
+                gd.setFitness(calcFitnessImpl(gd.m_genome.get(), calculator.get(), m_bestFitness));
             }
         }
 
@@ -172,7 +187,7 @@ void GenerationBase::calcFitness()
             const int threadId = i - offset;
             assert(threadId < (int)m_fitnessCalculators.size());
             GenomeData& gd = (*m_genomes)[i];
-            gd.setFitness(m_fitnessCalculators[threadId]->calcFitness(gd.m_genome.get()));
+            gd.setFitness(calcFitnessImpl(gd.m_genome.get(), m_fitnessCalculators[threadId].get(), m_bestFitness));
         }
     }
     else
@@ -181,7 +196,7 @@ void GenerationBase::calcFitness()
         FitnessCalcPtr calculator = m_fitnessCalculators[0];
         for (GenomeData& gd : *m_genomes)
         {
-            gd.setFitness(calculator->calcFitness(gd.m_genome.get()));
+            gd.setFitness(calcFitnessImpl(gd.m_genome.get(), calculator.get(), m_bestFitness));
         }
     }
 }

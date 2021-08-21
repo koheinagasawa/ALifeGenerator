@@ -151,7 +151,7 @@ void Generation::preUpdateGeneration()
     GenerationBase::preUpdateGeneration();
 
     // Update species in the champion selector.
-    m_speciesChampSelector->updateSpecies(getAllSpecies());
+    m_speciesChampSelector->updateSpecies(getAllSpecies(), m_bestFitness);
 
     // Clear mutator.
     m_mutator->reset();

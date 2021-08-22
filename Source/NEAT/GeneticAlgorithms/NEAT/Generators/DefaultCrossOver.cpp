@@ -213,8 +213,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     // Disable those edges one by one until we have no circular connection.
     if (!network->allowsCircularNetwork())
     {
-        auto* ffn = static_cast<FeedForwardNetwork<Genome::Node, SwitchableEdge>*>(network.get());
-        while (ffn->hasCircularEdges())
+        while (network->hasCircularEdges())
         {
             EdgeId edge;
 
@@ -232,8 +231,8 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
                 enabledEdges.pop_back();
             }
 
-            assert(ffn->getEdge(edge).isEnabled());
-            ffn->accessEdge(edge).setEnabled(false);
+            assert(network->getEdge(edge).isEnabled());
+            network->accessEdge(edge).setEnabled(false);
         }
     }
 

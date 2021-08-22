@@ -33,9 +33,6 @@ public:
     // Feed forward network shouldn't have circular connections.
     virtual bool allowsCircularNetwork() const override { return false; }
 
-    // Return true if this network has circular connections.
-    bool hasCircularEdges() const;
-
     virtual bool validate() const;
 
 protected:
@@ -44,7 +41,6 @@ protected:
 
     // Recursive functions used internally.
     bool canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const;
-    bool hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> checkedNodes, std::unordered_set<NodeId> visitedNodes) const;
 };
 
 template <typename Node, typename Edge>
@@ -164,61 +160,4 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
     if (hasCircularEdges()) return false;
 #endif
     return true;
-}
-
-template <typename Node, typename Edge>
-bool FeedForwardNetwork<Node, Edge>::hasCircularEdgesRecursive(NodeId id, std::unordered_set<NodeId> checkedNodes, std::unordered_set<NodeId> visitingNodes) const
-{
-    if (visitingNodes.find(id) != visitingNodes.end())
-    {
-        // Already visited this node. We found a circle.
-        return true;
-    }
-
-    visitingNodes.insert(id);
-
-    // Follow edges backward and see if we visit the same node more than once.
-    for (EdgeId e : this->getIncomingEdges(id))
-    {
-        const Edge& edge = this->getEdge(e);
-
-        // Ignore disabled edges.
-        if (!edge.isEnabled())
-        {
-            continue;
-        }
-
-        if (hasCircularEdgesRecursive(edge.getInNode(), checkedNodes, visitingNodes))
-        {
-            return true;
-        }
-    }
-
-    visitingNodes.erase(id);
-    checkedNodes.insert(id);
-
-    return false;
-}
-
-template <typename Node, typename Edge>
-bool FeedForwardNetwork<Node, Edge>::hasCircularEdges() const
-{
-    std::unordered_set<NodeId> checkedNodes;
-
-    for (const auto& node : this->m_nodes)
-    {
-        NodeId id = node.getId();
-
-        if (checkedNodes.find(id) != checkedNodes.end())
-        {
-            // This node is already checked.
-            continue;
-        }
-
-        // Check if this node is a part of circular links.
-        std::unordered_set<NodeId> visitingNodes;
-        if (hasCircularEdgesRecursive(id, checkedNodes, visitingNodes)) return true;
-    }
-
-    return false;
 }

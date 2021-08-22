@@ -151,6 +151,9 @@ public:
     // Get output node ids.
     inline auto getOutputNodes() const->const NodeIds& { return m_outputNodes; }
 
+    // Return true if this network has circular edge connections.
+    bool hasCircularEdges() const;
+
     //
     // Edge Queries
     //
@@ -244,6 +247,9 @@ protected:
 
     // Add a new EdgeData
     inline void addEdgeData(const EdgeData& ed);
+
+    // Implementation of hasCircularEdges()
+    bool hasCircularEdgesImpl(NodeId nodeId, std::vector<bool>& checkedNodes) const;
 
     //NodeDatas m_nodes; // Nodes of this network.
     NodeDatas m_nodes;
@@ -432,6 +438,102 @@ inline auto NeuralNetwork<Node, Edge>::getOutNode(EdgeId id) const->NodeId
 {
     assert(hasEdge(id));
     return getEdgeData(id).m_edge.getOutNode();
+}
+
+template <typename Node, typename Edge>
+bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
+{
+    const int numNodes = (int)m_nodes.size();
+    std::vector<bool> checkedNodes;
+    checkedNodes.resize(numNodes, false);
+
+    // First, start looking at output nodes. This first path should cover most nodes already.
+    for (NodeId id : m_outputNodes)
+    {
+        if (hasCircularEdgesImpl(id, checkedNodes))
+        {
+            return true;
+        }
+
+        checkedNodes[m_nodeIdIndexMap[id.m_val]] = true;
+    }
+
+    // Second, we iterate over all nodes while skipping nodes which are already checked in the previous loop.
+    // This is needed to find any circles isolated from the network containing the output nodes.
+    for (int i = 0; i < numNodes; i++)
+    {
+        if (checkedNodes[i])
+        {
+            continue;
+        }
+
+        if(hasCircularEdgesImpl(m_nodes[i].m_id, checkedNodes))
+        {
+            return true;
+        }
+
+        checkedNodes[i] = true;
+    }
+
+    return false;
+}
+
+template <typename Node, typename Edge>
+bool NeuralNetwork<Node, Edge>::hasCircularEdgesImpl(NodeId startNodeId, std::vector<bool>& checkedNodes) const
+{
+    std::unordered_set<NodeId> visitingNodes;
+    std::vector<NodeId> nodeStack;
+    nodeStack.push_back(startNodeId);
+
+    while (nodeStack.size() > 0)
+    {
+        NodeId currentNodeId = nodeStack.back();
+        visitingNodes.insert(currentNodeId);
+
+        bool newNodeInStack = false;
+
+        // Follow edges backward and see if we visit the same node more than once.
+        for (EdgeId e : getIncomingEdges(currentNodeId))
+        {
+            const Edge& edge = getEdge(e);
+
+            // Ignore disabled edges.
+            if (!edge.isEnabled())
+            {
+                continue;
+            }
+
+            NodeId inNodeId = edge.getInNode();
+            if (visitingNodes.find(inNodeId) != visitingNodes.end())
+            {
+                // Found a circle
+                return true;
+            }
+
+            // Skip this node if we have already looked at it.
+            if (checkedNodes[m_nodeIdIndexMap[inNodeId.m_val]])
+            {
+                continue;
+            }
+
+            // Add inNodeId to the stack and continue to follow that path.
+            nodeStack.push_back(inNodeId);
+            newNodeInStack = true;
+            break;
+        }
+
+        if (newNodeInStack)
+        {
+            continue;
+        }
+
+        // The current node is not a part of a circle.
+        visitingNodes.erase(currentNodeId);
+        checkedNodes[m_nodeIdIndexMap[currentNodeId.m_val]] = true;
+        nodeStack.pop_back();
+    }
+
+    return false;
 }
 
 template <typename Node, typename Edge>

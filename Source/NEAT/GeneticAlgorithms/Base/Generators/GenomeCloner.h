@@ -23,6 +23,9 @@ void GenomeCloner<GenomeType>::generate(int /*numTotalGenomes*/, int numRemaning
 {
     using GenomeData = GenerationBase::GenomeData;
 
+    // Clear new genomes output.
+    m_generatedGenomes.clear();
+
     if (numRemaningGenomes == 0)
     {
         return;
@@ -30,8 +33,6 @@ void GenomeCloner<GenomeType>::generate(int /*numTotalGenomes*/, int numRemaning
 
     genomeSelector->preSelection(numRemaningGenomes, GenomeSelector::SELECT_ONE_GENOME);
 
-    // Clear new genomes output.
-    m_generatedGenomes.clear();;
     m_generatedGenomes.reserve(numRemaningGenomes);
 
     // Copy genomes

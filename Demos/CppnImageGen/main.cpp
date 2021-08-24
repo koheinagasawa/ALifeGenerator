@@ -153,7 +153,6 @@ int main()
         activationTypes.push_back(ActivationFacotry::BIPOLAR_SIGMOID);
         activationTypes.push_back(ActivationFacotry::RELU);
         activationTypes.push_back(ActivationFacotry::GAUSSIAN);
-        activationTypes.push_back(ActivationFacotry::LINEAR);
         activationTypes.push_back(ActivationFacotry::ABSOLUTE);
         activationTypes.push_back(ActivationFacotry::SINE);
         activationTypes.push_back(ActivationFacotry::COSINE);

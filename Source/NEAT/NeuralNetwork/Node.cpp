@@ -11,13 +11,3 @@ DefaultNode::DefaultNode(Type type)
     : m_type(type)
 {
 }
-
-float DefaultNode::getValue() const
-{
-    return m_value;
-}
-
-void DefaultNode::setValue(float value)
-{
-    m_value = m_activation ? m_activation->activate(value) : value;
-}

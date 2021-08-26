@@ -49,6 +49,7 @@
     <IntDir>$(SolutionDir)..\Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="UnitTestBaseTypes.h" />
     <ClInclude Include="UnitTestPch.h" />
     <ClInclude Include="Util\TestUtils.h" />
   </ItemGroup>
@@ -57,7 +58,7 @@
     <ClCompile Include="DefaultCrossOverTest.cpp" />
     <ClCompile Include="FeedForwardNetworkTest.cpp" />
     <ClCompile Include="GenomeClonerTest.cpp" />
-    <ClCompile Include="NeuralNetworkEvaluator.cpp" />
+    <ClCompile Include="NeuralNetworkEvaluatorTest.cpp" />
     <ClCompile Include="SpeciesBasedGenomeSelectorTest.cpp" />
     <ClCompile Include="DefaultMutationTest.cpp" />
     <ClCompile Include="GenerationTest.cpp" />

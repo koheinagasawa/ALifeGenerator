@@ -11,28 +11,14 @@
 
 DECLARE_ID(EdgeId);
 
-// Base struct of edge.
-struct EdgeBase
-{
-    virtual NodeId getInNode() const = 0;
-    virtual NodeId getOutNode() const = 0;
-    virtual float getWeight() const = 0;
-    virtual void setWeight(float weight) = 0;
-
-    virtual bool isEnabled() const { return true; }
-
-    // Copy internal state of the edge (e.g. weight) without copying in node and out node ids.
-    virtual void copyState(const EdgeBase* other) {}
-};
-
 // Default edge structure.
-struct DefaultEdge : public EdgeBase
+struct DefaultEdge
 {
     // Default constructor. This is used only by container of Edge in Network class and users shouldn't call it.
     DefaultEdge() = default;
 
     // Constructor using inNode and outNode ids.
-    DefaultEdge(NodeId inNode, NodeId outNode, float weight = 1.f);
+    DefaultEdge(NodeId inNode, NodeId outNode, float weight = 1.f, bool enabled = true);
 
     // Copy and move constructor and operator
     DefaultEdge(const DefaultEdge& other) = default;
@@ -40,46 +26,20 @@ struct DefaultEdge : public EdgeBase
     void operator=(const DefaultEdge& other);
     void operator=(DefaultEdge&& other);
 
-    virtual NodeId getInNode() const override;
-    virtual NodeId getOutNode() const override;
-    virtual float getWeight() const override;
-    virtual void setWeight(float weight) override;
+    inline bool isEnabled() const { return m_enabled; }
+    inline void setEnabled(bool enable) { m_enabled = enable; }
+    inline float getWeightRaw() const { return m_weight; }
+
+    inline NodeId getInNode() const { return m_inNode; }
+    inline NodeId getOutNode() const { return m_outNode; }
+    inline void setWeight(float weight) { m_weight = weight; }
+    inline float getWeight() const { return m_enabled ? m_weight : 0.f; }
 
     // Copy internal state of the edge (e.g. weight) without copying in node and out node ids.
-    virtual void copyState(const EdgeBase* other) override;
+    void copyState(const DefaultEdge* other);
 
 protected:
     const NodeId m_inNode, m_outNode;
     float m_weight = 0.f;
-};
-
-// Edge which can be turned on and off without losing previous weight value.
-struct SwitchableEdge : public DefaultEdge
-{
-    // Default constructor. This is used only by container of Edge in Network class and users shouldn't call it.
-    SwitchableEdge() = default;
-
-    // Constructor using inNode and outNode ids.
-    SwitchableEdge(NodeId inNode, NodeId outNode, float weight = 1.f, bool enabled = true);
-
-    // Copy and move constructor and operator
-    SwitchableEdge(const SwitchableEdge& other) = default;
-    SwitchableEdge(SwitchableEdge&& other) = default;
-    void operator=(const SwitchableEdge& other);
-    void operator=(SwitchableEdge&& other);
-
-    // Return the weight. Return 0 if this edge is disabled.
-    virtual float getWeight() const override;
-
-    // Return the weight regardless of whether this edge is enabled.
-    inline float getWeightRaw() const { return m_weight; }
-
-    // Copy internal state of the edge (e.g. weight) without copying in node and out node ids.
-    virtual void copyState(const EdgeBase* other) override;
-
-    virtual bool isEnabled() const override { return m_enabled; }
-    inline void setEnabled(bool enable) { m_enabled = enable; }
-
-protected:
     bool m_enabled = false;
 };

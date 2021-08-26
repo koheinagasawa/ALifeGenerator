@@ -203,7 +203,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     }
 
     // Create a new network.
-    Genome::NetworkPtr network = NeuralNetworkFactory::createNeuralNetwork<Genome::Node, SwitchableEdge>(
+    Genome::NetworkPtr network = NeuralNetworkFactory::createNeuralNetwork<Genome::Node, Genome::Edge>(
         network1->getType(),
         newGenomeNodes, newGenomeEdges,
         genome1.getNetwork()->getInputNodes(),

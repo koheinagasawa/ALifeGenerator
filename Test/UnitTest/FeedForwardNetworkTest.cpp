@@ -5,36 +5,9 @@
 */
 
 #include <UnitTest/UnitTestPch.h>
+#include <UnitTest/UnitTestBaseTypes.h>
 
 #include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
-
-// Basic node class.
-struct Node : public NodeBase
-{
-    Node() = default;
-    Node(float value) : m_value(value) {}
-
-    virtual float getValue() const { return m_value; }
-    virtual void setValue(float value) { m_value = value; }
-
-    float m_value = 0.f;
-};
-
-// Basic edge class.
-struct Edge : public EdgeBase
-{
-    Edge() = default;
-    Edge(NodeId inNode, NodeId outNode, float weight = 0.f) : m_inNode(inNode), m_outNode(outNode), m_weight(weight) {}
-
-    virtual NodeId getInNode() const { return m_inNode; }
-    virtual NodeId getOutNode() const { return m_outNode; }
-    virtual float getWeight() const { return m_weight; }
-    virtual void setWeight(float weight) { m_weight = weight; }
-
-    NodeId m_inNode = NodeId::invalid();
-    NodeId m_outNode = NodeId::invalid();
-    float m_weight = 0.f;
-};
 
 using FFN = FeedForwardNetwork<Node, Edge>;
 

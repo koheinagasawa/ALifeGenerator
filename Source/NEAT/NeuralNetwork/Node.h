@@ -10,15 +10,8 @@
 
 DECLARE_ID(NodeId);
 
-// Base struct of node.
-struct NodeBase
-{
-    virtual float getValue() const = 0;
-    virtual void setValue(float value) = 0;
-};
-
 // Default node structure.
-struct DefaultNode : public NodeBase
+struct DefaultNode
 {
 public:
     // Type of Node.
@@ -40,8 +33,8 @@ public:
     // Copy constructor.
     DefaultNode(const DefaultNode& other) = default;
 
-    virtual float getValue() const override;
-    virtual void setValue(float value) override;
+    inline float getValue() const { return m_value; }
+    inline void setValue(float value) { m_value = m_activation ? m_activation->activate(value) : value; }
 
     inline void setActivation(const Activation* activation) { m_activation = activation; }
     inline auto getActivationName() const->const char* { return m_activation ? m_activation->m_name : nullptr; }

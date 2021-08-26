@@ -17,9 +17,9 @@ class GenomeBase
 public:
     // Type declarations.
     using Node = DefaultNode;
-    using Network = NeuralNetwork<Node, SwitchableEdge>;
+    using Edge = DefaultEdge;
+    using Network = NeuralNetwork<Node, Edge>;
     using NetworkPtr = std::shared_ptr<Network>;
-    using Edge = SwitchableEdge;
 
     // Constructor
     GenomeBase() = default;

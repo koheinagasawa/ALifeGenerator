@@ -22,10 +22,16 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
     assert(genome1.validate());
     assert(genome2.validate());
     assert(genome1.getNetwork() && genome2.getNetwork());
+
+    const Network::NodeIds& inputNodes1 = genome1.getInputNodes();
+    const Network::NodeIds& outputNodes1 = genome1.getOutputNodes();
+    const Network::NodeIds& inputNodes2 = genome2.getInputNodes();
+    const Network::NodeIds& outputNodes2 = genome2.getOutputNodes();
+
     // Make sure that the numbers of input/output nodes are the same.
     // NOTE: Not only the number of nodes but also all node ids have to be identical too. Maybe we should check that here on debug.
-    assert(genome1.getNetwork()->getInputNodes().size() == genome2.getNetwork()->getInputNodes().size());
-    assert(genome1.getNetwork()->getOutputNodes().size() == genome2.getNetwork()->getOutputNodes().size());
+    assert(inputNodes1.size() == inputNodes2.size());
+    assert(outputNodes1.size() == outputNodes2.size());
 
     RandomGenerator& random = m_params.m_random ? *m_params.m_random : PseudoRandom::getInstance();
 
@@ -186,11 +192,11 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // Add input, output and bias nodes in case we are missing any of them.
     {
-        for (NodeId node : genome1.getNetwork()->getInputNodes())
+        for (NodeId node : inputNodes1)
         {
             newGenomeNodes.insert({ node, network1->getNode(node) });
         }
-        for (NodeId node : network1->getOutputNodes())
+        for (NodeId node : outputNodes1)
         {
             newGenomeNodes.insert({ node, network1->getNode(node) });
         }
@@ -204,10 +210,7 @@ auto DefaultCrossOver::crossOver(const GenomeBase& genome1In, const GenomeBase& 
 
     // Create a new network.
     Genome::NetworkPtr network = NeuralNetworkFactory::createNeuralNetwork<Genome::Node, Genome::Edge>(
-        network1->getType(),
-        newGenomeNodes, newGenomeEdges,
-        genome1.getNetwork()->getInputNodes(),
-        genome1.getNetwork()->getOutputNodes());
+        network1->getType(), newGenomeNodes, newGenomeEdges, inputNodes1, outputNodes1);
 
     // In case of feed forward network, the child genome might have circular connections because some edges were enabled or due to disjoint edges inherited from the less fit genome.
     // Disable those edges one by one until we have no circular connection.

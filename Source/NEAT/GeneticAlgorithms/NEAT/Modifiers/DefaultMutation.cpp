@@ -43,7 +43,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             if (random->randomReal01() <= m_params.m_weightMutationNewValRate)
             {
                 // Assign a new random weight.
-                network->setWeight(edgeId, random->randomReal(m_params.m_weightMutationValMin, m_params.m_weightMutationValMax));
+                genomeInOut->setEdgeWeight(edgeId, random->randomReal(m_params.m_weightMutationValMin, m_params.m_weightMutationValMax));
             }
             else
             {
@@ -52,7 +52,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 const float perturbation = random->randomReal(-m_params.m_weightMutationPerturbation, m_params.m_weightMutationPerturbation);
                 weight = weight * (1.0f + perturbation);
                 weight = std::max(m_params.m_weightMutationValMin, std::min(m_params.m_weightMutationValMax, weight));
-                network->setWeight(edgeId, weight);
+                genomeInOut->setEdgeWeight(edgeId, weight);
             }
         }
     }
@@ -63,11 +63,11 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     NodeId nodeActivationMutated = NodeId::invalid();
     if (m_params.m_activationProvider && random->randomReal01() < m_params.m_changeActivationRate)
     {
-        auto& nodes = network->accessNodes();
+        auto& nodes = network->getNodes();
 
         // Select a random node.
         int index = random->randomInteger(0, nodes.size() - 1);
-        Genome::Network::NodeData& nd = nodes[index];
+        const Genome::Network::NodeData& nd = nodes[index];
         NodeId nodeId = nd.getId();
 
         // We don't change activation functions for input and bias nodes.
@@ -77,11 +77,11 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             if (activation->m_id != nd.m_node.getActivationId())
             {
                 // Update activation function.
-                nd.m_node.setActivation(activation);
+                genome->setActivation(nodeId, activation);
 
                 // Reset node id and ids of all the connected edges.
-                genome->reassignNewNodeIdAndConnectedEdgeIds(nd.getId());
-                nodeActivationMutated = nd.getId();
+                genome->reassignNewNodeIdAndConnectedEdgeIds(nodeId);
+                nodeActivationMutated = nodeId;
             }
         }
     }

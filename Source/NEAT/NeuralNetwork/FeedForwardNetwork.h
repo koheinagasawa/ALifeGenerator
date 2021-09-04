@@ -157,7 +157,7 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
     }
 
     // Make sure the the network doesn't contain circular edges.
-    if (hasCircularEdges()) return false;
+    if (this->hasCircularEdges()) return false;
 #endif
     return true;
 }

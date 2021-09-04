@@ -11,10 +11,11 @@
 // Returns true if the two genomes have the same structure.
 bool TestUtils::compareGenome(const NEAT::Genome& g1, const NEAT::Genome& g2)
 {
+    if (g1.getNumNodes() != g2.getNumNodes()) return false;
+    if (g1.getNumEdges() != g2.getNumEdges()) return false;
+
     const NEAT::Genome::Network* net1 = g1.getNetwork();
     const NEAT::Genome::Network* net2 = g2.getNetwork();
-    if (net1->getNumNodes() != net2->getNumNodes()) return false;
-    if (net1->getNumEdges() != net2->getNumEdges()) return false;
 
     for (const auto& node : net1->getNodes())
     {

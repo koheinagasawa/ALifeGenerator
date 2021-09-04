@@ -79,19 +79,19 @@ TEST(SpeciesChampionSelector, SelectChampions)
     // Generate genomes.
     scs.generate(6, 3, nullptr);
     EXPECT_EQ(scs.getNumGeneratedGenomes(), 2);
-    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNetwork()->getNumEdges(), genome1->getNetwork()->getNumEdges());
-    EXPECT_EQ(scs.getGeneratedGenomes()[1]->getNetwork()->getNumEdges(), genome2->getNetwork()->getNumEdges());
+    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNumEdges(), genome1->getNumEdges());
+    EXPECT_EQ(scs.getGeneratedGenomes()[1]->getNumEdges(), genome2->getNumEdges());
 
     // Make s2 not reproducible.
     s2->setReproducible(false);
     scs.generate(6, 3, nullptr);
     EXPECT_EQ(scs.getNumGeneratedGenomes(), 1);
-    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNetwork()->getNumEdges(), genome1->getNetwork()->getNumEdges());
+    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNumEdges(), genome1->getNumEdges());
     s2->setReproducible(true);
 
     // Generate only one genome.
     scs.generate(6, 1, nullptr);
     EXPECT_EQ(scs.getNumGeneratedGenomes(), 1);
-    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNetwork()->getNumEdges(), genome2->getNetwork()->getNumEdges());
+    EXPECT_EQ(scs.getGeneratedGenomes()[0]->getNumEdges(), genome2->getNumEdges());
 
 }

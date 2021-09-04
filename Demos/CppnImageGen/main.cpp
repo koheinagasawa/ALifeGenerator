@@ -50,7 +50,7 @@ public:
         image.save_image(str.c_str());
     }
 
-    void generateImage(const GenomeBase* genome)
+    void generateImage(GenomeBase* genome)
     {
         std::vector<float> inputValues;
         inputValues.resize(2);
@@ -82,7 +82,7 @@ public:
         }
     }
 
-    virtual float calcFitness(const GenomeBase* genome) override
+    virtual float calcFitness(GenomeBase* genome) override
     {
         generateImage(genome);
         float diff = 0.f;

@@ -120,6 +120,7 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
     , m_innovIdCounter(source.m_innovIdCounter)
 {
     m_network = network;
+    m_needRebake = true;
 
 #ifdef _DEBUG
     {
@@ -132,7 +133,7 @@ Genome::Genome(const Genome& source, NetworkPtr network, const Network::EdgeIds&
                 numInputNodes++;
             }
         }
-        assert(numInputNodes == (int)source.getNetwork()->getInputNodes().size());
+        assert(numInputNodes == (int)source.getInputNodes().size());
         assert(!(m_biasNode.isValid() ^ source.getBiasNode().isValid()));
 
         // Make sure that the number of innovations and the edges in the source are the same.
@@ -202,6 +203,10 @@ void Genome::addNodeAt(EdgeId edgeId, const Activation* activation, NodeId& newN
 
     // Sort the innovations.
     std::sort(m_innovations.begin(), m_innovations.end());
+
+    m_needRebake = true;
+
+    assert(validate());
 }
 
 EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAddFlippedEdgeOnFail)
@@ -230,6 +235,9 @@ EdgeId Genome::addEdgeAt(NodeId inNode, NodeId outNode, float weight, bool tryAd
         // Record the innovation.
         m_innovations.push_back(newEdge);
         std::sort(m_innovations.begin(), m_innovations.end());
+        m_needRebake = true;
+
+        assert(validate());
 
         return newEdge;
     }
@@ -255,6 +263,10 @@ void Genome::removeEdge(EdgeId edge)
             break;
         }
     }
+
+    m_needRebake = true;
+
+    assert(validate());
 }
 
 void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
@@ -262,6 +274,7 @@ void Genome::reassignNodeId(const NodeId originalId, const NodeId newId)
     assert(m_network->hasNode(originalId) && !m_network->hasNode(newId));
 
     m_network->replaceNodeId(originalId, newId);
+    m_needRebake = true;
 
     assert(validate());
 }
@@ -285,6 +298,10 @@ void Genome::reassignNewNodeIdAndConnectedEdgeIds(const NodeId originalId)
         EdgeId newEdgeId = m_innovIdCounter.getEdgeId(entry);
         reassignInnovation(edge, newEdgeId);
     }
+
+    m_needRebake = true;
+
+    assert(validate());
 }
 
 void Genome::reassignInnovation(const EdgeId originalId, const EdgeId newId)

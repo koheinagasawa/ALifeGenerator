@@ -256,17 +256,17 @@ TEST(DefaultMutation, MutateGeneration)
         const Genome::Network* network = genome1->getNetwork();
 
         EXPECT_TRUE(genome1->validate());
-        EXPECT_EQ(network->getInputNodes().size(), 2);
-        EXPECT_EQ(network->getNumNodes(), 4);
-        EXPECT_EQ(network->getNumEdges(), 4);
-        EXPECT_EQ(network->getOutputNodes().size(), 2);
+        EXPECT_EQ(genome1->getInputNodes().size(), 2);
+        EXPECT_EQ(genome1->getNumNodes(), 4);
+        EXPECT_EQ(genome1->getNumEdges(), 4);
+        EXPECT_EQ(genome1->getOutputNodes().size(), 2);
 
         // All the weights should be 1.0
         {
             const auto& edges = network->getEdges();
             for (const auto& edge : edges)
             {
-                EXPECT_EQ(network->getWeight(edge.getId()), 1.0);
+                EXPECT_EQ(genome1->getEdgeWeight(edge.getId()), 1.0);
             }
         }
     }
@@ -285,7 +285,6 @@ TEST(DefaultMutation, MutateGeneration)
         DefaultMutation::MutationOut out;
         mutator.mutate(genome1.get(), out);
 
-        const Genome::Network* network = genome1->getNetwork();
         EXPECT_TRUE(genome1->validate());
         EXPECT_TRUE(out.m_newNodeInfo.m_nodeId.isValid());
         EXPECT_TRUE(out.m_newNodeInfo.m_previousEdgeId.isValid());
@@ -301,11 +300,11 @@ TEST(DefaultMutation, MutateGeneration)
         EXPECT_FALSE(out.m_newEdgeInfos[2].m_sourceInNode.isValid());
         EXPECT_FALSE(out.m_newEdgeInfos[2].m_sourceOutNode.isValid());
         EXPECT_FALSE(out.m_newEdgeInfos[2].m_edgeId.isValid());
-        EXPECT_EQ(network->getInputNodes().size(), 2);
-        EXPECT_EQ(network->getNumNodes(), 5);
-        EXPECT_EQ(network->getNode(out.m_newNodeInfo.m_nodeId).getNodeType(), Genome::Node::Type::HIDDEN);
-        EXPECT_EQ(network->getNumEdges(), 6);
-        EXPECT_EQ(network->getOutputNodes().size(), 2);
+        EXPECT_EQ(genome1->getInputNodes().size(), 2);
+        EXPECT_EQ(genome1->getNumNodes(), 5);
+        EXPECT_EQ(genome1->getNetwork()->getNode(out.m_newNodeInfo.m_nodeId).getNodeType(), Genome::Node::Type::HIDDEN);
+        EXPECT_EQ(genome1->getNumEdges(), 6);
+        EXPECT_EQ(genome1->getOutputNodes().size(), 2);
     }
 
     // Create one more genome by copying genome1.
@@ -327,12 +326,11 @@ TEST(DefaultMutation, MutateGeneration)
     for (const auto& g : genomes)
     {
         const Genome* newGenome = static_cast<const Genome*>(g.get());
-        const Genome::Network* network = newGenome->getNetwork();
         EXPECT_TRUE(newGenome->validate());
-        EXPECT_EQ(network->getInputNodes().size(), 2);
-        EXPECT_EQ(network->getNumNodes(), 6);
-        EXPECT_EQ(network->getNumEdges(), 9);
-        EXPECT_EQ(network->getOutputNodes().size(), 2);
+        EXPECT_EQ(newGenome->getInputNodes().size(), 2);
+        EXPECT_EQ(newGenome->getNumNodes(), 6);
+        EXPECT_EQ(newGenome->getNumEdges(), 9);
+        EXPECT_EQ(newGenome->getOutputNodes().size(), 2);
     }
 
     // Compare the two modified genomes.

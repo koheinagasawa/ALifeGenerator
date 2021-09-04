@@ -20,14 +20,14 @@ public:
     using FitnessCalcPtr = std::shared_ptr<FitnessCalculatorBase>;
 
     // This function has to be implemented to calculate fitness of a genome.
-    virtual float calcFitness(const GenomeBase* genome) = 0;
+    virtual float calcFitness(GenomeBase* genome) = 0;
 
     // Return a clone of this calculator.
     virtual FitnessCalcPtr clone() const = 0;
 
 protected:
     // This function can be called inside calcFitness() to evaluate a genome to assess its fitness.
-    void evaluateGenome(const GenomeBase* genome, const std::vector<float>& inputNodeValues, float biasNodeValue = 0.f);
+    void evaluateGenome(GenomeBase* genome, const std::vector<float>& inputNodeValues, float biasNodeValue = 0.f);
 
 public:
     NeuralNetworkEvaluator m_evaluator;

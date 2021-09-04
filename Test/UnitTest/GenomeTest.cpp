@@ -25,14 +25,14 @@ TEST(Genome, CreateGenome)
 
     // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network->getNumEdges(), 4);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumEdges(), 4);
+    EXPECT_EQ(genome.getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
     // Create another genome by copying the original one.
@@ -42,14 +42,14 @@ TEST(Genome, CreateGenome)
 
     // Check that genome2 is identical with genome1.
     EXPECT_TRUE(genome2.validate());
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network2->getNumNodes(), 4);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome2.getNumNodes(), 4);
     EXPECT_EQ(network2->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network2->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network2->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network2->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network2->getNumEdges(), 4);
-    EXPECT_EQ(network2->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome2.getNumEdges(), 4);
+    EXPECT_EQ(genome2.getOutputNodes().size(), 2);
     EXPECT_EQ(genome2.getInnovations().size(), 4);
 
     // Check if innovation ids are the same
@@ -68,15 +68,15 @@ TEST(Genome, CreateGenome)
     const Genome::Network* network3 = genome3.getNetwork();
 
     EXPECT_TRUE(genome3.validate());
-    EXPECT_EQ(network3->getInputNodes().size(), 2);
-    EXPECT_EQ(network3->getNumNodes(), 5);
+    EXPECT_EQ(genome3.getInputNodes().size(), 2);
+    EXPECT_EQ(genome3.getNumNodes(), 5);
     EXPECT_EQ(network3->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network3->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network3->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::BIAS);
     EXPECT_EQ(network3->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network3->getNode(NodeId(4)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network3->getNumEdges(), 6);
-    EXPECT_EQ(network3->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome3.getNumEdges(), 6);
+    EXPECT_EQ(genome3.getOutputNodes().size(), 2);
     EXPECT_EQ(genome3.getInnovations().size(), 6);
 }
 
@@ -96,20 +96,20 @@ TEST(Genome, ModifyGenome)
 
     // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network->getNumEdges(), 4);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumEdges(), 4);
+    EXPECT_EQ(genome.getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
     NodeId newNode;
     EdgeId newEdge1, newEdge2, newEdge3;
 
-    genome.accessNetwork()->setWeight(EdgeId(0), 0.5f);
+    genome.setEdgeWeight(EdgeId(0), 0.5f);
 
     // Add a new node
     genome.addNodeAt(EdgeId(0), nullptr, newNode, newEdge1, newEdge2);
@@ -121,12 +121,12 @@ TEST(Genome, ModifyGenome)
     EXPECT_TRUE(genome.isEdgeEnabled(newEdge2));
     EXPECT_EQ(network->getEdge(newEdge1).getWeight(), 1.0f);
     EXPECT_EQ(network->getEdge(newEdge2).getWeight(), 0.5f);
-    EXPECT_EQ(network->getNumNodes(), 5);
-    EXPECT_EQ(network->getNumEdges(), 6);
+    EXPECT_EQ(genome.getNumNodes(), 5);
+    EXPECT_EQ(genome.getNumEdges(), 6);
     EXPECT_EQ(genome.getNumEnabledEdges(), 5);
     EXPECT_EQ(genome.getInnovations().size(), 6);
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getOutputNodes().size(), 2);
     EXPECT_TRUE(network->hasNode(newNode));
     EXPECT_TRUE(network->hasEdge(newEdge1));
     EXPECT_TRUE(network->hasEdge(newEdge2));
@@ -141,8 +141,8 @@ TEST(Genome, ModifyGenome)
     newEdge3 = genome.addEdgeAt(NodeId(3), newNode, 3.f);
     EXPECT_NE(newEdge3, EdgeId::invalid());
     EXPECT_TRUE(network->isConnected(NodeId(3), newNode));
-    EXPECT_EQ(network->getNumNodes(), 5);
-    EXPECT_EQ(network->getNumEdges(), 7);
+    EXPECT_EQ(genome.getNumNodes(), 5);
+    EXPECT_EQ(genome.getNumEdges(), 7);
     EXPECT_EQ(genome.getNumEnabledEdges(), 6);
     EXPECT_EQ(genome.getInnovations().size(), 7);
     EXPECT_TRUE(network->hasEdge(newEdge3));
@@ -153,8 +153,8 @@ TEST(Genome, ModifyGenome)
     // Remove an edge
     genome.removeEdge(newEdge2);
     EXPECT_FALSE(network->hasEdge(newEdge2));
-    EXPECT_EQ(network->getNumNodes(), 5);
-    EXPECT_EQ(network->getNumEdges(), 6);
+    EXPECT_EQ(genome.getNumNodes(), 5);
+    EXPECT_EQ(genome.getNumEdges(), 6);
     EXPECT_EQ(genome.getNumEnabledEdges(), 5);
 }
 
@@ -174,14 +174,14 @@ TEST(Genome, ReassignInnovation)
 
     // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network->getNumEdges(), 4);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumEdges(), 4);
+    EXPECT_EQ(genome.getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
     // Reassign innovation id of an edge.
@@ -213,14 +213,14 @@ TEST(Genome, ReassignNodeId)
 
     // Verify the genome's structure. It should be fully connected network with two input nodes and two output nodes.
     EXPECT_TRUE(genome.validate());
-    EXPECT_EQ(network->getInputNodes().size(), 2);
-    EXPECT_EQ(network->getNumNodes(), 4);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumNodes(), 4);
     EXPECT_EQ(network->getNode(NodeId(0)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(1)).getNodeType(), Genome::Node::Type::INPUT);
     EXPECT_EQ(network->getNode(NodeId(2)).getNodeType(), Genome::Node::Type::OUTPUT);
     EXPECT_EQ(network->getNode(NodeId(3)).getNodeType(), Genome::Node::Type::OUTPUT);
-    EXPECT_EQ(network->getNumEdges(), 4);
-    EXPECT_EQ(network->getOutputNodes().size(), 2);
+    EXPECT_EQ(genome.getNumEdges(), 4);
+    EXPECT_EQ(genome.getOutputNodes().size(), 2);
     EXPECT_EQ(genome.getInnovations().size(), 4);
 
     // Reassign NodeId of a node.
@@ -230,12 +230,12 @@ TEST(Genome, ReassignNodeId)
     EXPECT_TRUE(network->hasNode(originalNode));
     EXPECT_FALSE(network->hasNode(newNode));
     EXPECT_EQ(network->getInNode(edge), originalNode);
-    EXPECT_EQ(network->getInputNodes()[0], originalNode);
+    EXPECT_EQ(genome.getInputNodes()[0], originalNode);
     genome.reassignNodeId(originalNode, newNode);
     EXPECT_FALSE(network->hasNode(originalNode));
     EXPECT_TRUE(network->hasNode(newNode));
     EXPECT_EQ(network->getInNode(edge), newNode);
-    EXPECT_TRUE(network->getInputNodes()[0] == newNode || network->getInputNodes()[1] == newNode);
+    EXPECT_TRUE(genome.getInputNodes()[0] == newNode || network->getInputNodes()[1] == newNode);
 }
 
 TEST(Genome, EvaluateGenome)
@@ -252,7 +252,7 @@ TEST(Genome, EvaluateGenome)
     cinfo.m_activationProvider = &activation;
     Genome genome(cinfo);
 
-    const Genome::Network::NodeIds& outputNodes = genome.getNetwork()->getOutputNodes();
+    const Genome::Network::NodeIds& outputNodes = genome.getOutputNodes();
 
     // Evaluate the network
     std::vector<float> inputs;
@@ -264,7 +264,7 @@ TEST(Genome, EvaluateGenome)
     // Check the node values are expected.
     for (NodeId nodeId : outputNodes)
     {
-        EXPECT_EQ(genome.getNetwork()->getNode(nodeId).getValue(), 6.f);
+        EXPECT_EQ(genome.getNodeValue(nodeId), 6.f);
     }
 
     // Change an edge weight
@@ -278,8 +278,8 @@ TEST(Genome, EvaluateGenome)
     genome.evaluate();
 
     // Check the node values are expected.
-    EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[0]).getValue(), 0.f);
-    EXPECT_EQ(genome.getNetwork()->getNode(outputNodes[1]).getValue(), 1.f);
+    EXPECT_EQ(genome.getNodeValue(outputNodes[0]), 0.f);
+    EXPECT_EQ(genome.getNodeValue(outputNodes[1]), 1.f);
 }
 
 TEST(Genome, CalcGenomesDistance)
@@ -337,8 +337,8 @@ TEST(Genome, CalcGenomesDistance)
         EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
 
         EXPECT_TRUE(genome1.validate());
-        EXPECT_EQ(genome1.getNetwork()->getNumNodes(), 6);
-        EXPECT_EQ(genome1.getNetwork()->getNumEdges(), 9);
+        EXPECT_EQ(genome1.getNumNodes(), 6);
+        EXPECT_EQ(genome1.getNumEdges(), 9);
 
         mutator.m_params.m_addEdgeMutationRate = 0.0f;
         mutator.mutate(&genome2, mutOut);
@@ -346,8 +346,8 @@ TEST(Genome, CalcGenomesDistance)
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
 
         EXPECT_TRUE(genome2.validate());
-        EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
-        EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
+        EXPECT_EQ(genome2.getNumNodes(), 5);
+        EXPECT_EQ(genome2.getNumEdges(), 6);
     }
 
     // Calculate the distance of the two genomes.

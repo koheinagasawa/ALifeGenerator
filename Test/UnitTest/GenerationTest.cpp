@@ -16,15 +16,15 @@ namespace
     class MyFitnessCalculator : public FitnessCalculatorBase
     {
     public:
-        virtual float calcFitness(const GenomeBase* genome) override
+        virtual float calcFitness(GenomeBase* genome) override
         {
             evaluateGenome(genome, { 1.f, 1.f, 1.f });
 
-            const Genome::Network::NodeIds& outputNodes = genome->getNetwork()->getOutputNodes();
+            const Genome::Network::NodeIds& outputNodes = genome->getOutputNodes();
             float fitness = 0.f;
             for (NodeId node : outputNodes)
             {
-                fitness += genome->getNetwork()->getNode(node).getValue();
+                fitness += genome->getNodeValue(node);
             }
             return std::max(0.f, fitness);
         }

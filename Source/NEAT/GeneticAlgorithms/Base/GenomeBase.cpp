@@ -6,13 +6,19 @@
 
 #include <NEAT/Neat.h>
 #include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
-
+#include <NEAT/NeuralNetwork/NeuralNetworkEvaluator.h>
 
 GenomeBase::GenomeBase(const GenomeBase& other)
     : m_biasNode(other.m_biasNode)
+    , m_needRebake(other.m_needRebake)
 {
     // Copy the network
     m_network = other.m_network->clone();
+
+    if (other.m_bakedNetwork)
+    {
+        m_bakedNetwork = std::make_shared<BakedNeuralNetwork>(*other.m_bakedNetwork);
+    }
 }
 
 void GenomeBase::operator= (const GenomeBase& other)
@@ -21,11 +27,31 @@ void GenomeBase::operator= (const GenomeBase& other)
 
     // Copy the network
     m_network = other.m_network->clone();
+
+    if (other.m_bakedNetwork)
+    {
+        m_bakedNetwork = std::make_shared<BakedNeuralNetwork>(*other.m_bakedNetwork);
+        m_needRebake = other.m_needRebake;
+    }
+    else
+    {
+        m_bakedNetwork = nullptr;
+        m_needRebake = true;
+    }
 }
 
 std::shared_ptr<GenomeBase> GenomeBase::clone() const
 {
     return std::make_shared<GenomeBase>(*this);
+}
+
+void GenomeBase::bake()
+{
+    if (m_needRebake)
+    {
+        m_bakedNetwork = m_network->bake();
+        m_needRebake = false;
+    }
 }
 
 int GenomeBase::getNumEnabledEdges() const
@@ -41,15 +67,17 @@ int GenomeBase::getNumEnabledEdges() const
     return num;
 }
 
-void GenomeBase::clearNodeValues() const
+void GenomeBase::clearNodeValues()
 {
-    for (auto& node : m_network->accessNodes())
+    m_network->setAllNodeValues(0.f);
+
+    if (shouldUpdateBakedNetworkNode())
     {
-        node.m_node.setValue(0.f);
+        m_bakedNetwork->clearNodeValues();
     }
 }
 
-void GenomeBase::setInputNodeValues(const std::vector<float>& values, float biasNodeValue) const
+void GenomeBase::setInputNodeValues(const std::vector<float>& values, float biasNodeValue)
 {
     assert(values.size() == m_network->getInputNodes().size());
 
@@ -60,13 +88,19 @@ void GenomeBase::setInputNodeValues(const std::vector<float>& values, float bias
     }
 
     // Set input node values.
+    const bool updateBakedNetwork = shouldUpdateBakedNetworkNode();
     for (int i = 0; i < (int)values.size(); i++)
     {
-        m_network->setNodeValue(m_network->getInputNodes()[i], values[i]);
+        NodeId nodeId = m_network->getInputNodes()[i];
+        m_network->setNodeValue(nodeId, values[i]);
+        if (updateBakedNetwork)
+        {
+            m_bakedNetwork->setNodeValue(nodeId, values[i]);
+        }
     }
 }
 
-void GenomeBase::setBiasNodeValue(float value) const
+void GenomeBase::setBiasNodeValue(float value)
 {
     if (!m_biasNode.isValid())
     {
@@ -74,7 +108,22 @@ void GenomeBase::setBiasNodeValue(float value) const
         return;
     }
 
-    m_network->accessNode(m_biasNode).setValue(value);
+    m_network->setNodeValue(m_biasNode, value);
+
+    if (shouldUpdateBakedNetworkNode())
+    {
+        m_bakedNetwork->setNodeValue(m_biasNode, value);
+    }
+}
+
+float GenomeBase::getNodeValue(NodeId nodeId) const
+{
+    if (shouldUpdateBakedNetworkNode())
+    {
+        return m_bakedNetwork->getNodeValue(nodeId);
+    }
+
+    return m_network->getNode(nodeId).getValue();
 }
 
 void GenomeBase::setActivation(NodeId nodeId, const Activation* activation)
@@ -83,6 +132,7 @@ void GenomeBase::setActivation(NodeId nodeId, const Activation* activation)
     assert(!m_network->getNode(nodeId).isInputOrBias());
 
     m_network->accessNode(nodeId).setActivation(activation);
+    m_needRebake = true;
 }
 
 void GenomeBase::setActivationAll(const Activation* activation)
@@ -97,12 +147,31 @@ void GenomeBase::setActivationAll(const Activation* activation)
         if (nodeType == Node::Type::HIDDEN || nodeType == Node::Type::OUTPUT)
         {
             node.setActivation(activation);
+            m_needRebake = true;
         }
     }
 }
 
-void GenomeBase::evaluate() const
+void GenomeBase::evaluate()
 {
     assert(m_network.get());
-    m_network->evaluate();
+
+    bake();
+    m_bakedNetwork->evaluate();
+}
+
+void GenomeBase::evaluate(NeuralNetworkEvaluator* evaluator)
+{
+    assert(m_network.get());
+
+    if (!evaluator)
+    {
+        // Fallback to evaluation without evaluator.
+        evaluate();
+    }
+    else
+    {
+        bake();
+        evaluator->evaluate(m_network->getOutputNodes(), m_bakedNetwork.get());
+    }
 }

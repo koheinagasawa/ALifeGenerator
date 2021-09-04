@@ -73,7 +73,6 @@ TEST(GenomeBase, GenomeBasicOperations)
 
     // Create network.
     genome.createNetwork(nodes, edges);
-    EXPECT_TRUE(genome.getNetwork() != nullptr);
 
     // Test edge interface.
     EXPECT_EQ(genome.getEdgeWeight(EdgeId(0)), 2.0f);
@@ -90,23 +89,23 @@ TEST(GenomeBase, GenomeBasicOperations)
     genome.setEdgeEnabled(EdgeId(0), true);
 
     // Test node interface.
-    EXPECT_EQ(genome.getNetwork()->getInputNodes().size(), 2);
-    EXPECT_EQ(genome.getNetwork()->getInputNodes()[0], NodeId(0));
-    EXPECT_EQ(genome.getNetwork()->getInputNodes()[1], NodeId(1));
-    EXPECT_EQ(genome.getNetwork()->getNode(NodeId(0)).getValue(), 0.f);
-    EXPECT_EQ(genome.getNetwork()->getNode(NodeId(1)).getValue(), 0.f);
+    EXPECT_EQ(genome.getInputNodes().size(), 2);
+    EXPECT_EQ(genome.getInputNodes()[0], NodeId(0));
+    EXPECT_EQ(genome.getInputNodes()[1], NodeId(1));
+    EXPECT_EQ(genome.getNodeValue(NodeId(0)), 0.f);
+    EXPECT_EQ(genome.getNodeValue(NodeId(1)), 0.f);
     {
         std::vector<float> inputValues;
         inputValues.push_back(5.f);
         inputValues.push_back(6.f);
         genome.setInputNodeValues(inputValues);
-        EXPECT_EQ(genome.getNetwork()->getNode(NodeId(0)).getValue(), 5.f);
-        EXPECT_EQ(genome.getNetwork()->getNode(NodeId(1)).getValue(), 6.f);
+        EXPECT_EQ(genome.getNodeValue(NodeId(0)), 5.f);
+        EXPECT_EQ(genome.getNodeValue(NodeId(1)), 6.f);
     }
     EXPECT_EQ(genome.getBiasNode(), NodeId(4));
-    EXPECT_EQ(genome.getNetwork()->getNode(genome.getBiasNode()).getValue(), 0.f);
+    EXPECT_EQ(genome.getNodeValue(genome.getBiasNode()), 0.f);
     genome.setBiasNodeValue(1.f);
-    EXPECT_EQ(genome.getNetwork()->getNode(genome.getBiasNode()).getValue(), 1.f);
+    EXPECT_EQ(genome.getNodeValue(genome.getBiasNode()), 1.f);
 
     // Test activation interface
     Activation newActivation = [](float value) { return value; };
@@ -115,14 +114,14 @@ TEST(GenomeBase, GenomeBasicOperations)
 
     // Test evaluation
     genome.evaluate();
-    EXPECT_EQ(genome.getNetwork()->getNode(NodeId(3)).getValue(), 272.f); // (2 * (5 * 2 + 6 * 4)) * 4 = 272
+    EXPECT_EQ(genome.getNodeValue(NodeId(3)), 272.f); // (2 * (5 * 2 + 6 * 4)) * 4 = 272
     std::vector<float> inputValues;
     inputValues.push_back(1.f);
     inputValues.push_back(2.f);
     genome.clearNodeValues();
     genome.setInputNodeValues(inputValues);
     genome.evaluate();
-    EXPECT_EQ(genome.getNetwork()->getNode(NodeId(3)).getValue(), 80.f); // (2 * (1 * 2 + 2 * 4)) * 4 = 80
+    EXPECT_EQ(genome.getNodeValue(NodeId(3)), 80.f); // (2 * (1 * 2 + 2 * 4)) * 4 = 80
 
     // Clear node values
     genome.clearNodeValues();

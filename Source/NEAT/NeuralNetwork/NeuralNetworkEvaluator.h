@@ -8,6 +8,8 @@
 
 #include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
+class BakedNeuralNetwork;
+
 // Helper class to evaluate neural network.
 class NeuralNetworkEvaluator
 {
@@ -19,10 +21,18 @@ public:
         CONVERGE,  // Perform evaluation until the output values converge.
     };
 
-    template <typename Node, typename Edge>
-    void evaluate(NeuralNetwork<Node, Edge>* network) const;
+    // Evaluate the given network.
+    template <typename Network>
+    void evaluate(const std::vector<NodeId>& outputNodes, Network* network) const;
 
     inline int getCurrentIteration() const { return m_currentItration; }
+
+protected:
+    template <typename Network>
+    inline bool isCircularNetwork(const Network* network) const;
+
+    template <typename Network>
+    inline float getNodeValue(NodeId nodeId, const Network* network) const;
 
 public:
     EvaluationType m_type = EvaluationType::ITERATION;  // The method to evaluate network.
@@ -33,17 +43,40 @@ protected:
     mutable int m_currentItration;
 };
 
-template <typename Node, typename Edge>
-void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
+template <typename NeuralNetwork>
+inline bool NeuralNetworkEvaluator::isCircularNetwork(const NeuralNetwork* network) const
+{
+    return network->allowsCircularNetwork();
+}
+
+template <>
+inline bool NeuralNetworkEvaluator::isCircularNetwork<BakedNeuralNetwork>(const BakedNeuralNetwork* network) const
+{
+    return network->isCircularNetwork();
+}
+
+template <typename NeuralNetwork>
+inline float NeuralNetworkEvaluator::getNodeValue(NodeId nodeId, const NeuralNetwork* network) const
+{
+    return network->getNode(nodeId).getValue();
+}
+
+template <>
+inline float NeuralNetworkEvaluator::getNodeValue<BakedNeuralNetwork>(NodeId nodeId, const BakedNeuralNetwork* network) const
+{
+    return network->getNodeValue(nodeId);
+}
+
+template <typename Network>
+void NeuralNetworkEvaluator::evaluate(const std::vector<NodeId>& outputNodes, Network* network) const
 {
     m_currentItration = 0;
 
-    if (network->allowsCircularNetwork())
+    if (isCircularNetwork(network))
     {
         // Network containing recursion.
         const bool checkConvergence = m_type == EvaluationType::CONVERGE;
 
-        const NeuralNetwork<Node, Edge>::NodeIds& outputNodes = network->getOutputNodes();
         const int numOutputNodes = (int)outputNodes.size();
 
         // Prepare a buffer to store output values of the previous evaluation.
@@ -54,7 +87,7 @@ void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
         }
 
         // Run evaluation multiple times.
-        for (;m_currentItration < m_evalIterations; m_currentItration++)
+        for (; m_currentItration < m_evalIterations; m_currentItration++)
         {
             network->evaluate();
 
@@ -66,7 +99,7 @@ void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
                     bool converged = true;
                     for (int i = 0; i < numOutputNodes; i++)
                     {
-                        const float nodeVal = network->getNode(outputNodes[i]).getValue();
+                        const float nodeVal = getNodeValue(outputNodes[i], network);
                         converged &= (std::fabs(previousOutputVals[i] - nodeVal) <= m_convergenceThreshold);
                         previousOutputVals[i] = nodeVal;
                     }
@@ -81,7 +114,7 @@ void NeuralNetworkEvaluator::evaluate(NeuralNetwork<Node, Edge>* network) const
                     // Just copy the output values for the first run.
                     for (int i = 0; i < numOutputNodes; i++)
                     {
-                        previousOutputVals[i] = network->getNode(outputNodes[i]).getValue();
+                        previousOutputVals[i] = getNodeValue(outputNodes[i], network);
                     }
                 }
             }

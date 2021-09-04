@@ -201,6 +201,7 @@
     <ClInclude Include="NeuralNetwork\Activations\Activation.h" />
     <ClInclude Include="NeuralNetwork\Activations\ActivationFactory.h" />
     <ClInclude Include="NeuralNetwork\Activations\ActivationLibrary.h" />
+    <ClInclude Include="NeuralNetwork\BakedNeuralNetwork.h" />
     <ClInclude Include="NeuralNetwork\Edge.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetworkEvaluator.h" />
     <ClInclude Include="NeuralNetwork\NeuralNetworkFactory.h" />
@@ -229,6 +230,7 @@
     </ClCompile>
     <ClCompile Include="NeuralNetwork\Activations\ActivationFactory.cpp" />
     <ClCompile Include="NeuralNetwork\Activations\ActivationLibrary.cpp" />
+    <ClCompile Include="NeuralNetwork\BakedNeuralNetwork.cpp" />
     <ClCompile Include="NeuralNetwork\Edge.cpp" />
     <ClCompile Include="NeuralNetwork\Node.cpp" />
   </ItemGroup>

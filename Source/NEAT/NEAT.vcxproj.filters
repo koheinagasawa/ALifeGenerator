@@ -50,6 +50,9 @@
     <ClCompile Include="NeuralNetwork\Activations\ActivationFactory.cpp">
       <Filter>NeuralNetwork\Activations</Filter>
     </ClCompile>
+    <ClCompile Include="NeuralNetwork\BakedNeuralNetwork.cpp">
+      <Filter>NeuralNetwork</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Neat.h" />
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="NeuralNetwork\Activations\ActivationFactory.h">
       <Filter>NeuralNetwork\Activations</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralNetwork\BakedNeuralNetwork.h">
+      <Filter>NeuralNetwork</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -13,14 +13,14 @@ using NN = NeuralNetwork<Node, Edge>;
 
 TEST(NeuralNetworkEvaluator, Evaluate)
 {
-// Create a NN looks like below
+    // Create a NN looks like below
 
-//                _0.2
-//                \ /
-// 5.0 (0) -1.0-> (2) -(-3.0)-> (4)
-//
-// 6.0 (1) -2.0-> (3) -0.1-> (5) -7.0-> (6)
-//                 |____0.3___|
+    //                _0.2
+    //                \ /
+    // 5.0 (0) -1.0-> (2) -(-3.0)-> (4)
+    //
+    // 6.0 (1) -2.0-> (3) -0.1-> (5) -7.0-> (6)
+    //                 |____0.3___|
 
     NodeId n0(0);
     NodeId n1(1);
@@ -70,21 +70,21 @@ TEST(NeuralNetworkEvaluator, Evaluate)
     evaluator.m_type = NeuralNetworkEvaluator::EvaluationType::ITERATION;
     evaluator.m_evalIterations = 2;
 
-    evaluator.evaluate(&nn);
+    evaluator.evaluate(nn.getOutputNodes(), &nn);
     EXPECT_TRUE(std::fabs(nn.getNode(n4).getValue() - (-18.f)) < 1e-4f); // -3 * (5 * 1 + 0.2 * 5) = -18.0f
     EXPECT_TRUE(std::fabs(nn.getNode(n6).getValue() - 8.652f) < 1e-4f); // 7 * (0.1 * (6 * 2 + 1.2 * 0.3)) = 8.652f;
 
-    nn.accessNode(n2).setValue(0.f);
-    nn.accessNode(n3).setValue(0.f);
-    nn.accessNode(n4).setValue(0.f);
-    nn.accessNode(n5).setValue(0.f);
-    nn.accessNode(n6).setValue(0.f);
+    nn.setNodeValue(n2, 0.f);
+    nn.setNodeValue(n3, 0.f);
+    nn.setNodeValue(n4, 0.f);
+    nn.setNodeValue(n5, 0.f);
+    nn.setNodeValue(n6, 0.f);
 
     evaluator.m_type = NeuralNetworkEvaluator::EvaluationType::CONVERGE;
     evaluator.m_convergenceThreshold = 1e-6f;
     evaluator.m_evalIterations = 10000;
 
-    evaluator.evaluate(&nn);
+    evaluator.evaluate(nn.getOutputNodes(), &nn);
     EXPECT_TRUE(std::fabs(nn.getNode(n4).getValue() - (-18.75f)) < 1e-4f); // -3 * (5 * 1 + 5 / 4) = -18.75f
     EXPECT_TRUE(evaluator.getCurrentIteration() < evaluator.m_evalIterations);
 }

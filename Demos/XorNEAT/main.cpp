@@ -14,7 +14,7 @@ class XorFitnessCalculator : public FitnessCalculatorBase
 {
 public:
 
-    virtual float calcFitness(const GenomeBase* genome) override
+    virtual float calcFitness(GenomeBase* genome) override
     {
         m_numEvaluations++;
         float score = 0.f;
@@ -34,7 +34,7 @@ public:
         return std::make_shared<XorFitnessCalculator>();
     }
 
-    float evaluate(const GenomeBase* genome, bool input1, bool input2)
+    float evaluate(GenomeBase* genome, bool input1, bool input2)
     {
         // Initialize values
         std::vector<float> values;
@@ -47,7 +47,7 @@ public:
         return genome->getNodeValue(genome->getOutputNodes()[0]);
     }
 
-    bool test(const GenomeBase* genome)
+    bool test(GenomeBase* genome)
     {
         bool result = true;
         // Test 4 patterns of XOR
@@ -107,7 +107,7 @@ int main()
             generation.evolveGeneration();
             const int numGeneration = generation.getId().val();
 
-            std::shared_ptr<const GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
+            std::shared_ptr<GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
             if (fitnessCalc->test(bestGenome.get()))
             {
                 std::cout << "Solution Found at Generation " << numGeneration << "!" << std::endl;

@@ -33,9 +33,11 @@ public:
     // Copy constructor.
     DefaultNode(const DefaultNode& other) = default;
 
-    inline float getValue() const { return m_value; }
-    inline void setValue(float value) { m_value = m_activation ? m_activation->activate(value) : value; }
+    inline float getValue() const { return m_activation ? m_activation->activate(m_value) : m_value; }
+    inline float getRawValue() const { return m_value; }
+    inline void setValue(float value) { m_value = value; }
 
+    inline auto getActivation() const->const Activation* { return m_activation; }
     inline void setActivation(const Activation* activation) { m_activation = activation; }
     inline auto getActivationName() const->const char* { return m_activation ? m_activation->m_name : nullptr; }
     inline auto getActivationId() const->ActivationId { return m_activation ? m_activation->m_id : ActivationId::invalid(); }

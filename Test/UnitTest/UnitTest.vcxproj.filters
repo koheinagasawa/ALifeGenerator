@@ -44,6 +44,7 @@
     <ClCompile Include="NeuralNetworkEvaluatorTest.cpp">
       <Filter>UnitTest</Filter>
     </ClCompile>
+    <ClCompile Include="BakedNeuralNetworkTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />

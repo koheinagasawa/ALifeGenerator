@@ -15,6 +15,7 @@
 #include <Common/BaseType.h>
 #include <NEAT/NeuralNetwork/Node.h>
 #include <NEAT/NeuralNetwork/Edge.h>
+#include <NEAT/NeuralNetwork/BakedNeuralNetwork.h>
 
 // Type of neural network
 enum class NeuralNetworkType
@@ -142,6 +143,9 @@ public:
     // Return true if the two nodes are connected.
     inline bool isConnected(NodeId node1, NodeId node2) const;
 
+    // Set values of the all nodes.
+    inline void setAllNodeValues(float value);
+
     // Set a value of the node.
     inline void setNodeValue(NodeId id, float value);
 
@@ -213,6 +217,9 @@ public:
 
     // Evaluates this network and calculate new values for each node.
     virtual void evaluate();
+
+    // Create a baked network.
+    auto bake() const->std::shared_ptr<BakedNeuralNetwork>;
 
     //
     // Validation
@@ -361,6 +368,15 @@ inline auto NeuralNetwork<Node, Edge>::accessNode(NodeId id)->Node&
 {
     assert(hasNode(id));
     return getNodeData(id).m_node;
+}
+
+template <typename Node, typename Edge>
+inline void NeuralNetwork<Node, Edge>::setAllNodeValues(float value)
+{
+    for (NodeData& nd : m_nodes)
+    {
+        nd.m_node.setValue(value);
+    }
 }
 
 template <typename Node, typename Edge>
@@ -621,6 +637,7 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
     addEdgeData(EdgeData(Edge(node1, node2, weight), newEdgeId));
     edgesFromInNode.push_back(newEdgeId);
     edgesToOutNode.push_back(newEdgeId);
+
     assert(validate());
 
     return true;
@@ -812,6 +829,13 @@ void NeuralNetwork<Node, Edge>::evaluate()
         {
             NodeId id = stack.back();
             NodeData& node = getNodeData(id);
+
+            if (node.m_state == NodeData::EvalState::EVALUATED)
+            {
+                stack.pop_back();
+                continue;
+            }
+
             assert(node.m_incomingEdges.size() > 0);
 
             // Calculate value of this node by visiting all parent nodes.
@@ -819,12 +843,15 @@ void NeuralNetwork<Node, Edge>::evaluate()
             bool readyToEval = true;
             for (EdgeId incomingId : node.m_incomingEdges)
             {
-                if (getWeight(incomingId) == 0.f)
+                const Edge& edge = getEdge(incomingId);
+                const float weight = edge.getWeight();
+
+                if (weight == 0.f)
                 {
                     continue;
                 }
 
-                NodeId inNodeId = getInNode(incomingId);
+                NodeId inNodeId = edge.getInNode();
 
                 bool isNewNode = true;
                 if (circularNetwork)
@@ -839,8 +866,10 @@ void NeuralNetwork<Node, Edge>::evaluate()
                     }
                 }
 
+                const NodeData& inNodeData = getNodeData(inNodeId);
+
                 // Recurse if we haven't evaluated this parent node yet.
-                if (isNewNode && (getNodeData(inNodeId).m_state != NodeData::EvalState::EVALUATED))
+                if (isNewNode && (inNodeData.m_state != NodeData::EvalState::EVALUATED))
                 {
                     stack.push_back(inNodeId);
                     readyToEval = false;
@@ -850,16 +879,17 @@ void NeuralNetwork<Node, Edge>::evaluate()
                 if (readyToEval)
                 {
                     // Add a value from this parent.
-                    sumValue += getNode(inNodeId).getValue() * getWeight(incomingId);
+                    sumValue += inNodeData.m_node.getValue() * weight;
                 }
             }
 
             if (readyToEval)
             {
+                assert(node.m_state != NodeData::EvalState::EVALUATED);
                 // Set the node value and update its state.
-                getNodeData(id).m_state = NodeData::EvalState::EVALUATED;
+                node.m_state = NodeData::EvalState::EVALUATED;
                 node.m_node.setValue(sumValue);
-                stack.resize(stack.size() - 1);
+                stack.pop_back();
             }
         }
     }
@@ -892,6 +922,12 @@ inline void NeuralNetwork<Node, Edge>::addEdgeData(const EdgeData& ed)
     m_edges.push_back(ed);
     ensureIdIndexMapStorage(id, m_edgeIdIndexMap);
     m_edgeIdIndexMap[id.m_val] = (int)m_edges.size() - 1;
+}
+
+template <typename Node, typename Edge>
+auto NeuralNetwork<Node, Edge>::bake() const->std::shared_ptr<BakedNeuralNetwork>
+{
+    return std::make_shared<BakedNeuralNetwork>(this);
 }
 
 template <typename Node, typename Edge>

@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActivationLibraryTest.cpp" />
+    <ClCompile Include="BakedNeuralNetworkTest.cpp" />
     <ClCompile Include="DefaultCrossOverTest.cpp" />
     <ClCompile Include="FeedForwardNetworkTest.cpp" />
     <ClCompile Include="GenomeClonerTest.cpp" />

@@ -64,8 +64,8 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         EXPECT_EQ(mutOut.m_numEdgesAdded, 3);
 
         EXPECT_TRUE(genome1.validate());
-        EXPECT_EQ(genome1.getNetwork()->getNumNodes(), 7);
-        EXPECT_EQ(genome1.getNetwork()->getNumEdges(), 11);
+        EXPECT_EQ(genome1.getNumNodes(), 7);
+        EXPECT_EQ(genome1.getNumEdges(), 11);
 
         // Mutate genome2 once.
         mutator.m_params.m_addEdgeMutationRate = 0.0f;
@@ -74,8 +74,8 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         EXPECT_EQ(mutOut.m_numEdgesAdded, 2);
 
         EXPECT_TRUE(genome2.validate());
-        EXPECT_EQ(genome2.getNetwork()->getNumNodes(), 5);
-        EXPECT_EQ(genome2.getNetwork()->getNumEdges(), 6);
+        EXPECT_EQ(genome2.getNumNodes(), 5);
+        EXPECT_EQ(genome2.getNumEdges(), 6);
     }
 
     // Disable one edge in genome2.
@@ -91,9 +91,9 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         GenomePtr newGenome1 = std::static_pointer_cast<Genome>(crossOver.crossOver(genome1, genome2, false));
 
         EXPECT_TRUE(newGenome1->validate());
-        EXPECT_EQ(newGenome1->getNetwork()->getInputNodes().size(), 2);
-        EXPECT_EQ(newGenome1->getNetwork()->getNumNodes(), genome1.getNetwork()->getNumNodes());
-        EXPECT_EQ(newGenome1->getNetwork()->getNumEdges(), genome1.getNetwork()->getNumEdges());
+        EXPECT_EQ(newGenome1->getInputNodes().size(), 2);
+        EXPECT_EQ(newGenome1->getNumNodes(), genome1.getNumNodes());
+        EXPECT_EQ(newGenome1->getNumEdges(), genome1.getNumEdges());
         for (int i = 0; i < 4; i++)
         {
             EXPECT_EQ(newGenome1->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome1[i]);
@@ -107,9 +107,9 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         GenomePtr newGenome2 = std::static_pointer_cast<Genome>(crossOver.crossOver(genome2, genome1, false));
 
         EXPECT_TRUE(newGenome2->validate());
-        EXPECT_EQ(newGenome2->getNetwork()->getInputNodes().size(), 2);
-        EXPECT_EQ(newGenome2->getNetwork()->getNumNodes(), genome2.getNetwork()->getNumNodes());
-        EXPECT_EQ(newGenome2->getNetwork()->getNumEdges(), genome2.getNetwork()->getNumEdges());
+        EXPECT_EQ(newGenome2->getInputNodes().size(), 2);
+        EXPECT_EQ(newGenome2->getNumNodes(), genome2.getNumNodes());
+        EXPECT_EQ(newGenome2->getNumEdges(), genome2.getNumEdges());
         for (int i = 0; i < 4; i++)
         {
             EXPECT_EQ(newGenome2->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
@@ -125,9 +125,9 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         GenomePtr newGenome3 = std::static_pointer_cast<Genome>(crossOver.crossOver(genome1, genome2, true));
 
         EXPECT_TRUE(newGenome3->validate());
-        EXPECT_EQ(newGenome3->getNetwork()->getInputNodes().size(), 2);
-        EXPECT_EQ(newGenome3->getNetwork()->getNumNodes(), 8);
-        EXPECT_EQ(newGenome3->getNetwork()->getNumEdges(), 13);
+        EXPECT_EQ(newGenome3->getInputNodes().size(), 2);
+        EXPECT_EQ(newGenome3->getNumNodes(), 8);
+        EXPECT_EQ(newGenome3->getNumEdges(), 13);
         for (int i = 0; i < 4; i++)
         {
             EXPECT_EQ(newGenome3->getEdgeWeightRaw(EdgeId(i)), initialEdgeWeightsGenome2[i]);
@@ -214,6 +214,6 @@ TEST(DefaultCrossOver, GenerateGeneration)
     // genome2 and genome3 have better fitness.
     crossOver.generate(2, 2, &selector);
     EXPECT_EQ(crossOver.getNumGeneratedGenomes(), 2);
-    EXPECT_EQ(crossOver.getGeneratedGenomes()[0]->getNetwork()->getNumEdges(), genome2->getNetwork()->getNumEdges());
-    EXPECT_EQ(crossOver.getGeneratedGenomes()[1]->getNetwork()->getNumEdges(), genome3->getNetwork()->getNumEdges());
+    EXPECT_EQ(crossOver.getGeneratedGenomes()[0]->getNumEdges(), genome2->getNumEdges());
+    EXPECT_EQ(crossOver.getGeneratedGenomes()[1]->getNumEdges(), genome3->getNumEdges());
 }

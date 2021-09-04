@@ -44,8 +44,7 @@ public:
 
         evaluateGenome(genome, values, 1.0f);
 
-        const GenomeBase::Network* network = genome->getNetwork();
-        return network->getNode(network->getOutputNodes()[0]).getValue();
+        return genome->getNodeValue(genome->getOutputNodes()[0]);
     }
 
     bool test(const GenomeBase* genome)
@@ -113,15 +112,13 @@ int main()
             {
                 std::cout << "Solution Found at Generation " << numGeneration << "!" << std::endl;
 
-                const Genome::Network* network = bestGenome->getNetwork();
-
                 // Get data for performance investigation
                 totalGenerations += numGeneration;
                 if (worstGenerations < numGeneration)
                 {
                     worstGenerations = numGeneration;
                 }
-                totalNumHiddenNodes += network->getNumNodes() - 4; // 4 is two inputs, one output and one bias
+                totalNumHiddenNodes += bestGenome->getNumNodes() - 4; // 4 is two inputs, one output and one bias
                 totalNumNondisabledConnections += bestGenome->getNumEnabledEdges();
 
                 int numEvaluation = 0;

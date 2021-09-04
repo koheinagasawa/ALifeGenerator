@@ -33,8 +33,6 @@ public:
 
     void outputImage(const std::string& filename)
     {
-        const unsigned int dim = 1000;
-
         bitmap_image image(m_xDim, m_yDim);
 
         for (unsigned int x = 0; x < m_xDim; ++x)
@@ -60,11 +58,10 @@ public:
         {
             for (unsigned int y = 0; y < m_yDim; y++)
             {
-                inputValues[0] = (float)x;
-                inputValues[1] = (float)y;
+                inputValues[0] = (float)(x) / (float)m_xDim;
+                inputValues[1] = (float)(y) / (float)m_yDim;
                 evaluateGenome(genome, inputValues, 1.0f);
-                const GenomeBase::Network* network = genome->getNetwork();
-                float val = network->getNode(network->getOutputNodes()[0]).getValue();
+                float val = genome->getNodeValue(genome->getOutputNodes()[0]);
                 unsigned char charVal;
                 if (val < 0)
                 {
@@ -83,12 +80,6 @@ public:
                 m_generatedImage[coords2index(x, y)].blue = charVal;
             }
         }
-    }
-
-    bool test(const GenomeBase* genome)
-    {
-        float fitness = calcFitness(genome);
-        return fitness > 240.f;
     }
 
     virtual float calcFitness(const GenomeBase* genome) override
@@ -156,7 +147,6 @@ int main()
         activationTypes.push_back(ActivationFacotry::ABSOLUTE);
         activationTypes.push_back(ActivationFacotry::SINE);
         activationTypes.push_back(ActivationFacotry::COSINE);
-        activationTypes.push_back(ActivationFacotry::TANGENT);
         activationTypes.push_back(ActivationFacotry::HYPERBOLIC_TANGENT);
         activationTypes.push_back(ActivationFacotry::RAMP);
         activationTypes.push_back(ActivationFacotry::STEP);
@@ -174,19 +164,22 @@ int main()
 
     RandomActivationProvider activationProvider(activationLib);
 
-    Image refImage = ImageMatchingFitnessCalculator::getImage("Resource/CppnRefImage.bmp", 300, 300);
-    auto fitnessCalculator = std::make_shared<ImageMatchingFitnessCalculator>(refImage, 300, 300);
+    const int pixelSize = 150;
+    Image refImage = ImageMatchingFitnessCalculator::getImage("Resource/CppnRefImage.bmp", pixelSize, pixelSize);
+    auto fitnessCalculator = std::make_shared<ImageMatchingFitnessCalculator>(refImage, pixelSize, pixelSize);
 
     NEAT::Generation::Cinfo genCinfo;
-    genCinfo.m_numGenomes = 150;
+    genCinfo.m_numGenomes = 500;
     genCinfo.m_genomeCinfo.m_numInputNodes = 2; // XY coordinates
     genCinfo.m_genomeCinfo.m_numOutputNodes = 1; // Gray scale value of the pixel
     genCinfo.m_genomeCinfo.m_createBiasNode = true;
     genCinfo.m_genomeCinfo.m_networkType = NeuralNetworkType::GENERAL;
     genCinfo.m_genomeCinfo.m_activationProvider = &activationProvider;
+    genCinfo.m_mutationParams.m_changeActivationRate = 0.03f;
     genCinfo.m_mutationParams.m_activationProvider = &activationProvider;
     genCinfo.m_fitnessCalculator = fitnessCalculator;
-    genCinfo.m_numThreads = 16;
+    genCinfo.m_generationParams.m_maxStagnantCount = 30;
+    genCinfo.m_numThreads = 64;
 
     const int maxGeneration = 1000;
 
@@ -203,12 +196,15 @@ int main()
         const int numGeneration = generation.getId().val();
 
         std::shared_ptr<const GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
-        const NEAT::Genome::Network* network = bestGenome->getNetwork();
-        std::cout << "Number of total nodes: " << network->getNumNodes() << std::endl;
+        float fitness = fitnessCalculator->calcFitness(bestGenome.get());
+        std::cout << "Best Fitness: " << fitness << std::endl;
+        std::cout << "Number of total nodes: " << bestGenome->getNumNodes() << std::endl;
         std::cout << "Number of enabled edges: " << bestGenome->getNumEnabledEdges() << std::endl;
+        std::cout << "Number of species: " << generation.getAllSpecies().size() << std::endl;
+        std::cout << "Best Species: " << generation.getAllSpeciesInBestFitnessOrder()[0].get() << std::endl;
         std::cout << "=============================" << std::endl;
 
-        if (fitnessCalculator->test(bestGenome.get()))
+        if (fitness > 240.f)
         {
             std::cout << "Solution Found at Generation " << numGeneration << "!" << std::endl;
 

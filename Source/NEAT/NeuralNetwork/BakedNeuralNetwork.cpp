@@ -156,7 +156,10 @@ BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
 
 void BakedNeuralNetwork::setNodeValue(NodeId node, float value)
 {
-    assert(m_nodeIdIndexMap.find(node) != m_nodeIdIndexMap.end());
+    if (m_nodeIdIndexMap.find(node) == m_nodeIdIndexMap.end())
+    {
+        return;
+    }
 
     int index = m_nodeIdIndexMap.at(node);
     assert(index >= 0 && index < (int)m_nodes.size());

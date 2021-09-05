@@ -14,6 +14,8 @@
 
 using Image = std::vector<rgb_t>;
 
+static bool s_grayScale = false;
+
 class ImageMatchingFitnessCalculator : public FitnessCalculatorBase
 {
 public:
@@ -50,6 +52,25 @@ public:
         image.save_image(str.c_str());
     }
 
+    unsigned char floatToUCharColor(float val)
+    {
+        unsigned char charVal;
+        if (val < 0)
+        {
+            charVal = 0;
+        }
+        else if (val > 1.0f)
+        {
+            charVal = 255;
+        }
+        else
+        {
+            charVal = unsigned char(val * 255.f);
+        }
+
+        return charVal;
+    }
+
     void generateImage(GenomeBase* genome)
     {
         std::vector<float> inputValues;
@@ -61,23 +82,24 @@ public:
                 inputValues[0] = (float)(x) / (float)m_xDim;
                 inputValues[1] = (float)(y) / (float)m_yDim;
                 evaluateGenome(genome, inputValues, 1.0f);
-                float val = genome->getNodeValue(genome->getOutputNodes()[0]);
-                unsigned char charVal;
-                if (val < 0)
+                unsigned char r = floatToUCharColor(genome->getNodeValue(genome->getOutputNodes()[0]));
+
+                if (s_grayScale)
                 {
-                    charVal = 0;
-                }
-                else if (val > 1.0f)
-                {
-                    charVal = 255;
+                    m_generatedImage[coords2index(x, y)].red = r;
+                    m_generatedImage[coords2index(x, y)].green = r;
+                    m_generatedImage[coords2index(x, y)].blue = r;
                 }
                 else
                 {
-                    charVal = unsigned char(val * 255.f);
+                    unsigned char g = floatToUCharColor(genome->getNodeValue(genome->getOutputNodes()[1]));
+                    unsigned char b = floatToUCharColor(genome->getNodeValue(genome->getOutputNodes()[2]));
+                    m_generatedImage[coords2index(x, y)].red = r;
+                    m_generatedImage[coords2index(x, y)].green = g;
+                    m_generatedImage[coords2index(x, y)].blue = b;
                 }
-                m_generatedImage[coords2index(x, y)].red = charVal;
-                m_generatedImage[coords2index(x, y)].green = charVal;
-                m_generatedImage[coords2index(x, y)].blue = charVal;
+
+
             }
         }
     }
@@ -91,10 +113,27 @@ public:
             for (unsigned int y = 0; y < m_yDim; y++)
             {
                 int index = coords2index(x, y);
-                diff += fabsf((float)(m_referenceImage[index].red - m_generatedImage[index].red));
+                if (s_grayScale)
+                {
+                    diff += fabsf((float)(m_referenceImage[index].red - m_generatedImage[index].red));
+                }
+                else
+                {
+                    diff += fabsf((float)(m_referenceImage[index].red - m_generatedImage[index].red));
+                    diff += fabsf((float)(m_referenceImage[index].green - m_generatedImage[index].green));
+                    diff += fabsf((float)(m_referenceImage[index].blue - m_generatedImage[index].blue));
+                }
             }
         }
-        diff /= (float)(m_xDim * m_yDim);
+
+        if (s_grayScale)
+        {
+            diff /= (float)(m_xDim * m_yDim);
+        }
+        else
+        {
+            diff /= (float)(m_xDim * m_yDim * 3);
+        }
         return 255.f - diff;
     }
 
@@ -171,7 +210,7 @@ int main()
     NEAT::Generation::Cinfo genCinfo;
     genCinfo.m_numGenomes = 500;
     genCinfo.m_genomeCinfo.m_numInputNodes = 2; // XY coordinates
-    genCinfo.m_genomeCinfo.m_numOutputNodes = 1; // Gray scale value of the pixel
+    genCinfo.m_genomeCinfo.m_numOutputNodes = s_grayScale ? 1 : 3; // Gray scale value of the pixel
     genCinfo.m_genomeCinfo.m_createBiasNode = true;
     genCinfo.m_genomeCinfo.m_networkType = NeuralNetworkType::GENERAL;
     genCinfo.m_genomeCinfo.m_activationProvider = &activationProvider;
@@ -195,7 +234,7 @@ int main()
         generation.evolveGeneration();
         const int numGeneration = generation.getId().val();
 
-        std::shared_ptr<const GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
+        std::shared_ptr<GenomeBase> bestGenome = generation.getGenomesInFitnessOrder()[0].getGenome()->clone();
         float fitness = fitnessCalculator->calcFitness(bestGenome.get());
         std::cout << "Best Fitness: " << fitness << std::endl;
         std::cout << "Number of total nodes: " << bestGenome->getNumNodes() << std::endl;

@@ -8,6 +8,8 @@
 #include <NEAT/NeuralNetwork/BakedNeuralNetwork.h>
 #include <NEAT/NeuralNetwork/NeuralNetwork.h>
 
+#include <iostream>
+
 const std::function<float(float)> BakedNeuralNetwork::s_nullActivation = [](float val) { return val; };
 
 BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
@@ -20,11 +22,13 @@ BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
 
     std::unordered_set<NodeId> addedNodes;
     std::vector<NodeId> stack;
+    std::unordered_set<NodeId> nodesInCurrentPath;
 
     // Iterate over output nodes and collect any nodes and edges connected to those output nodes.
     for (NodeId outputNodeId : outputNodes)
     {
         stack.clear();
+        nodesInCurrentPath.clear();
 
         // Recursively visit connected nodes
         stack.push_back(outputNodeId);
@@ -61,19 +65,17 @@ BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
                 bool isNewNode = true;
                 if (m_isCircularNetwork)
                 {
-                    for (NodeId i : stack)
+                    if (nodesInCurrentPath.find(inNodeId) != nodesInCurrentPath.end())
                     {
-                        if (i == inNodeId)
-                        {
-                            isNewNode = false;
-                            break;
-                        }
+                        isNewNode = false;
                     }
                 }
 
                 // Recurse if we haven't evaluated this in node yet.
                 if (isNewNode && addedNodes.find(inNodeId) == addedNodes.end())
                 {
+                    nodesInCurrentPath.insert(id);
+
                     stack.push_back(inNodeId);
                     canAddToList = false;
                     continue;
@@ -102,8 +104,9 @@ BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
                         continue;
                     }
 
-                    assert(m_nodeIdIndexMap.find(edge.getInNode()) != m_nodeIdIndexMap.end());
-                    m_edges.push_back(Edge{ m_nodeIdIndexMap.at(edge.getInNode()), edge.getWeight() });
+                    // Here, we store raw NodeId value for now. We will update it to index of m_nodes later in this function.
+                    // This is needed because inNode might not be added to the list yet in the case of circular network.
+                    m_edges.push_back(Edge{ edge.getInNode().m_val, edge.getWeight() });
                 }
 
                 const DefaultNode& node = network->getNode(id);
@@ -149,8 +152,15 @@ BakedNeuralNetwork::BakedNeuralNetwork(const Network* network)
                 m_nodes.push_back(entry);
                 addedNodes.insert(id);
                 stack.pop_back();
+                nodesInCurrentPath.erase(id);
             }
         }
+    }
+
+    // Update NodeId stored in Edge to index of m_nodes.
+    for (Edge& e : m_edges)
+    {
+        e.m_node = m_nodeIdIndexMap.at(NodeId(e.m_node));
     }
 }
 

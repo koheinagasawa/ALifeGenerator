@@ -817,6 +817,7 @@ void NeuralNetwork<Node, Edge>::evaluate()
 
     const bool circularNetwork = allowsCircularNetwork();
 
+    std::unordered_set<NodeId> nodesInCurrentPath;
     std::vector<NodeId> stack;
     stack.reserve(4);
 
@@ -824,6 +825,7 @@ void NeuralNetwork<Node, Edge>::evaluate()
     for (NodeId outputNodeId : this->m_outputNodes)
     {
         stack.clear();
+        nodesInCurrentPath.clear();
         stack.push_back(outputNodeId);
         while(stack.size() > 0)
         {
@@ -856,13 +858,9 @@ void NeuralNetwork<Node, Edge>::evaluate()
                 bool isNewNode = true;
                 if (circularNetwork)
                 {
-                    for (NodeId i : stack)
+                    if (nodesInCurrentPath.find(inNodeId) != nodesInCurrentPath.end())
                     {
-                        if (i == inNodeId)
-                        {
-                            isNewNode = false;
-                            break;
-                        }
+                        isNewNode = false;
                     }
                 }
 
@@ -871,6 +869,8 @@ void NeuralNetwork<Node, Edge>::evaluate()
                 // Recurse if we haven't evaluated this parent node yet.
                 if (isNewNode && (inNodeData.m_state != NodeData::EvalState::EVALUATED))
                 {
+                    nodesInCurrentPath.insert(id);
+
                     stack.push_back(inNodeId);
                     readyToEval = false;
                     continue;
@@ -890,6 +890,7 @@ void NeuralNetwork<Node, Edge>::evaluate()
                 node.m_state = NodeData::EvalState::EVALUATED;
                 node.m_node.setValue(sumValue);
                 stack.pop_back();
+                nodesInCurrentPath.erase(id);
             }
         }
     }

@@ -36,7 +36,7 @@ TEST(DefaultMutation, MutateSingleGenome)
         const auto& edges = network->getEdges();
         for (const auto& edge : edges)
         {
-            EXPECT_EQ(network->getWeight(edge.getId()), 1.0);
+            EXPECT_EQ(network->getWeight(edge.first), 1.0);
         }
     }
 
@@ -143,7 +143,7 @@ TEST(DefaultMutation, MutateSingleGenome)
         const auto& edges = network->getEdges();
         for (const auto& edge : edges)
         {
-            originalWeights.insert({ edge.getId(), genome.getEdgeWeightRaw(edge.getId()) });
+            originalWeights.insert({ edge.first, genome.getEdgeWeightRaw(edge.first) });
         }
 
         mutator.mutate(&genome, out);
@@ -153,7 +153,7 @@ TEST(DefaultMutation, MutateSingleGenome)
         // Check the edge mutation was done expectedly.
         for (const auto& edge : edges)
         {
-            EdgeId id = edge.getId();
+            EdgeId id = edge.first;
             if (genome.isEdgeEnabled(id))
             {
                 float original = originalWeights.at(id);
@@ -188,7 +188,7 @@ TEST(DefaultMutation, MutateSingleGenome)
         const auto& edges = network->getEdges();
         for (const auto& edge : edges)
         {
-            EdgeId id = edge.getId();
+            EdgeId id = edge.first;
             if (genome.isEdgeEnabled(id))
             {
                 EXPECT_EQ(genome.getEdgeWeightRaw(id), 3.f);
@@ -266,7 +266,7 @@ TEST(DefaultMutation, MutateGeneration)
             const auto& edges = network->getEdges();
             for (const auto& edge : edges)
             {
-                EXPECT_EQ(genome1->getEdgeWeight(edge.getId()), 1.0);
+                EXPECT_EQ(genome1->getEdgeWeight(edge.first), 1.0);
             }
         }
     }

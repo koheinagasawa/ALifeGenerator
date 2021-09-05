@@ -70,29 +70,9 @@ public:
         friend class NeuralNetwork;
     };
 
-    // Edge and its id.
-    struct EdgeData
-    {
-    public:
-        EdgeData() = default;
-        EdgeData(const Edge& edge, EdgeId id);
-
-        // Get the id of this edge.
-        inline EdgeId getId() const { return m_id; }
-
-    public:
-        Edge m_edge; // The edge.
-
-    private:
-        EdgeId m_id; // Id of this edge.
-
-        friend class NeuralNetwork;
-    };
-
-    using NodeDatas = std::vector<NodeData>;
-    using EdgeDatas = std::vector<EdgeData>;
-    using Nodes = std::unordered_map<NodeId, Node>;
+    using NodeDatas = std::unordered_map<NodeId, NodeData>;
     using Edges = std::unordered_map<EdgeId, Edge>;
+    using Nodes = std::unordered_map<NodeId, Node>;
 
     //
     // Constructors
@@ -166,16 +146,16 @@ public:
     inline int getNumEdges() const { return (int)m_edges.size(); }
 
     // Return all the edges in the network.
-    inline auto getEdges() const->const EdgeDatas& { return m_edges; }
+    inline auto getEdges() const->const Edges& { return m_edges; }
 
     // Return true if the edge id exists.
     inline bool hasEdge(EdgeId id) const;
 
     // Return read-only access to an edge in the network.
-    inline auto getEdge(EdgeId id) const->const Edge& { return getEdgeData(id).m_edge; }
+    inline auto getEdge(EdgeId id) const->const Edge& { return m_edges.at(id); }
 
     // Return read-write access to an edge in the network.
-    inline auto accessEdge(EdgeId id)->Edge& { return getEdgeData(id).m_edge; }
+    inline auto accessEdge(EdgeId id)->Edge& { return m_edges.at(id); }
 
     // Get the in-node of the edge.
     inline auto getInNode(EdgeId id) const->NodeId;
@@ -229,42 +209,20 @@ public:
     virtual bool validate() const;
 
 protected:
-    using IdIndexMap = std::vector<int>;
-
     // Default constructor.
     NeuralNetwork() = default;
 
     // Construct m_nodes. This is called from constructor.
     void constructData(const Nodes& nodes, const Edges& edges);
 
-    // Get NodeData from NodeId.
-    inline auto getNodeData(NodeId id) const->const NodeData& { return m_nodes[m_nodeIdIndexMap[id.m_val]]; }
-    inline auto getNodeData(NodeId id)->NodeData& { return m_nodes[m_nodeIdIndexMap[id.m_val]]; }
-
-    // Get EdgeData from EdgeId.
-    inline auto getEdgeData(EdgeId id) const->const EdgeData& { return m_edges[m_edgeIdIndexMap[id.m_val]]; }
-    inline auto getEdgeData(EdgeId id)->EdgeData& { return m_edges[m_edgeIdIndexMap[id.m_val]]; }
-
-    // Ensure that map between id and index has enough buffer space.
-    template <typename ID_TYPE>
-    inline void ensureIdIndexMapStorage(ID_TYPE id, IdIndexMap& idIndexMap);
-
-    // Add a new NodeData.
-    inline void addNodeData(const NodeData& nd);
-
-    // Add a new EdgeData
-    inline void addEdgeData(const EdgeData& ed);
-
     // Implementation of hasCircularEdges()
-    bool hasCircularEdgesImpl(NodeId nodeId, std::vector<bool>& checkedNodes) const;
+    bool hasCircularEdgesImpl(NodeId nodeId, std::unordered_set<NodeId>& checkedNodes) const;
 
-    //NodeDatas m_nodes; // Nodes of this network.
+    // Nodes of this network.
     NodeDatas m_nodes;
-    IdIndexMap m_nodeIdIndexMap;
 
-    //Edges m_edges; // Edges of this network.
-    EdgeDatas m_edges;
-    IdIndexMap m_edgeIdIndexMap;
+    // Edges of this network.
+    Edges m_edges;
 
     NodeIds m_inputNodes; // A list of output nodes of this network.
     NodeIds m_outputNodes; // A list of output nodes of this network.
@@ -279,21 +237,16 @@ NeuralNetwork<Node, Edge>::NodeData::NodeData(const Node& node, NodeId id)
 }
 
 template <typename Node, typename Edge>
-NeuralNetwork<Node, Edge>::EdgeData::EdgeData(const Edge& edge, EdgeId id)
-    : m_edge(edge)
-    , m_id(id)
-{
-}
-
-template <typename Node, typename Edge>
 NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges)
+    : m_edges(edges)
 {
     constructData(nodes, edges);
 }
 
 template <typename Node, typename Edge>
 NeuralNetwork<Node, Edge>::NeuralNetwork(const Nodes& nodes, const Edges& edges, const NodeIds& inputNodes, const NodeIds& outputNodes)
-    : m_inputNodes(inputNodes)
+    : m_edges(edges)
+    , m_inputNodes(inputNodes)
     , m_outputNodes(outputNodes)
 {
     constructData(nodes, edges);
@@ -311,34 +264,22 @@ void NeuralNetwork<Node, Edge>::constructData(const Nodes& nodes, const Edges& e
     // Allocate and add NodeDatas
     m_nodes.clear();
     m_nodes.reserve(nodes.size());
-    m_nodeIdIndexMap.clear();
-    m_nodeIdIndexMap.resize(nodes.size(), -1);
     for (const auto& itr : nodes)
     {
-        addNodeData(NodeData(itr.second, itr.first));
+        m_nodes[itr.first] = NodeData(itr.second, itr.first);
     }
-
-    // Allocate EdgeDatas
-    m_edges.clear();
-    m_edges.reserve(edges.size());
-    m_edgeIdIndexMap.clear();
-    m_edgeIdIndexMap.resize(edges.size(), -1);
 
     // Set incoming edges and outgoing edges array in each node
     for (const auto& itr : edges)
     {
-        // Add EdgeData
-        EdgeId id = itr.first;
         const Edge& e = itr.second;
-        addEdgeData(EdgeData(e, id));
-
         NodeId outNode = e.getOutNode();
         if (!hasNode(outNode))
         {
             WARN("Input edge contains invalid outNode value.");
             continue;
         }
-        getNodeData(outNode).m_incomingEdges.push_back(itr.first);
+        m_nodes[outNode].m_incomingEdges.push_back(itr.first);
 
         NodeId inNode = e.getInNode();
         if (!hasNode(inNode))
@@ -346,36 +287,36 @@ void NeuralNetwork<Node, Edge>::constructData(const Nodes& nodes, const Edges& e
             WARN("Input edge contains invalid inNode value.");
             continue;
         }
-        getNodeData(inNode).m_outgoingEdges.push_back(itr.first);
+        m_nodes[inNode].m_outgoingEdges.push_back(itr.first);
     }
 }
 
 template <typename Node, typename Edge>
 inline bool NeuralNetwork<Node, Edge>::hasNode(NodeId id) const 
 {
-    return ((int)m_nodeIdIndexMap.size() > id.m_val) && (m_nodeIdIndexMap[id.m_val] >= 0);
+    return m_nodes.find(id) != m_nodes.end();
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getNode(NodeId id) const->const Node&
 {
     assert(hasNode(id));
-    return getNodeData(id).m_node;
+    return m_nodes.at(id).m_node;
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::accessNode(NodeId id)->Node&
 {
     assert(hasNode(id));
-    return getNodeData(id).m_node;
+    return m_nodes.at(id).m_node;
 }
 
 template <typename Node, typename Edge>
 inline void NeuralNetwork<Node, Edge>::setAllNodeValues(float value)
 {
-    for (NodeData& nd : m_nodes)
+    for (auto& elem : m_nodes)
     {
-        nd.m_node.setValue(value);
+        elem.second.m_node.setValue(value);
     }
 }
 
@@ -383,19 +324,19 @@ template <typename Node, typename Edge>
 inline void NeuralNetwork<Node, Edge>::setNodeValue(NodeId id, float value)
 {
     assert(hasNode(id));
-    getNodeData(id).m_node.setValue(value);
+    m_nodes[id].m_node.setValue(value);
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getIncomingEdges(NodeId id) const->const EdgeIds&
 {
-    return getNodeData(id).getIncomingEdges();
+    return m_nodes.at(id).getIncomingEdges();
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getOutgoingEdges(NodeId id) const->const EdgeIds&
 {
-    return getNodeData(id).getOutgoingEdges();
+    return m_nodes.at(id).getOutgoingEdges();
 }
 
 template <typename Node, typename Edge>
@@ -425,43 +366,42 @@ inline bool NeuralNetwork<Node, Edge>::isConnected(NodeId node1, NodeId node2) c
 template <typename Node, typename Edge>
 inline bool NeuralNetwork<Node, Edge>::hasEdge(EdgeId id) const
 {
-    return ((int)m_edgeIdIndexMap.size() > id.m_val) && (m_edgeIdIndexMap[id.m_val] >= 0);
+    return m_edges.find(id) != m_edges.end();
 }
 
 template <typename Node, typename Edge>
 inline float NeuralNetwork<Node, Edge>::getWeight(EdgeId id) const
 {
     assert(hasEdge(id));
-    return getEdgeData(id).m_edge.getWeight();
+    return m_edges.at(id).getWeight();
 }
 
 template <typename Node, typename Edge>
 inline void NeuralNetwork<Node, Edge>::setWeight(EdgeId id, float weight)
 {
     assert(hasEdge(id));
-    getEdgeData(id).m_edge.setWeight(weight);
+    m_edges[id].setWeight(weight);
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getInNode(EdgeId id) const->NodeId
 {
     assert(hasEdge(id));
-    return getEdgeData(id).m_edge.getInNode();
+    return m_edges.at(id).getInNode();
 }
 
 template <typename Node, typename Edge>
 inline auto NeuralNetwork<Node, Edge>::getOutNode(EdgeId id) const->NodeId
 {
     assert(hasEdge(id));
-    return getEdgeData(id).m_edge.getOutNode();
+    return m_edges.at(id).getOutNode();
 }
 
 template <typename Node, typename Edge>
 bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
 {
     const int numNodes = (int)m_nodes.size();
-    std::vector<bool> checkedNodes;
-    checkedNodes.resize(numNodes, false);
+    std::unordered_set<NodeId> checkedNodes;
 
     // First, start looking at output nodes. This first path should cover most nodes already.
     for (NodeId id : m_outputNodes)
@@ -471,31 +411,31 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdges() const
             return true;
         }
 
-        checkedNodes[m_nodeIdIndexMap[id.m_val]] = true;
+        checkedNodes.insert(id);
     }
 
     // Second, we iterate over all nodes while skipping nodes which are already checked in the previous loop.
     // This is needed to find any circles isolated from the network containing the output nodes.
-    for (int i = 0; i < numNodes; i++)
+    for (const auto& elem : m_nodes)
     {
-        if (checkedNodes[i])
+        if (checkedNodes.find(elem.first) != checkedNodes.end())
         {
             continue;
         }
 
-        if(hasCircularEdgesImpl(m_nodes[i].m_id, checkedNodes))
+        if(hasCircularEdgesImpl(elem.first, checkedNodes))
         {
             return true;
         }
 
-        checkedNodes[i] = true;
+        checkedNodes.insert(elem.first);
     }
 
     return false;
 }
 
 template <typename Node, typename Edge>
-bool NeuralNetwork<Node, Edge>::hasCircularEdgesImpl(NodeId startNodeId, std::vector<bool>& checkedNodes) const
+bool NeuralNetwork<Node, Edge>::hasCircularEdgesImpl(NodeId startNodeId, std::unordered_set<NodeId>& checkedNodes) const
 {
     std::unordered_set<NodeId> visitingNodes;
     std::vector<NodeId> nodeStack;
@@ -527,7 +467,7 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdgesImpl(NodeId startNodeId, std::ve
             }
 
             // Skip this node if we have already looked at it.
-            if (checkedNodes[m_nodeIdIndexMap[inNodeId.m_val]])
+            if (checkedNodes.find(inNodeId) != checkedNodes.end())
             {
                 continue;
             }
@@ -545,7 +485,7 @@ bool NeuralNetwork<Node, Edge>::hasCircularEdgesImpl(NodeId startNodeId, std::ve
 
         // The current node is not a part of a circle.
         visitingNodes.erase(currentNodeId);
-        checkedNodes[m_nodeIdIndexMap[currentNodeId.m_val]] = true;
+        checkedNodes.insert(currentNodeId);
         nodeStack.pop_back();
     }
 
@@ -573,28 +513,19 @@ bool NeuralNetwork<Node, Edge>::addNodeAt(EdgeId edgeId, NodeId newNodeId, EdgeI
     }
 
     // Create two new edges.
-    ensureIdIndexMapStorage(newIncomingEdgeId < newOutgoingEdgeId ? newOutgoingEdgeId : newIncomingEdgeId, m_edgeIdIndexMap);
-    Edge newEdge1(inNode, newNodeId, 1.0f);
-    {
-        m_edges.push_back(EdgeData(newEdge1, newIncomingEdgeId));
-        m_edgeIdIndexMap[newIncomingEdgeId.m_val] = (int)m_edges.size() - 1;
-    }
-    Edge newEdge2(newNodeId, outNode, 1.0f);
-    {
-        m_edges.push_back(EdgeData(newEdge2, newOutgoingEdgeId));
-        m_edgeIdIndexMap[newOutgoingEdgeId.m_val] = (int)m_edges.size() - 1;
-    }
+    m_edges[newIncomingEdgeId] = Edge(inNode, newNodeId, 1.0f);
+    m_edges[newOutgoingEdgeId] = Edge(newNodeId, outNode, 1.0f);
 
     // Create a new node.
     NodeData newNode;
     newNode.m_incomingEdges.push_back(newIncomingEdgeId);
     newNode.m_outgoingEdges.push_back(newOutgoingEdgeId);
     newNode.m_id = newNodeId;
-    addNodeData(newNode);
+    m_nodes[newNodeId] = newNode;
 
     // Update incoming edge and outgoing edge of the existing node.
-    getNodeData(inNode).m_outgoingEdges.push_back(newIncomingEdgeId);
-    getNodeData(outNode).m_incomingEdges.push_back(newOutgoingEdgeId);
+    m_nodes[inNode].m_outgoingEdges.push_back(newIncomingEdgeId);
+    m_nodes[outNode].m_incomingEdges.push_back(newOutgoingEdgeId);
 
     assert(validate());
 
@@ -614,8 +545,8 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
         return false;
     }
 
-    EdgeIds& edgesFromInNode = getNodeData(node1).m_outgoingEdges;
-    EdgeIds& edgesToOutNode = getNodeData(node2).m_incomingEdges;
+    EdgeIds& edgesFromInNode = m_nodes[node1].m_outgoingEdges;
+    EdgeIds& edgesToOutNode = m_nodes[node2].m_incomingEdges;
 
     // Check if there is already an edge between the two nodes.
     for (EdgeId eid : edgesToOutNode)
@@ -634,7 +565,7 @@ bool NeuralNetwork<Node, Edge>::addEdgeAt(NodeId node1, NodeId node2, EdgeId new
     }
 
     // Create a new edge
-    addEdgeData(EdgeData(Edge(node1, node2, weight), newEdgeId));
+    m_edges[newEdgeId] = Edge(node1, node2, weight);
     edgesFromInNode.push_back(newEdgeId);
     edgesToOutNode.push_back(newEdgeId);
 
@@ -651,31 +582,29 @@ void NeuralNetwork<Node, Edge>::replaceNodeId(NodeId nodeId, NodeId newId)
     assert(!hasNode(newId));
 
     // Replace nodeIds stored in edges.
-    for (EdgeData& edgeData : m_edges)
+    for (auto& elem : m_edges)
     {
-        const Edge& curEdge = edgeData.m_edge;
+        const Edge& curEdge = elem.second;
         if (curEdge.getInNode() == nodeId)
         {
             Edge newEdge(newId, curEdge.getOutNode());
             newEdge.copyState(&curEdge);
-            edgeData.m_edge = newEdge;
+            elem.second = newEdge;
         }
         else if (curEdge.getOutNode() == nodeId)
         {
             Edge newEdge(curEdge.getInNode(), newId);
             newEdge.copyState(&curEdge);
-            edgeData.m_edge = newEdge;
+            elem.second = newEdge;
         }
     }
 
     // Replace the node itself
     {
-        int index = m_nodeIdIndexMap[nodeId.m_val];
-        assert(index >= 0);
-        m_nodeIdIndexMap[nodeId.m_val] = -1;
-        ensureIdIndexMapStorage(newId, m_nodeIdIndexMap);
-        m_nodeIdIndexMap[newId.m_val] = index;
-        m_nodes[index].m_id = newId;
+        NodeData nd = m_nodes.at(nodeId);
+        nd.m_id = newId;
+        m_nodes.erase(nodeId);
+        m_nodes[newId] = nd;
     }
 
     // Update lists of input/output nodes
@@ -716,11 +645,11 @@ void NeuralNetwork<Node, Edge>::removeEdge(EdgeId edgeId)
     assert(validate());
     assert(hasEdge(edgeId));
 
-    const Edge& edge = getEdgeData(edgeId).m_edge;
+    const Edge& edge = m_edges.at(edgeId);
 
     // Update incoming edges and outgoing edges of the in/out nodes
     {
-        EdgeIds& edgesFromInNode = getNodeData(edge.getInNode()).m_outgoingEdges;
+        EdgeIds& edgesFromInNode = m_nodes[edge.getInNode()].m_outgoingEdges;
         for (auto itr = edgesFromInNode.begin(); itr != edgesFromInNode.end(); itr++)
         {
             if (*itr == edgeId)
@@ -731,7 +660,7 @@ void NeuralNetwork<Node, Edge>::removeEdge(EdgeId edgeId)
         }
     }
     {
-        EdgeIds& edgesToOutNode = getNodeData(edge.getOutNode()).m_incomingEdges;
+        EdgeIds& edgesToOutNode = m_nodes[edge.getOutNode()].m_incomingEdges;
         for (auto itr = edgesToOutNode.begin(); itr != edgesToOutNode.end(); itr++)
         {
             if (*itr == edgeId)
@@ -742,20 +671,8 @@ void NeuralNetwork<Node, Edge>::removeEdge(EdgeId edgeId)
         }
     }
 
-    // Remove the original edge id
-    {
-        const int index = m_edgeIdIndexMap[edgeId.m_val];
-        m_edges.erase(m_edges.begin() + index);
-        m_edgeIdIndexMap[edgeId.m_val] = -1;
-        // Decrement index of edges stored later than the removed edge.
-        for (int i = 0; i < (int)m_edgeIdIndexMap.size(); i++)
-        {
-            if (m_edgeIdIndexMap[i] > index)
-            {
-                m_edgeIdIndexMap[i]--;
-            }
-        }
-    }
+    // Remove the edge
+    m_edges.erase(edgeId);
 
     assert(validate());
 }
@@ -767,12 +684,11 @@ void NeuralNetwork<Node, Edge>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
     assert(hasEdge(edgeId));
     assert(!hasEdge(newId));
 
-    EdgeData& ed = getEdgeData(edgeId);
-    const Edge& edge = ed.m_edge;
+    const Edge& edge = m_edges.at(edgeId);
 
     // Update incoming edges and outgoing edges of in/out nodes
     {
-        EdgeIds& edgesFromInNode = getNodeData(edge.getInNode()).m_outgoingEdges;
+        EdgeIds& edgesFromInNode = m_nodes[edge.getInNode()].m_outgoingEdges;
         for (EdgeId& e : edgesFromInNode)
         {
             if (e == edgeId)
@@ -783,7 +699,7 @@ void NeuralNetwork<Node, Edge>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
         }
     }
     {
-        EdgeIds& edgesToOutNode = getNodeData(edge.getOutNode()).m_incomingEdges;
+        EdgeIds& edgesToOutNode = m_nodes[edge.getOutNode()].m_incomingEdges;
         for (EdgeId& e : edgesToOutNode)
         {
             if (e == edgeId)
@@ -795,11 +711,8 @@ void NeuralNetwork<Node, Edge>::replaceEdgeId(EdgeId edgeId, EdgeId newId)
     }
 
     // Replace the edge id.
-    ed.m_id = newId;
-    int index = m_edgeIdIndexMap[edgeId.m_val];
-    m_edgeIdIndexMap[edgeId.m_val] = -1;
-    ensureIdIndexMapStorage(newId, m_edgeIdIndexMap);
-    m_edgeIdIndexMap[newId.m_val] = index;
+    m_edges[newId] = m_edges[edgeId];
+    m_edges.erase(edgeId);
 
     assert(validate());
 }
@@ -810,8 +723,9 @@ void NeuralNetwork<Node, Edge>::evaluate()
     assert(validate());
 
     // Initialize node evaluation states.
-    for (auto& nodeData : m_nodes)
+    for (auto& elem : m_nodes)
     {
+        NodeData& nodeData = elem.second;
         nodeData.m_state = nodeData.getIncomingEdges().size() == 0 ? NodeData::EvalState::EVALUATED : NodeData::EvalState::NONE;
     }
 
@@ -830,7 +744,7 @@ void NeuralNetwork<Node, Edge>::evaluate()
         while(stack.size() > 0)
         {
             NodeId id = stack.back();
-            NodeData& node = getNodeData(id);
+            NodeData& node = m_nodes[id];
 
             if (node.m_state == NodeData::EvalState::EVALUATED)
             {
@@ -864,7 +778,7 @@ void NeuralNetwork<Node, Edge>::evaluate()
                     }
                 }
 
-                const NodeData& inNodeData = getNodeData(inNodeId);
+                const NodeData& inNodeData = m_nodes.at(inNodeId);
 
                 // Recurse if we haven't evaluated this parent node yet.
                 if (isNewNode && (inNodeData.m_state != NodeData::EvalState::EVALUATED))
@@ -897,35 +811,6 @@ void NeuralNetwork<Node, Edge>::evaluate()
 }
 
 template <typename Node, typename Edge>
-template <typename ID_TYPE>
-inline void NeuralNetwork<Node, Edge>::ensureIdIndexMapStorage(ID_TYPE id, std::vector<int>& idIndexMap)
-{
-    int intId = id.m_val;
-    if (intId >= (int)idIndexMap.size())
-    {
-        idIndexMap.resize(intId + 1, -1);
-    }
-}
-
-template <typename Node, typename Edge>
-inline void NeuralNetwork<Node, Edge>::addNodeData(const NodeData& nd)
-{
-    NodeId id = nd.getId();
-    m_nodes.push_back(nd);
-    ensureIdIndexMapStorage(id, m_nodeIdIndexMap);
-    m_nodeIdIndexMap[id.m_val] = (int)m_nodes.size() - 1;
-}
-
-template <typename Node, typename Edge>
-inline void NeuralNetwork<Node, Edge>::addEdgeData(const EdgeData& ed)
-{
-    EdgeId id = ed.getId();
-    m_edges.push_back(ed);
-    ensureIdIndexMapStorage(id, m_edgeIdIndexMap);
-    m_edgeIdIndexMap[id.m_val] = (int)m_edges.size() - 1;
-}
-
-template <typename Node, typename Edge>
 auto NeuralNetwork<Node, Edge>::bake() const->std::shared_ptr<BakedNeuralNetwork>
 {
     return std::make_shared<BakedNeuralNetwork>(this);
@@ -941,20 +826,16 @@ bool NeuralNetwork<Node, Edge>::validate() const
     // Validate all edges.
     {
         std::unordered_set<EdgeId> edges;
-        for (int i = 0; i < (int)m_edges.size(); i++)
+        for (const auto& elem : m_edges)
         {
-            const EdgeData& edge = m_edges[i];
-
             // Make sure that the id is unique.
-            EdgeId id = edge.getId();
+            EdgeId id = elem.first;
             if (edges.find(id) != edges.end()) return false;
             edges.insert(id);
 
-            const Edge& e = edge.m_edge;
+            const Edge& e = elem.second;
             if (!hasNode(e.getInNode())) return false;
             if (!hasNode(e.getOutNode())) return false;
-
-            if (i != m_edgeIdIndexMap[id.m_val]) return false;
         }
     }
 
@@ -962,9 +843,9 @@ bool NeuralNetwork<Node, Edge>::validate() const
     {
         int numInputOrBiasNode = 0;
         std::unordered_set<NodeId> nodes;
-        for (int i = 0; i < (int)m_nodes.size(); i++)
+        for (const auto& elem : m_nodes)
         {
-            const NodeData& nodeData = m_nodes[i];
+            const NodeData& nodeData = elem.second;
 
             // Make sure that the id is unique.
             NodeId id = nodeData.getId();
@@ -991,8 +872,6 @@ bool NeuralNetwork<Node, Edge>::validate() const
                 if (edges.find(e) != edges.end()) return false;
                 edges.insert(e);
             }
-
-            if (i != m_nodeIdIndexMap[id.m_val]) return false;
         }
     }
 #endif

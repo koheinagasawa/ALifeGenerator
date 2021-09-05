@@ -19,7 +19,7 @@ bool TestUtils::compareGenome(const NEAT::Genome& g1, const NEAT::Genome& g2)
 
     for (const auto& node : net1->getNodes())
     {
-        NodeId id = node.getId();
+        NodeId id = node.first;
         if (!net2->hasNode(id)) return false;
         const NEAT::Genome::Node& n1 = net1->getNode(id);
         const NEAT::Genome::Node& n2 = net2->getNode(id);
@@ -39,10 +39,10 @@ bool TestUtils::compareGenome(const NEAT::Genome& g1, const NEAT::Genome& g2)
 
     for (const auto& edge : net1->getEdges())
     {
-        EdgeId id = edge.getId();
+        EdgeId id = edge.first;
         if (!net2->hasEdge(id)) return false;
 
-        const NEAT::Genome::Edge& e1 = edge.m_edge;
+        const NEAT::Genome::Edge& e1 = edge.second;
         const NEAT::Genome::Edge& e2 = net2->getEdge(id);
 
         if (e1.getInNode() != e2.getInNode()) return false;
@@ -63,10 +63,10 @@ bool TestUtils::compareGenomeWithWeightsAndStates(const NEAT::Genome& g1, const 
 
     for (const auto& edge : net1->getEdges())
     {
-        EdgeId id = edge.getId();
+        EdgeId id = edge.first;
         if (!net2->hasEdge(id)) return false;
 
-        const NEAT::Genome::Edge& e1 = edge.m_edge;
+        const NEAT::Genome::Edge& e1 = edge.second;
         const NEAT::Genome::Edge& e2 = net2->getEdge(id);
 
         if (e1.getWeightRaw() != e2.getWeightRaw()) return false;

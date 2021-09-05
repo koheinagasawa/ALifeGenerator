@@ -33,9 +33,9 @@ Generation::Generation(const Cinfo& cinfo)
 
         // Randomize edge weights.
         const Genome::Network* network = genome->getNetwork();
-        for (const auto& edge : network->getEdges())
+        for (const auto& elem : network->getEdges())
         {
-            genome->setEdgeWeight(edge.getId(), m_randomGenerator->randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
+            genome->setEdgeWeight(elem.first, m_randomGenerator->randomReal(cinfo.m_minWeight, cinfo.m_maxWeight));
         }
 
         // Add the genome.

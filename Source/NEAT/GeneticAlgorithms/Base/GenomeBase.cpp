@@ -57,9 +57,9 @@ void GenomeBase::bake()
 int GenomeBase::getNumEnabledEdges() const
 {
     int num = 0;
-    for (const auto& edge : m_network->getEdges())
+    for (const auto& elem : m_network->getEdges())
     {
-        if (edge.m_edge.isEnabled())
+        if (elem.second.isEnabled())
         {
             num++;
         }
@@ -140,9 +140,9 @@ void GenomeBase::setActivationAll(const Activation* activation)
     assert(m_network.get());
 
     // Set activation for all hidden and output nodes.
-    for (auto& nodeData : m_network->accessNodes())
+    for (auto& elem : m_network->accessNodes())
     {
-        Node& node = nodeData.m_node;
+        Node& node = elem.second.m_node;
         const Node::Type nodeType = node.getNodeType();
         if (nodeType == Node::Type::HIDDEN || nodeType == Node::Type::OUTPUT)
         {

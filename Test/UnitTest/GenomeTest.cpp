@@ -308,7 +308,7 @@ TEST(Genome, CalcGenomesDistance)
         int count = 0;
         for (const auto& edge : genome1.getNetwork()->getEdges())
         {
-            EdgeId id = edge.getId();
+            EdgeId id = edge.first;
             float weight1 = (float)count;
             genome1.setEdgeWeight(id, weight1);
             float weight2 = (float)(count + 4);

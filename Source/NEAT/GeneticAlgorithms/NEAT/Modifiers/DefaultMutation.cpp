@@ -35,9 +35,9 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     int numNewEdges = 0;
 
     // 1. Change weights of edges with a small perturbation.
-    for (const auto& edge : network->getEdges())
+    for (const auto& elem : network->getEdges())
     {
-        EdgeId edgeId = edge.getId();
+        EdgeId edgeId = elem.first;
         if (random->randomReal01() <= m_params.m_weightMutationRate)
         {
             if (random->randomReal01() <= m_params.m_weightMutationNewValRate)
@@ -67,7 +67,22 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
 
         // Select a random node.
         int index = random->randomInteger(0, nodes.size() - 1);
-        const Genome::Network::NodeData& nd = nodes[index];
+
+        // Find NodeId of the node.
+        NodeId nodeToChangeActivation;
+        {
+            int i = 0;
+            for (auto itr = nodes.begin(); itr != nodes.end(); itr++, i++)
+            {
+                if (i == index)
+                {
+                    nodeToChangeActivation = itr->first;
+                    break;
+                }
+            }
+        }
+
+        const Genome::Network::NodeData& nd = nodes.at(nodeToChangeActivation);
         NodeId nodeId = nd.getId();
 
         // We don't change activation functions for input and bias nodes.
@@ -106,7 +121,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
                 {
                     if (i == index)
                     {
-                        edgeToRemove = itr->getId();
+                        edgeToRemove = itr->first;
                         break;
                     }
                 }
@@ -140,9 +155,9 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
     if (addNewNode)
     {
         edgeCandidates.reserve(network->getNumEdges());
-        for (const auto& edgeData : network->getEdges())
+        for (const auto& elem : network->getEdges())
         {
-            const Genome::Edge& edge = edgeData.m_edge;
+            const Genome::Edge& edge = elem.second;
             NodeId inNode = edge.getInNode();
             NodeId outNode = edge.getOutNode();
             // We cannot add a new node at disable edges or edges from bias nodes.
@@ -150,7 +165,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             if (edge.isEnabled() && (network->getNode(inNode).getNodeType() != GenomeBase::Node::Type::BIAS) &&
                 (!nodeActivationMutated.isValid() || (inNode != nodeActivationMutated && outNode != nodeActivationMutated)))
             {
-                edgeCandidates.push_back(edgeData.getId());
+                edgeCandidates.push_back(elem.first);
             }
         }
     }
@@ -164,7 +179,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
         nodeCandidates.reserve(nodeDatas.size() / 2);
         for (auto n1Itr = nodeDatas.cbegin(); n1Itr != nodeDatas.cend(); n1Itr++)
         {
-            NodeId n1Id = n1Itr->getId();
+            NodeId n1Id = n1Itr->first;
             if (n1Id == nodeActivationMutated)
             {
                 // Skip node which mutated activation function in order to avoid applying multiple mutations to a single node at once.
@@ -179,7 +194,7 @@ void DefaultMutation::mutate(GenomeBase* genomeInOut, MutationOut& mutationOut)
             n2Itr++;
             for (; n2Itr != nodeDatas.cend(); n2Itr++)
             {
-                NodeId n2Id = n2Itr->getId();
+                NodeId n2Id = n2Itr->first;
                 if (n2Id == nodeActivationMutated)
                 {
                     // Skip node which mutated activation function in order to avoid applying multiple mutations to a single node at once.

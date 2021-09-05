@@ -32,11 +32,11 @@ TEST(DefaultCrossOver, GenerateSingleGenome)
         for (const auto& edge : genome1.getNetwork()->getEdges())
         {
             float weight1 = (float)count;
-            genome1.setEdgeWeight(edge.getId(), weight1);
+            genome1.setEdgeWeight(edge.first, weight1);
             initialEdgeWeightsGenome1[count] = weight1;
 
             float weight2 = (float)(count + 4);
-            genome2.setEdgeWeight(edge.getId(), weight2);
+            genome2.setEdgeWeight(edge.first, weight2);
             initialEdgeWeightsGenome2[count] = weight2;
 
             count++;

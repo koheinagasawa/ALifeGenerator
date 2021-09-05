@@ -127,6 +127,6 @@ TEST(GenomeBase, GenomeBasicOperations)
     genome.clearNodeValues();
     for (const auto& node : genome.getNetwork()->getNodes())
     {
-        EXPECT_EQ(node.m_node.getValue(), 0);
+        EXPECT_EQ(node.second.m_node.getValue(), 0);
     }
 }

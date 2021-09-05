@@ -58,7 +58,7 @@ auto FeedForwardNetwork<Node, Edge>::clone() const->std::shared_ptr<NeuralNetwor
 template <typename Node, typename Edge>
 bool FeedForwardNetwork<Node, Edge>::canAddEdgeAtRecursive(NodeId outNode, NodeId curNode) const
 {
-    const NodeData& node = this->getNodeData(curNode);
+    const NodeData& node = this->m_nodes.at(curNode);
 
     if (node.getIncomingEdges().empty())
     {
@@ -128,7 +128,7 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
             // Make sure that no edge has this node as its outNode.
             for (const auto& edge : this->m_edges)
             {
-                const Edge& e = edge.m_edge;
+                const Edge& e = edge.second;
                 if (e.getOutNode() == n) return false;
             }
         }
@@ -150,7 +150,7 @@ bool FeedForwardNetwork<Node, Edge>::validate() const
             // Make sure that no edge has this node as its inNode.
             for (const auto& edge : this->m_edges)
             {
-                const Edge& e = edge.m_edge;
+                const Edge& e = edge.second;
                 if (e.getInNode() == n) return false;
             }
         }

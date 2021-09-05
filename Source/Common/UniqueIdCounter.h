@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <iostream>
+
 // Helper class to increment unique id.
 template <typename T>
 class UniqueIdCounter
@@ -18,6 +20,12 @@ public:
     {
         T idOut = m_nextId;
         m_nextId = m_nextId.val() + 1;
+
+        if (m_nextId == 0)
+        {
+            std::cerr << "ERROR: Unique ID overflowed!" << std::endl;
+        }
+
         return idOut;
     }
 

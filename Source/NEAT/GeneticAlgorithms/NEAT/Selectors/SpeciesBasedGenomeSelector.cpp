@@ -63,7 +63,7 @@ SpeciesBasedGenomeSelector::SpeciesBasedGenomeSelector(const GenomeDatas& genome
         for (const GenomeData& g : genomeData)
         {
             const SpeciesId sId = getSpeciesId(g);
-            if (!sId.isValid() || !species.at(sId)->isReproducible() || g.getFitness() == 0)
+            if (!sId.isValid() || !species.at(sId)->isReproducible() || g.getFitness() <= 0)
             {
                 // Skip species who is marked as not reproducible and skip genome whose fitness is zero.
                 continue;

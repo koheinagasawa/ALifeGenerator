@@ -6,10 +6,10 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/Base/Generators/GenomeCloner.h>
-#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/Generators/GenomeCloner.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Genome.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 #include <UnitTest/Util/TestUtils.h>
 
 namespace

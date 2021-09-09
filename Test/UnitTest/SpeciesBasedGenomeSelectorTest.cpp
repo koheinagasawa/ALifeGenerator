@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Selectors/SpeciesBasedGenomeSelector.h>
 
 namespace
 {

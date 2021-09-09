@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/NeuralNetwork/Activations/ActivationLibrary.h>
+#include <EvoAlgo/NeuralNetwork/Activations/ActivationLibrary.h>
 
 TEST(ActivationLibrary, BasicOperations)
 {

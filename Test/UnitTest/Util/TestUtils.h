@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Genome.h>
 
 namespace TestUtils
 {

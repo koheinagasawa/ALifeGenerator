@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <NEAT/NeuralNetwork/Node.h>
-#include <NEAT/NeuralNetwork/Edge.h>
+#include <EvoAlgo/NeuralNetwork/Node.h>
+#include <EvoAlgo/NeuralNetwork/Edge.h>
 
 // Basic node class.
 struct Node

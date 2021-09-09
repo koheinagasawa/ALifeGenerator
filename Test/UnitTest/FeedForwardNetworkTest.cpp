@@ -7,7 +7,7 @@
 #include <UnitTest/UnitTestPch.h>
 #include <UnitTest/UnitTestBaseTypes.h>
 
-#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
+#include <EvoAlgo/NeuralNetwork/FeedForwardNetwork.h>
 
 using FFN = FeedForwardNetwork<Node, Edge>;
 

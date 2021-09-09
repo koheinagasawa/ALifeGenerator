@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Generation.h>
 
 namespace
 {

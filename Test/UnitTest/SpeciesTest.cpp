@@ -6,8 +6,8 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Species.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Species.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 
 TEST(Species, AddGenomeToSpecies)
 {

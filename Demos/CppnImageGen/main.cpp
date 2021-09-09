@@ -4,11 +4,11 @@
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
 
-#include <NEAT/NeuralNetwork/Activations/ActivationFactory.h>
-#include <NEAT/NeuralNetwork/Activations/ActivationLibrary.h>
-#include <NEAT/GeneticAlgorithms/Base/GenerationBase.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Genome.h>
+#include <EvoAlgo/NeuralNetwork/Activations/ActivationFactory.h>
+#include <EvoAlgo/NeuralNetwork/Activations/ActivationLibrary.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/GenerationBase.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Generation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Genome.h>
 #include <bitmap_image.hpp>
 #include <sstream>
 

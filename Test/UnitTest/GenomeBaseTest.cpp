@@ -6,8 +6,8 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/Base/GenomeBase.h>
-#include <NEAT/NeuralNetwork/FeedForwardNetwork.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/GenomeBase.h>
+#include <EvoAlgo/NeuralNetwork/FeedForwardNetwork.h>
 
 namespace
 {

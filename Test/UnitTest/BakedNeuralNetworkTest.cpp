@@ -7,10 +7,10 @@
 #include <UnitTest/UnitTestPch.h>
 #include <UnitTest/UnitTestBaseTypes.h>
 
-#include <NEAT/NeuralNetwork/Node.h>
-#include <NEAT/NeuralNetwork/Edge.h>
-#include <NEAT/NeuralNetwork/NeuralNetwork.h>
-#include <NEAT/NeuralNetwork/BakedNeuralNetwork.h>
+#include <EvoAlgo/NeuralNetwork/Node.h>
+#include <EvoAlgo/NeuralNetwork/Edge.h>
+#include <EvoAlgo/NeuralNetwork/NeuralNetwork.h>
+#include <EvoAlgo/NeuralNetwork/BakedNeuralNetwork.h>
 
 using NN = NeuralNetwork<DefaultNode, DefaultEdge>;
 

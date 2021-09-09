@@ -6,8 +6,8 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Generators/SpeciesChampionSelector.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 
 TEST(SpeciesChampionSelector, SelectChampions)
 {

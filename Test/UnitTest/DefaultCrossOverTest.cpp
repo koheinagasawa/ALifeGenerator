@@ -6,9 +6,9 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
-#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
-#include <NEAT/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Generators/DefaultCrossOver.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/Selectors/GenomeSelector.h>
 
 TEST(DefaultCrossOver, GenerateSingleGenome)
 {

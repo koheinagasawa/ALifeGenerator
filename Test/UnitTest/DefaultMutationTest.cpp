@@ -6,7 +6,7 @@
 
 #include <UnitTest/UnitTestPch.h>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Modifiers/DefaultMutation.h>
 #include <UnitTest/Util/TestUtils.h>
 
 TEST(DefaultMutation, MutateSingleGenome)

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <fstream>
 
-#include <NEAT/GeneticAlgorithms/NEAT/Generation.h>
+#include <EvoAlgo/GeneticAlgorithms/NEAT/Generation.h>
 
 class XorFitnessCalculator : public FitnessCalculatorBase
 {

@@ -7,7 +7,7 @@
 #include <UnitTest/UnitTestPch.h>
 #include <UnitTest/UnitTestBaseTypes.h>
 
-#include <NEAT/NeuralNetwork/NeuralNetworkEvaluator.h>
+#include <EvoAlgo/NeuralNetwork/NeuralNetworkEvaluator.h>
 
 using NN = NeuralNetwork<Node, Edge>;
 

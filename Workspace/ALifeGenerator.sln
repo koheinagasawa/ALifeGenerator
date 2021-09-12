@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EvoAlgo", "..\Source\EvoAlg
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Simulation", "..\Source\Simulation\Simulation.vcxproj", "{8646C491-8AAD-48C9-9F3B-44D1BC751482}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Geometry", "..\Source\Geometry\Geometry.vcxproj", "{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -80,6 +82,14 @@ Global
 		{8646C491-8AAD-48C9-9F3B-44D1BC751482}.Release|x64.Build.0 = Release|x64
 		{8646C491-8AAD-48C9-9F3B-44D1BC751482}.Release|x86.ActiveCfg = Release|Win32
 		{8646C491-8AAD-48C9-9F3B-44D1BC751482}.Release|x86.Build.0 = Release|Win32
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Debug|x64.ActiveCfg = Debug|x64
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Debug|x64.Build.0 = Debug|x64
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Debug|x86.ActiveCfg = Debug|Win32
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Debug|x86.Build.0 = Debug|Win32
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Release|x64.ActiveCfg = Release|x64
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Release|x64.Build.0 = Release|x64
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Release|x86.ActiveCfg = Release|Win32
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +101,7 @@ Global
 		{52704823-2412-454A-878B-2AEF86E748DE} = {6B879EA0-5672-4B51-90C5-FC37E28CE2C9}
 		{A8B98BD3-4244-4E79-BB1B-A5BF836F21D4} = {8A4A8C9A-73B2-4D9D-A3AC-4D65ED471702}
 		{8646C491-8AAD-48C9-9F3B-44D1BC751482} = {8A4A8C9A-73B2-4D9D-A3AC-4D65ED471702}
+		{D0B5A7FE-7015-4960-B8F6-16671ECC6DA7} = {8A4A8C9A-73B2-4D9D-A3AC-4D65ED471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48851B75-FA2E-47D9-957D-2CFD67987610}

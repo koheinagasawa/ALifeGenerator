@@ -1,5 +1,5 @@
 /*
-* Simulation.cpp
+* Geometry.h
 *
 * Copyright (C) 2021 Kohei Nagasawa All Rights Reserved.
 */
@@ -8,4 +8,3 @@
 
 #include <cassert>
 #include <Common/BaseType.h>
-#include <Geometry/BasicTypes.h>

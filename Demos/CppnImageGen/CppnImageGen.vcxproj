@@ -99,6 +99,7 @@
       <AdditionalIncludeDirectories>../../../../external/bitmap/;$(SolutionDir)..\Source;</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,6 +117,7 @@
       <AdditionalIncludeDirectories>../../../../external/bitmap/;$(SolutionDir)..\Source;</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,6 +135,7 @@
       <AdditionalIncludeDirectories>../../../../external/bitmap/;$(SolutionDir)..\Source;</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,6 +153,7 @@
       <AdditionalIncludeDirectories>../../../../external/bitmap/;$(SolutionDir)..\Source;</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

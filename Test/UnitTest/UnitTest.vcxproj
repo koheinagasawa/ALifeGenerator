@@ -83,6 +83,9 @@
     <ProjectReference Include="..\..\Source\EvoAlgo\EvoAlgo.vcxproj">
       <Project>{a8b98bd3-4244-4e79-bb1b-a5bf836f21d4}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\Source\Simulation\Simulation.vcxproj">
+      <Project>{8646c491-8aad-48c9-9f3b-44d1bc751482}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

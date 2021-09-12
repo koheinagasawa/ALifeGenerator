@@ -2,8 +2,43 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Simulation.cpp" />
+    <ClCompile Include="SoftBody\SoftBodySystem.cpp">
+      <Filter>SoftBody</Filter>
+    </ClCompile>
+    <ClCompile Include="World\World.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation.h" />
+    <ClInclude Include="World\World.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="System\System.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="SoftBody\SoftBodySystem.h">
+      <Filter>SoftBody</Filter>
+    </ClInclude>
+    <ClInclude Include="SoftBody\Solver\SoftBodySolver.h">
+      <Filter>SoftBody\Solver</Filter>
+    </ClInclude>
+    <ClInclude Include="SoftBody\MassSpringSoftBodySystem.h">
+      <Filter>SoftBody</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="World">
+      <UniqueIdentifier>{d246bee7-84f3-4383-aab8-d587705b121e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{8bb46018-be5e-4c5c-9464-49f614ec7297}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SoftBody">
+      <UniqueIdentifier>{c8c5e386-c525-4bd3-b9d8-d397176efc25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SoftBody\Solver">
+      <UniqueIdentifier>{67ea22c7-32b0-4f53-8e9e-a97e37a9474d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

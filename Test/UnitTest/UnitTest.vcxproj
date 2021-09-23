@@ -54,20 +54,21 @@
     <ClInclude Include="Util\TestUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ActivationLibraryTest.cpp" />
-    <ClCompile Include="BakedNeuralNetworkTest.cpp" />
-    <ClCompile Include="DefaultCrossOverTest.cpp" />
-    <ClCompile Include="FeedForwardNetworkTest.cpp" />
-    <ClCompile Include="GenomeClonerTest.cpp" />
-    <ClCompile Include="NeuralNetworkEvaluatorTest.cpp" />
-    <ClCompile Include="SpeciesBasedGenomeSelectorTest.cpp" />
-    <ClCompile Include="DefaultMutationTest.cpp" />
-    <ClCompile Include="GenerationTest.cpp" />
-    <ClCompile Include="GenomeBaseTest.cpp" />
-    <ClCompile Include="GenomeTest.cpp" />
-    <ClCompile Include="NeuralNetworkTest.cpp" />
-    <ClCompile Include="SpeciesChampionSelectorTest.cpp" />
-    <ClCompile Include="SpeciesTest.cpp" />
+    <ClCompile Include="EvoAlgo\ActivationLibraryTest.cpp" />
+    <ClCompile Include="EvoAlgo\BakedNeuralNetworkTest.cpp" />
+    <ClCompile Include="EvoAlgo\DefaultCrossOverTest.cpp" />
+    <ClCompile Include="EvoAlgo\DefaultMutationTest.cpp" />
+    <ClCompile Include="EvoAlgo\FeedForwardNetworkTest.cpp" />
+    <ClCompile Include="EvoAlgo\GenerationTest.cpp" />
+    <ClCompile Include="EvoAlgo\GenomeBaseTest.cpp" />
+    <ClCompile Include="EvoAlgo\GenomeClonerTest.cpp" />
+    <ClCompile Include="EvoAlgo\GenomeTest.cpp" />
+    <ClCompile Include="EvoAlgo\NeuralNetworkEvaluatorTest.cpp" />
+    <ClCompile Include="EvoAlgo\NeuralNetworkTest.cpp" />
+    <ClCompile Include="EvoAlgo\SpeciesBasedGenomeSelectorTest.cpp" />
+    <ClCompile Include="EvoAlgo\SpeciesChampionSelectorTest.cpp" />
+    <ClCompile Include="EvoAlgo\SpeciesTest.cpp" />
+    <ClCompile Include="Geometry\PlaneShapeTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -82,9 +83,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\Source\EvoAlgo\EvoAlgo.vcxproj">
       <Project>{a8b98bd3-4244-4e79-bb1b-a5bf836f21d4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Source\Simulation\Simulation.vcxproj">
-      <Project>{8646c491-8aad-48c9-9f3b-44d1bc751482}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

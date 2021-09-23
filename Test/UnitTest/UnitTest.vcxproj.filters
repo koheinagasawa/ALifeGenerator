@@ -2,49 +2,54 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="UnitTestPch.cpp" />
-    <ClCompile Include="DefaultCrossOverTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="DefaultMutationTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="GenerationTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="GenomeBaseTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="GenomeClonerTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="GenomeTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="NeuralNetworkTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="SpeciesBasedGenomeSelectorTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="SpeciesChampionSelectorTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
-    <ClCompile Include="SpeciesTest.cpp">
-      <Filter>UnitTest</Filter>
-    </ClCompile>
     <ClCompile Include="Util\TestUtils.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="FeedForwardNetworkTest.cpp">
-      <Filter>UnitTest</Filter>
+    <ClCompile Include="Geometry\PlaneShapeTest.cpp">
+      <Filter>Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="ActivationLibraryTest.cpp">
-      <Filter>UnitTest</Filter>
+    <ClCompile Include="EvoAlgo\ActivationLibraryTest.cpp">
+      <Filter>EvoAlgo</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralNetworkEvaluatorTest.cpp">
-      <Filter>UnitTest</Filter>
+    <ClCompile Include="EvoAlgo\BakedNeuralNetworkTest.cpp">
+      <Filter>EvoAlgo</Filter>
     </ClCompile>
-    <ClCompile Include="BakedNeuralNetworkTest.cpp" />
+    <ClCompile Include="EvoAlgo\DefaultCrossOverTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\DefaultMutationTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\FeedForwardNetworkTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\GenerationTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\GenomeBaseTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\GenomeClonerTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\GenomeTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\NeuralNetworkEvaluatorTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\NeuralNetworkTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\SpeciesBasedGenomeSelectorTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\SpeciesChampionSelectorTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
+    <ClCompile Include="EvoAlgo\SpeciesTest.cpp">
+      <Filter>EvoAlgo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />
@@ -59,11 +64,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="UnitTest">
-      <UniqueIdentifier>{827f8762-7957-4a54-b9e1-9a5912face20}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Util">
       <UniqueIdentifier>{4d821edc-ba34-4188-9684-fb6e58248c9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EvoAlgo">
+      <UniqueIdentifier>{d9900390-5afb-4b15-9826-7f28e7462df6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{2324dcd9-4e37-4f46-b81b-2354e71fef30}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

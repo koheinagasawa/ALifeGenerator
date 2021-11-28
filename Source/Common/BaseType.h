@@ -9,6 +9,10 @@
 #include <cstdint>
 #include <stdio.h>
 
+#ifndef USE_SSE
+    #define USE_SSE
+#endif
+
 #ifndef DEBUG_SLOW
 // #define DEBUG_SLOW
 #endif

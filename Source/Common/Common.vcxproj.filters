@@ -5,12 +5,35 @@
     <ClInclude Include="PseudoRandom.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="UniqueIdCounter.h" />
+    <ClInclude Include="Math\Vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Simd\SimdFloat.h">
+      <Filter>Math\Simd</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Simd\SseTypes.h">
+      <Filter>Math\Simd</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix33.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PseudoRandom.cpp" />
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="Math\Simd\SseTypes.cpp">
+      <Filter>Math\Simd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Demos\XorNEAT\XorNEAT.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Math">
+      <UniqueIdentifier>{2ddcdd51-d246-4d7d-8921-f753f65526e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Simd">
+      <UniqueIdentifier>{1dfa4e1b-0982-4055-996b-236efa1d5e04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

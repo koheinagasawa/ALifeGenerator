@@ -50,6 +50,15 @@
     <ClCompile Include="EvoAlgo\SpeciesTest.cpp">
       <Filter>EvoAlgo</Filter>
     </ClCompile>
+    <ClCompile Include="Common\Vector4Test.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\SimdFloatTest.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry\SphereShapeTest.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnitTestPch.h" />
@@ -72,6 +81,9 @@
     </Filter>
     <Filter Include="Geometry">
       <UniqueIdentifier>{2324dcd9-4e37-4f46-b81b-2354e71fef30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{35f81ca7-bbbc-4b28-8685-9593305cff0c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

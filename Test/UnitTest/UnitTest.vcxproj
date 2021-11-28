@@ -54,6 +54,8 @@
     <ClInclude Include="Util\TestUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Common\SimdFloatTest.cpp" />
+    <ClCompile Include="Common\Vector4Test.cpp" />
     <ClCompile Include="EvoAlgo\ActivationLibraryTest.cpp" />
     <ClCompile Include="EvoAlgo\BakedNeuralNetworkTest.cpp" />
     <ClCompile Include="EvoAlgo\DefaultCrossOverTest.cpp" />
@@ -69,6 +71,7 @@
     <ClCompile Include="EvoAlgo\SpeciesChampionSelectorTest.cpp" />
     <ClCompile Include="EvoAlgo\SpeciesTest.cpp" />
     <ClCompile Include="Geometry\PlaneShapeTest.cpp" />
+    <ClCompile Include="Geometry\SphereShapeTest.cpp" />
     <ClCompile Include="UnitTestPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -83,6 +86,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\Source\EvoAlgo\EvoAlgo.vcxproj">
       <Project>{a8b98bd3-4244-4e79-bb1b-a5bf836f21d4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Geometry\Geometry.vcxproj">
+      <Project>{d0b5a7fe-7015-4960-b8f6-16671ecc6da7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +110,7 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source;$(SolutionDir)..\Test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -125,6 +132,7 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source;$(SolutionDir)..\Test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -145,6 +153,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source;$(SolutionDir)..\Test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -166,6 +175,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source;$(SolutionDir)..\Test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

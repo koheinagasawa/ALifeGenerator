@@ -98,9 +98,10 @@
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Geometry.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Geometry/Geometry.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source;</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,9 +117,10 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Geometry.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Geometry/Geometry.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source;</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,9 +137,10 @@
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Geometry.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Geometry/Geometry.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source;</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,9 +156,10 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Geometry.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Geometry/Geometry.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source;</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -167,6 +171,9 @@
   <ItemGroup>
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Shapes\PlaneShape.h" />
+    <ClInclude Include="Shapes\SphereShape.h" />
+    <ClInclude Include="Shapes\Shape.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">
@@ -184,6 +191,8 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry/Geometry.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry/Geometry.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Shapes\PlaneShape.cpp" />
+    <ClCompile Include="Shapes\SphereShape.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

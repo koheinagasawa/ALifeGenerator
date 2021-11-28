@@ -3,8 +3,28 @@
   <ItemGroup>
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="BasicTypes.h" />
+    <ClInclude Include="Shapes\Shape.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes\SphereShape.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes\PlaneShape.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="Shapes\PlaneShape.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes\SphereShape.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shapes">
+      <UniqueIdentifier>{dd5b7d8f-dd26-4570-8a4b-4a16a9b04572}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

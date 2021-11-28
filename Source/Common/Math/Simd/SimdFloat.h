@@ -13,6 +13,7 @@ class SimdFloat
 {
 public:
     // Constructors
+    inline SimdFloat() {}
     inline explicit SimdFloat(float val);
     inline SimdFloat(SingleFloat val) : m_val(val) {}
     inline SimdFloat(const SimdFloat& rhs) : m_val(rhs.m_val) {}

@@ -59,12 +59,12 @@ namespace PBD
         Vector4 m_normal;
     };
 
-    // Position Based Dynamic solver
+    // Position Based Dynamic solver.
     // [TODO] The solver assumes that mass of all vertices are the same.
     class Solver : public PointBasedSystemSolver
     {
     public:
-        // Type definitions
+        // Type definitions.
         using Positions = std::vector<Vector4>;
         using Velocities = std::vector<Vector4>;
         using Colliders = std::vector<Collider>;
@@ -72,7 +72,7 @@ namespace PBD
         using DynamicVertexCollisionConstraints = std::vector<DynamicVertexCollisionConstraint>;
         using StaticCollisionConstraints = std::vector<StaticCollisionConstraint>;
 
-        // Type for velocity damping
+        // Type for velocity damping.
         enum class VelocityDampingType
         {
             NONE,           // No velocity damping.

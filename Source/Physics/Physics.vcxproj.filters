@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="World\World.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\PBD\PBDSolver.cpp">
+      <Filter>Solvers\PBD</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\PointBasedSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\PBD\Constraints\PBDConstraints.cpp">
+      <Filter>Solvers\PBD\Constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\MassSpring\MassSpringSolver.cpp">
+      <Filter>Solvers\MassSpring</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Physics.h" />
+    <ClInclude Include="World\World.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\Collider.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\PBD\PBDSolver.h">
+      <Filter>Solvers\PBD</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\PointBasedSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\System.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\PointBasedSystemSolver.h">
+      <Filter>Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\PBD\Constraints\PBDConstraints.h">
+      <Filter>Solvers\PBD\Constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\MassSpring\MassSpringSolver.h">
+      <Filter>Solvers\MassSpring</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="World">
+      <UniqueIdentifier>{d246bee7-84f3-4383-aab8-d587705b121e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{34f37ab5-8191-4ebb-8df3-aa41699d3d3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solvers">
+      <UniqueIdentifier>{422b6714-6531-42b8-b6d4-0647a4ab3d57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solvers\PBD">
+      <UniqueIdentifier>{a6778f67-8ea9-40ca-a638-0986c2d2829c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solvers\PBD\Constraints">
+      <UniqueIdentifier>{d23a5021-d518-415a-9641-9fee4b7a1e44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{5f84b75a-86fb-4133-99cf-14a692d45e0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solvers\MassSpring">
+      <UniqueIdentifier>{ce079999-832a-43c0-8c7f-094676603f05}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

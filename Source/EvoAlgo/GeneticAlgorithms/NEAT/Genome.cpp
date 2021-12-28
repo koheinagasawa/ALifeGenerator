@@ -96,6 +96,8 @@ Genome::Genome(const Cinfo& cinfo)
     edges.reserve(numEdges);
     m_innovations.reserve(numEdges);
     {
+        // [TODO] It might be better to create edges in output-first-input-next order in terms of cache consistency during evaluation.
+        //        Probably it won't matter when the initial network is small, but it might be worth testing for initially huge network (big numbers of inputs and outputs).
         for (int i = 0; i < numInputNodes; i++)
         {
             NodeId inputNode = (i == cinfo.m_numInputNodes) ? m_biasNode : inputNodes[i];

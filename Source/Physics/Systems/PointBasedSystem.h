@@ -62,6 +62,8 @@ public:
         float m_mass = 1.0f;
         float m_radius = 1.0f;
         float m_dampingFactor = 1.0f;
+
+        Vector4 m_gravity = Vector4{0.f, -9.8f, 0.f};
     };
 
     // Constructor

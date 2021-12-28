@@ -13,7 +13,7 @@ class System
 {
 public:
     // Constructor
-    System() : m_gravity(0.f, -9.8f, 0.f) {}
+    System() = default;
 
     // Step this system by deltaTime.
     virtual void step(float deltaTime) = 0;

@@ -11,6 +11,8 @@
 
 PointBasedSystem::PointBasedSystem(const Cinfo& cinfo)
 {
+    m_gravity = cinfo.m_gravity;
+
     // Create vertices and edges
     {
         const int numVertices = (int)cinfo.m_vertexPositions.size();

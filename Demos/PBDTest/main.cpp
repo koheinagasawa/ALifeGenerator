@@ -96,7 +96,7 @@ public:
 
     // For simulation
     World m_world;
-    std::shared_ptr<PointBasedSystem> m_pointBasedSystem;
+    PointBasedSystem m_pointBasedSystem;
     float m_deltaTime = 1.0f/60.f;
 
     bool m_running = true;
@@ -359,7 +359,7 @@ void MySystem::initScene()
         createSphere(numVerts, positions, cinfo);
         //createTeapot(numVerts, positions, cinfo);
 
-        m_pointBasedSystem = std::make_shared<PointBasedSystem>(cinfo);
+        m_pointBasedSystem.init(cinfo);
 
         kMaterialId mRedId = createMaterial("RED", kColor::RED);
         for (int i = 0; i < numVerts; i++)
@@ -377,7 +377,7 @@ void MySystem::initScene()
     // Create ground
     {
         std::shared_ptr<Shape> groundShape = std::make_shared<PlaneShape>(Vector4(0.f, 1.f, 0.f, 0.f));
-        m_pointBasedSystem->addCollider(groundShape);
+        m_pointBasedSystem.addCollider(groundShape);
 
         // Add render geometry
         {
@@ -408,7 +408,7 @@ void MySystem::init()
 
 void MySystem::postStep()
 {
-    const std::vector<Vector4>& positions = m_pointBasedSystem->getVertexPositions();
+    const std::vector<Vector4>& positions = m_pointBasedSystem.getVertexPositions();
     const int numVerts = (int)positions.size();
     for (int i = 0; i < numVerts; i++)
     {
@@ -419,8 +419,8 @@ void MySystem::postStep()
 
     // Draw edges
     {
-        const PointBasedSystem::Vertices& vertices = m_pointBasedSystem->getVertices();
-        const PointBasedSystem::Edges& edges = m_pointBasedSystem->getEdges();
+        const PointBasedSystem::Vertices& vertices = m_pointBasedSystem.getVertices();
+        const PointBasedSystem::Edges& edges = m_pointBasedSystem.getEdges();
         int currentVertexIdx = 0;
         const PointBasedSystem::Vertex* currentVertex = &vertices[currentVertexIdx];
         kVector4 start = vTokV(positions[currentVertexIdx]);

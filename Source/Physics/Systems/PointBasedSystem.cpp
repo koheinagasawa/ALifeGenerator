@@ -9,7 +9,7 @@
 #include <Physics/Solvers/PBD/PBDSolver.h>
 #include <Physics/Solvers/MassSpring/MassSpringSolver.h>
 
-PointBasedSystem::PointBasedSystem(const Cinfo& cinfo)
+void PointBasedSystem::init(const Cinfo& cinfo)
 {
     m_gravity = cinfo.m_gravity;
 

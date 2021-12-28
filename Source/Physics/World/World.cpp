@@ -11,13 +11,13 @@
 void World::step(float deltaTime)
 {
     // Step all the systems.
-    for (SystemPtr system : m_systems)
+    for (System* system : m_systems)
     {
         system->step(deltaTime);
     }
 }
 
-void World::addSystem(SystemPtr system)
+void World::addSystem(System& system)
 {
-    m_systems.push_back(system);
+    m_systems.push_back(&system);
 }

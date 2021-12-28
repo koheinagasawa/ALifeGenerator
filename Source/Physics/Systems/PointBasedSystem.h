@@ -67,7 +67,9 @@ public:
     };
 
     // Constructor
-    PointBasedSystem(const Cinfo& cinfo);
+    PointBasedSystem() = default;
+
+    void init(const Cinfo& cinfo);
 
     // Step this system by deltaTime.
     virtual void step(float deltaTime) override;

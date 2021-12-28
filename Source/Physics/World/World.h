@@ -15,14 +15,13 @@ class World
 {
 public:
     // Type definitions
-    using SystemPtr = std::shared_ptr<System>;
-    using Systems = std::vector<SystemPtr>;
+    using Systems = std::vector<System*>;
 
     // Step the world by deltaTime.
     void step(float deltaTime);
 
     // Add simulation system.
-    void addSystem(SystemPtr system);
+    void addSystem(System& system);
 
 protected:
     // The simulation systems.

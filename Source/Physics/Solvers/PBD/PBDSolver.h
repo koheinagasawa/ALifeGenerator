@@ -89,8 +89,13 @@ namespace PBD
         // Step and solve the vertices.
         virtual void solve(float deltaTime) override;
 
+        virtual Type getType() const override { return Type::POSITION_BASED_DYNAMICS; }
+
         inline int getNumVertices() const { return (int)m_positions.size(); }
         inline int getNumColliders() const { return (int)m_colliders.size(); }
+
+        inline auto getDampingFactor() const->const SimdFloat& { return m_dampingFactor; }
+        inline int getSolverIterations() const { return m_solverIterations; }
 
     protected:
         void dampVelocities();

@@ -17,4 +17,5 @@ public:
     };
 
     virtual void solve(float deltaTime) = 0;
+    virtual Type getType() const = 0;
 };

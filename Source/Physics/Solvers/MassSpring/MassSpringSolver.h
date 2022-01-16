@@ -22,6 +22,10 @@ public:
     // Step and solve.
     virtual void solve(float deltaTime) override;
 
+    virtual Type getType() const override { return Type::MASS_SPRING; }
+
+    inline auto getDampingFactor() const->const SimdFloat& { return m_dampingFactor; }
+
 protected:
     // Spring constraint.
     struct Constraint

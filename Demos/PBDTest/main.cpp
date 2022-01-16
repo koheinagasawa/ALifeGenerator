@@ -138,9 +138,60 @@ namespace
 
 void MySystem::handleInput()
 {
-    if (kInputModule::getInstance().getGlobalKeyLog().isKeyDown('P'))
+    const kKeyLog& log = kInputModule::getInstance().getGlobalKeyLog();
+    if (log.isKeyPressed('P'))
     {
         m_running = !m_running;
+    }
+    else if (log.isKeyPressed('U'))
+    {
+        // Test adding a new vertex
+        std::vector<Vector4> positions;
+        positions.push_back(Vector4{0.f, 5.0f, 0.f});
+        std::vector<Vector4> velocities;
+        velocities.push_back(Vec4_0);
+
+        // Add edges between all existing vertices.
+        PointBasedSystem::Cinfo::Connections connections;
+        const int numCurVertices = (int)m_pointBasedSystem.getVertices().size();
+        connections.reserve(numCurVertices);
+        for (int i = 0; i < numCurVertices; i++)
+        {
+            PointBasedSystem::Cinfo::Connection con;
+            con.m_vA = numCurVertices;
+            con.m_vB = i;
+            con.m_stiffness = .05f;
+            connections.push_back(con);
+        }
+
+        // Add the new vertex and edges.
+        std::vector<int> edgesToRemove;
+        edgesToRemove.push_back(0);
+        edgesToRemove.push_back(1);
+        edgesToRemove.push_back(2);
+        edgesToRemove.push_back(10);
+        edgesToRemove.push_back(20);
+        edgesToRemove.push_back(30);
+        edgesToRemove.push_back(31);
+        edgesToRemove.push_back(32);
+        edgesToRemove.push_back(33);
+        edgesToRemove.push_back(34);
+        edgesToRemove.push_back(35);
+        edgesToRemove.push_back(36);
+        m_pointBasedSystem.addRemoveVerticesAndEdges(positions, velocities, connections, edgesToRemove);
+
+        // Add a render object
+        {
+            static kMaterialId mRedId = createMaterial("GREEN", kColor::GREEN);
+
+            // Create sphere
+            kGeomData geom = kGeometryUtil::createSphere(kVector4_Zero, 0.15f, 4, 2);
+
+            // Add the geometry to the scene
+            std::shared_ptr<kRenderMesh> mesh = std::make_shared<kRenderMesh>(geom, kTransform_Identity, mRedId, kObjectMotionType::MOVABLE);
+            kScaleTransform st; st.setTranslation(vTokV(positions[0]));
+            m_vertexObjectIds.push_back(m_scene->addMeshObject(mesh, st));
+        }
     }
 }
 
@@ -281,15 +332,15 @@ namespace
         float stiffness = .5f;
         for (const kGeomData::Triangle& t : geom.m_triangles)
         {
-            if (t.m_a != t.m_b)
+            if (t.m_a < t.m_b)
             {
                 cinfo.m_vertexConnectivity.push_back({ (int)t.m_a, (int)t.m_b, stiffness });
             }
-            if (t.m_b != t.m_c)
+            if (t.m_b < t.m_c)
             {
                 cinfo.m_vertexConnectivity.push_back({ (int)t.m_b, (int)t.m_c, stiffness });
             }
-            if (t.m_a != t.m_c)
+            if (t.m_c < t.m_a)
             {
                 cinfo.m_vertexConnectivity.push_back({ (int)t.m_c, (int)t.m_a, stiffness });
             }

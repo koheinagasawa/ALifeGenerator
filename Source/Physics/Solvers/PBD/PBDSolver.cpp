@@ -219,6 +219,11 @@ namespace PBD
                     inertia += ((m * m.transpose()));
                 }
 
+                if (inertia.getDeterminant() == SimdFloat_0)
+                {
+                    break;
+                }
+
                 inertia.setInverse(inertia);
 
                 Vector4 angVel = inertia * l;

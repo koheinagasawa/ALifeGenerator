@@ -81,7 +81,7 @@ public:
 
 private:
 
-    QuadrupleFloat m_quad; // The data.
+    ALIGN16(QuadrupleFloat) m_quad; // The data.
 };
 
 static inline Vector4 operator*(const SimdFloat& f, const Vector4& v) { return v * f; }

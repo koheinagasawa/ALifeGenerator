@@ -19,6 +19,13 @@
 
 #define WARN(str, ...) printf(str##"\n", __VA_ARGS__);
 
+#define ALIGN(DECL, ALIGNMENT) alignas(ALIGNMENT) DECL
+#define ALIGN8(DECL) alignas(8) DECL
+#define ALIGN16(DECL) alignas(16) DECL
+#define ALIGN32(DECL) alignas(32) DECL
+#define ALIGN64(DECL) alignas(64) DECL
+#define ALIGN128(DECL) alignas(128) DECL
+
 ////////////
 
 template <typename TYPE = uint32_t, int INVALID = -1>

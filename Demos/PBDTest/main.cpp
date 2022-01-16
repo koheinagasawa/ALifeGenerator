@@ -164,7 +164,7 @@ void MySystem::handleInput()
             connections.push_back(con);
         }
 
-        // Add the new vertex and edges.
+        // Remove some existing edges.
         std::vector<int> edgesToRemove;
         edgesToRemove.push_back(0);
         edgesToRemove.push_back(1);

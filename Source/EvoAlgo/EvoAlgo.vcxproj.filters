@@ -53,6 +53,9 @@
     <ClCompile Include="NeuralNetwork\BakedNeuralNetwork.cpp">
       <Filter>NeuralNetwork</Filter>
     </ClCompile>
+    <ClCompile Include="CppnCellDivision\CppnCellGenome.cpp">
+      <Filter>CppnCellDivision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EvoAlgo.h" />
@@ -137,6 +140,9 @@
     <ClInclude Include="NeuralNetwork\BakedNeuralNetwork.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
+    <ClInclude Include="CppnCellDivision\CppnCellGenome.h">
+      <Filter>CppnCellDivision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GeneticAlgorithms">
@@ -174,6 +180,9 @@
     </Filter>
     <Filter Include="GeneticAlgorithms\Base\Activation">
       <UniqueIdentifier>{5b804d68-d2c5-4a0a-85e6-d2092bb75019}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CppnCellDivision">
+      <UniqueIdentifier>{50a33518-0316-41c8-88ee-8d08d71620ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

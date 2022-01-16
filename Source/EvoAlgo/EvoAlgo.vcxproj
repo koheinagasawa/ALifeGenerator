@@ -188,6 +188,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CppnCellDivision\CppnCellGenome.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Activations\ActivationProvider.h" />
     <ClInclude Include="GeneticAlgorithms\Base\GenerationBase.h" />
     <ClInclude Include="GeneticAlgorithms\Base\Generators\CrossOverDelegate.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="NeuralNetwork\NeuralNetwork.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CppnCellDivision\CppnCellGenome.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\Activations\ActivationProvider.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenerationBase.cpp" />
     <ClCompile Include="GeneticAlgorithms\Base\GenomeBase.cpp" />

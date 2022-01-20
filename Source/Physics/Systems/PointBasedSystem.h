@@ -50,6 +50,9 @@ public:
         {
             int m_vA, m_vB;             // Indices of vertices.
             float m_stiffness = 1.0f;   // Stiffness of this connection.
+
+            // Length of this connection. If zero, the length will be initial distance of the two vertices.
+            float m_length = 0.f;
         };
 
         using Connections = std::vector<Connection>;
@@ -69,7 +72,13 @@ public:
     // Constructor
     PointBasedSystem() = default;
 
+    // Initialize by Cinfo.
     void init(const Cinfo& cinfo);
+
+    // Add new vertices and edges and remove some edges.
+    // edgesToRemove has to be sorted by edgeId in increasing order.
+    // [TODO] Should we support to remove vertices too?
+    void addRemoveVerticesAndEdges(const Positions& newVertices, const Velocities& newVelocities, const Cinfo::Connections& newEdges, const std::vector<int>& edgesToRemove = std::vector<int>());
 
     // Step this system by deltaTime.
     virtual void step(float deltaTime) override;
@@ -89,11 +98,13 @@ public:
     inline const Edges& getEdges() const { return m_edges; }
     inline const Colliders& getColliders() const { return m_colliders; }
     inline const Positions& getVertexPositions() const { return m_positions; }
+    inline const Velocities& getVertexVelocities() const { return m_velocities; }
     inline Positions& accessVertexPositions() { return m_positions; }
     inline Velocities& accessVertexVelocities() { return m_velocities; }
 
 protected:
     void createSolver(const Cinfo& cinfo);
+    void updateSolver();
 
     Vertices m_vertices;        // The vertices
     Edges m_edges;              // The vertex edges.

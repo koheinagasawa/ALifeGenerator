@@ -40,6 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kGeometry", "..\..\PhysLib\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PBDTest", "..\Demos\PBDTest\PBDTest.vcxproj", "{ACAC36D7-D566-4AD1-A564-81BACEA04A55}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppnCellDivision", "..\Demos\CppnCellDivision\CppnCellDivision.vcxproj", "{C496D017-152B-4368-9511-607A3746503A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -152,6 +154,14 @@ Global
 		{ACAC36D7-D566-4AD1-A564-81BACEA04A55}.Release|x64.Build.0 = Release|x64
 		{ACAC36D7-D566-4AD1-A564-81BACEA04A55}.Release|x86.ActiveCfg = Release|Win32
 		{ACAC36D7-D566-4AD1-A564-81BACEA04A55}.Release|x86.Build.0 = Release|Win32
+		{C496D017-152B-4368-9511-607A3746503A}.Debug|x64.ActiveCfg = Debug|x64
+		{C496D017-152B-4368-9511-607A3746503A}.Debug|x64.Build.0 = Debug|x64
+		{C496D017-152B-4368-9511-607A3746503A}.Debug|x86.ActiveCfg = Debug|Win32
+		{C496D017-152B-4368-9511-607A3746503A}.Debug|x86.Build.0 = Debug|Win32
+		{C496D017-152B-4368-9511-607A3746503A}.Release|x64.ActiveCfg = Release|x64
+		{C496D017-152B-4368-9511-607A3746503A}.Release|x64.Build.0 = Release|x64
+		{C496D017-152B-4368-9511-607A3746503A}.Release|x86.ActiveCfg = Release|Win32
+		{C496D017-152B-4368-9511-607A3746503A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,6 +180,7 @@ Global
 		{66CC4679-E990-4C4A-B2F5-60D02164107C} = {43E2CF51-3C90-4D8B-A67B-A1D05B92615C}
 		{706A2393-4E19-4D25-8C55-4C7A0259CA2A} = {43E2CF51-3C90-4D8B-A67B-A1D05B92615C}
 		{ACAC36D7-D566-4AD1-A564-81BACEA04A55} = {6B879EA0-5672-4B51-90C5-FC37E28CE2C9}
+		{C496D017-152B-4368-9511-607A3746503A} = {6B879EA0-5672-4B51-90C5-FC37E28CE2C9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48851B75-FA2E-47D9-957D-2CFD67987610}

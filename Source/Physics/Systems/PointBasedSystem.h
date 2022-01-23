@@ -11,6 +11,9 @@
 #include <Physics/Solvers/PointBasedSystemSolver.h>
 #include <Physics/Collision/Collider.h>
 
+#include <functional>
+#include <map>
+
 class Shape;
 
 // A system of points connected by edges each other.
@@ -41,6 +44,8 @@ public:
     using SolverPtr = std::shared_ptr<PointBasedSystemSolver>;
     using ShapePtr = std::shared_ptr<Shape>;
     using SolverType = PointBasedSystemSolver::Type;
+    using OnParticleAddedFunc = std::function<void(const Positions&)>;
+    using OnParticleAddedFuncs = std::map<int, OnParticleAddedFunc>; // If we use unordered_map here, we hit a crash by an illegal instruction. It's probably due to a compiler bug.
 
     // Construction info
     struct Cinfo
@@ -102,9 +107,17 @@ public:
     inline Positions& accessVertexPositions() { return m_positions; }
     inline Velocities& accessVertexVelocities() { return m_velocities; }
 
+    // Subscribe to on particle added callback. Return handle of the callback.
+    int subscribeToOnParticleAdded(const OnParticleAddedFunc& f);
+
+    // Unsubscribe from on particle added callback.
+    void unsubscribeFromOnParticleAdded(int handle);
+
 protected:
     void createSolver(const Cinfo& cinfo);
     void updateSolver();
+
+    void onParticlesAdded(const Positions& posOfNewVertices) const;
 
     Vertices m_vertices;        // The vertices
     Edges m_edges;              // The vertex edges.
@@ -117,4 +130,6 @@ protected:
     Colliders m_colliders;  // The colliders.
 
     SolverPtr m_solver;     // The solver.
+
+    OnParticleAddedFuncs m_onParticleAddedFuncs; // List of callback function called after new particles were added to this system.
 };

@@ -12,64 +12,64 @@
 void PointBasedSystem::init(const Cinfo& cinfo)
 {
     // Create vertices and edges
+    const int numVertices = (int)cinfo.m_vertexPositions.size();
+    const int numEdges = (int)cinfo.m_vertexConnectivity.size();
+    assert(numVertices > 0 && cinfo.m_mass > 0.f);
+
+    // Allocate buffers.
+    m_vertices.resize(numVertices);
+    m_edges.resize(numEdges);
+    m_positions = cinfo.m_vertexPositions;
+    m_velocities.resize(numVertices, Vec4_0);
+
+    // Set mass and radius.
+    m_vertexMass = cinfo.m_mass / (float)numVertices;
+    m_vertexRadius = cinfo.m_radius;
+
+    // Count the number of edges going from each vertex.
+    for (int i = 0; i < numEdges; i++)
     {
-        const int numVertices = (int)cinfo.m_vertexPositions.size();
-        const int numEdges = (int)cinfo.m_vertexConnectivity.size();
-        assert(numVertices > 0 && cinfo.m_mass > 0.f);
+        const Cinfo::Connection& c = cinfo.m_vertexConnectivity[i];
+        assert(c.m_vA >= 0 && c.m_vA < numVertices);
+        assert(c.m_vB >= 0 && c.m_vB < numVertices);
+        assert(c.m_vA != c.m_vB);
 
-        // Allocate buffers.
-        m_vertices.resize(numVertices);
-        m_edges.resize(numEdges);
-        m_positions = cinfo.m_vertexPositions;
-        m_velocities.resize(numVertices, Vec4_0);
+        int vMin = std::min(c.m_vA, c.m_vB);
+        m_vertices[vMin].m_numEdges++;
+    }
 
-        // Set mass and radius.
-        m_vertexMass = cinfo.m_mass / (float)numVertices;
-        m_vertexRadius = cinfo.m_radius;
+    // Set Vertex data.
+    for (int i = 1; i < numVertices; i++)
+    {
+        Vertex& v = m_vertices[i];
+        const Vertex& pv = m_vertices[i - 1];
+        v.m_edgeStart = pv.m_edgeStart + pv.m_numEdges;
+    }
 
-        // Count the number of edges going from each vertex.
-        for (int i = 0; i < numEdges; i++)
-        {
-            const Cinfo::Connection& c = cinfo.m_vertexConnectivity[i];
-            assert(c.m_vA >= 0 && c.m_vA < numVertices);
-            assert(c.m_vB >= 0 && c.m_vB < numVertices);
-            assert(c.m_vA != c.m_vB);
+    // Clear m_numEdges once (needed for the following operation).
+    for (int i = 0; i < numVertices; i++)
+    {
+        m_vertices[i].m_numEdges = 0;
+    }
 
-            int vMin = std::min(c.m_vA, c.m_vB);
-            m_vertices[vMin].m_numEdges++;
-        }
+    // Set Edge data and count Vertex.m_numEdges again.
+    for (int i = 0; i < numEdges; i++)
+    {
+        const Cinfo::Connection& c = cinfo.m_vertexConnectivity[i];
+        int vA = std::min(c.m_vA, c.m_vB);
+        int vB = std::max(c.m_vA, c.m_vB);
 
-        // Set Vertex data.
-        for (int i = 1; i < numVertices; i++)
-        {
-            Vertex& v = m_vertices[i];
-            const Vertex& pv = m_vertices[i - 1];
-            v.m_edgeStart = pv.m_edgeStart + pv.m_numEdges;
-        }
-
-        // Clear m_numEdges once (needed for the following operation).
-        for (int i = 0; i < numVertices; i++)
-        {
-            m_vertices[i].m_numEdges = 0;
-        }
-
-        // Set Edge data and count Vertex.m_numEdges again.
-        for (int i = 0; i < numEdges; i++)
-        {
-            const Cinfo::Connection& c = cinfo.m_vertexConnectivity[i];
-            int vA = std::min(c.m_vA, c.m_vB);
-            int vB = std::max(c.m_vA, c.m_vB);
-
-            Vertex& v = m_vertices[vA];
-            Edge& e = m_edges[v.m_edgeStart + v.m_numEdges];
-            e.m_otherVertex = vB;
-            e.m_length = (c.m_length > 0.f) ? SimdFloat(c.m_length) : (m_positions[vA] - m_positions[vB]).length<3>();
-            e.m_stiffness = SimdFloat(c.m_stiffness);
-            v.m_numEdges++;
-        }
+        Vertex& v = m_vertices[vA];
+        Edge& e = m_edges[v.m_edgeStart + v.m_numEdges];
+        e.m_otherVertex = vB;
+        e.m_length = (c.m_length > 0.f) ? SimdFloat(c.m_length) : (m_positions[vA] - m_positions[vB]).length<3>();
+        e.m_stiffness = SimdFloat(c.m_stiffness);
+        v.m_numEdges++;
     }
 
     createSolver(cinfo);
+
+    onParticlesAdded(cinfo.m_vertexPositions);
 }
 
 void PointBasedSystem::addRemoveVerticesAndEdges(const Positions& newVertices, const Velocities& newVelocities, const Cinfo::Connections& newEdges, const std::vector<int>& edgesToRemove)
@@ -178,6 +178,8 @@ void PointBasedSystem::addRemoveVerticesAndEdges(const Positions& newVertices, c
     }
 
     updateSolver();
+
+    onParticlesAdded(newVertices);
 }
 
 void PointBasedSystem::createSolver(const Cinfo& cinfo)
@@ -237,4 +239,36 @@ void PointBasedSystem::step(float deltaTime)
 void PointBasedSystem::addCollider(const ShapePtr shape)
 {
     m_colliders.push_back(shape);
+}
+
+int PointBasedSystem::subscribeToOnParticleAdded(const OnParticleAddedFunc& f)
+{
+    int handle = m_onParticleAddedFuncs.size();
+    while (m_onParticleAddedFuncs.find(handle) != m_onParticleAddedFuncs.end())
+    {
+        handle++;
+    }
+    m_onParticleAddedFuncs[handle] = f;
+    return handle;
+}
+
+void PointBasedSystem::unsubscribeFromOnParticleAdded(int handle)
+{
+    auto itr = m_onParticleAddedFuncs.find(handle);
+    if (itr != m_onParticleAddedFuncs.end())
+    {
+        m_onParticleAddedFuncs.erase(itr);
+    }
+}
+
+void PointBasedSystem::onParticlesAdded(const Positions& posOfNewVertices) const
+{
+    // Fire callback functions
+    if (posOfNewVertices.size() > 0)
+    {
+        for (const auto& itr : m_onParticleAddedFuncs)
+        {
+            itr.second(posOfNewVertices);
+        }
+    }
 }

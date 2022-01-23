@@ -17,7 +17,7 @@ class MassSpringSolver : public PointBasedSystemSolver
 {
 public:
     // Constructor.
-    MassSpringSolver(PointBasedSystem& system, float dampingFactor);
+    MassSpringSolver(PointBasedSystem& system, const Vector4& gravity, float dampingFactor);
 
     // Step and solve.
     virtual void solve(float deltaTime) override;
@@ -25,6 +25,8 @@ public:
     virtual Type getType() const override { return Type::MASS_SPRING; }
 
     inline auto getDampingFactor() const->const SimdFloat& { return m_dampingFactor; }
+
+    inline auto getGravity() const->const Vector4& { return m_gravity; }
 
 protected:
     // Spring constraint.

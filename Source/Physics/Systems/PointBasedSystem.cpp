@@ -11,8 +11,6 @@
 
 void PointBasedSystem::init(const Cinfo& cinfo)
 {
-    m_gravity = cinfo.m_gravity;
-
     // Create vertices and edges
     {
         const int numVertices = (int)cinfo.m_vertexPositions.size();
@@ -188,12 +186,12 @@ void PointBasedSystem::createSolver(const Cinfo& cinfo)
     {
     case PointBasedSystemSolver::Type::POSITION_BASED_DYNAMICS:
     {
-        m_solver = std::make_shared<PBD::Solver>(*this, cinfo.m_solverIterations, cinfo.m_dampingFactor);
+        m_solver = std::make_shared<PBD::Solver>(*this, cinfo.m_gravity, cinfo.m_solverIterations, cinfo.m_dampingFactor);
         break;
     }
     case PointBasedSystemSolver::Type::MASS_SPRING:
     {
-        m_solver = std::make_shared<MassSpringSolver>(*this, cinfo.m_dampingFactor);
+        m_solver = std::make_shared<MassSpringSolver>(*this, cinfo.m_gravity, cinfo.m_dampingFactor);
         break;
     }
     default:
@@ -213,13 +211,13 @@ void PointBasedSystem::updateSolver()
     case PointBasedSystemSolver::Type::POSITION_BASED_DYNAMICS:
     {
         auto curSolver = static_cast<PBD::Solver*>(m_solver.get());
-        m_solver = std::make_shared<PBD::Solver>(*this, curSolver->getSolverIterations(), curSolver->getDampingFactor().getFloat());
+        m_solver = std::make_shared<PBD::Solver>(*this, curSolver->getGravity(), curSolver->getSolverIterations(), curSolver->getDampingFactor().getFloat());
         break;
     }
     case PointBasedSystemSolver::Type::MASS_SPRING:
     {
         auto curSolver = static_cast<MassSpringSolver*>(m_solver.get());
-        m_solver = std::make_shared<MassSpringSolver>(*this, curSolver->getDampingFactor().getFloat());
+        m_solver = std::make_shared<MassSpringSolver>(*this, curSolver->getGravity(), curSolver->getDampingFactor().getFloat());
         break;
     }
     default:

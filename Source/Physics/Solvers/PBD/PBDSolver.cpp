@@ -79,11 +79,11 @@ namespace PBD
     // Solver
     //
 
-    Solver::Solver(PointBasedSystem& system, int solverIterations, float dampingFactor)
+    Solver::Solver(PointBasedSystem& system, const Vector4& gravity, int solverIterations, float dampingFactor)
         : m_positions(system.accessVertexPositions())
         , m_velocities(system.accessVertexVelocities())
         , m_colliders(system.getColliders())
-        , m_gravity(system.getGravity())
+        , m_gravity(gravity)
         , m_solverIterations(solverIterations)
         , m_dampingFactor(dampingFactor)
         , m_vertexRadius(system.getVertexRadius())

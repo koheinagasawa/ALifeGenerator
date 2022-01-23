@@ -8,11 +8,11 @@
 #include <Physics/Solvers/MassSpring/MassSpringSolver.h>
 #include <Physics/Systems/PointBasedSystem.h>
 
-MassSpringSolver::MassSpringSolver(PointBasedSystem& system, float dampingFactor)
+MassSpringSolver::MassSpringSolver(PointBasedSystem& system, const Vector4& gravity, float dampingFactor)
     : m_positions(system.accessVertexPositions())
     , m_velocities(system.accessVertexVelocities())
     , m_colliders(system.getColliders())
-    , m_gravity(system.getGravity())
+    , m_gravity(gravity)
     , m_dampingFactor(dampingFactor)
 {
     const int numVertices = (int)m_positions.size();

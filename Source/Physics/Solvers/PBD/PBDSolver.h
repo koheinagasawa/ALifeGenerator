@@ -81,7 +81,7 @@ namespace PBD
         };
 
         // Constructor
-        Solver(PointBasedSystem& system, int solverIterations, float dampingFactor);
+        Solver(PointBasedSystem& system, const Vector4& gravity, int solverIterations, float dampingFactor);
 
         // Destructor
         virtual ~Solver();
@@ -96,6 +96,8 @@ namespace PBD
 
         inline auto getDampingFactor() const->const SimdFloat& { return m_dampingFactor; }
         inline int getSolverIterations() const { return m_solverIterations; }
+
+        inline auto getGravity() const->const Vector4& { return m_gravity; }
 
     protected:
         void dampVelocities();

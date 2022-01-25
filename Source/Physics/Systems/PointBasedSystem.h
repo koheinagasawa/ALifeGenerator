@@ -113,6 +113,9 @@ public:
     // Unsubscribe from on particle added callback.
     void unsubscribeFromOnParticleAdded(int handle);
 
+    // Get pointer to the solver.
+    SolverPtr getSolver() { return m_solver; }
+
 protected:
     void createSolver(const Cinfo& cinfo);
     void updateSolver();

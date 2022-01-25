@@ -95,6 +95,11 @@ namespace PBD
         inline int getNumColliders() const { return (int)m_colliders.size(); }
 
         inline auto getDampingFactor() const->const SimdFloat& { return m_dampingFactor; }
+        inline void setDampingFactor(const SimdFloat& f) { m_dampingFactor = f; }
+
+        inline auto getDampingType() const->VelocityDampingType { return m_dampingType; }
+        inline void setDampingType(VelocityDampingType type) { m_dampingType = type; }
+
         inline int getSolverIterations() const { return m_solverIterations; }
 
         inline auto getGravity() const->const Vector4& { return m_gravity; }
@@ -122,7 +127,7 @@ namespace PBD
 
         int m_solverIterations;
 
-        VelocityDampingType m_dampingType = VelocityDampingType::SHAPE_MATCH;
+        VelocityDampingType m_dampingType = VelocityDampingType::SIMPLE;
         SimdFloat m_dampingFactor;
 
         SimdFloat m_vertexRadius;

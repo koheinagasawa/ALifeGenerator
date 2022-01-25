@@ -213,7 +213,9 @@ void PointBasedSystem::updateSolver()
     case PointBasedSystemSolver::Type::POSITION_BASED_DYNAMICS:
     {
         auto curSolver = static_cast<PBD::Solver*>(m_solver.get());
+        PBD::Solver::VelocityDampingType damingType = curSolver->getDampingType();
         m_solver = std::make_shared<PBD::Solver>(*this, curSolver->getGravity(), curSolver->getSolverIterations(), curSolver->getDampingFactor().getFloat());
+        static_cast<PBD::Solver*>(m_solver.get())->setDampingType(damingType);
         break;
     }
     case PointBasedSystemSolver::Type::MASS_SPRING:

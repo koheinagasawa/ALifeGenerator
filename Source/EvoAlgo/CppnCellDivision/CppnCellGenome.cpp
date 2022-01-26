@@ -102,7 +102,7 @@ CppnCreatureGenome::CppnCreatureGenome(const Cinfo& cinfo)
             }
         }
 
-        startL1Node += numL1Nodes + numL2Nodes;
+        startL1Node += numL1Nodes;
     }
 
     // Create the network

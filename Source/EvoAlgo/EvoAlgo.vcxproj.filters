@@ -56,6 +56,9 @@
     <ClCompile Include="CppnCellDivision\CppnCellGenome.cpp">
       <Filter>CppnCellDivision</Filter>
     </ClCompile>
+    <ClCompile Include="CppnCellDivision\CppnCellCreature.cpp">
+      <Filter>CppnCellDivision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EvoAlgo.h" />
@@ -141,6 +144,9 @@
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
     <ClInclude Include="CppnCellDivision\CppnCellGenome.h">
+      <Filter>CppnCellDivision</Filter>
+    </ClInclude>
+    <ClInclude Include="CppnCellDivision\CppnCellCreature.h">
       <Filter>CppnCellDivision</Filter>
     </ClInclude>
   </ItemGroup>

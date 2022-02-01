@@ -164,22 +164,12 @@ void CppnCellCreature::divide()
             newConnectionCinfo.m_length = edgeLength;
         }
 
-        // Helper function to connect the new cell and a neighbor cell of its parent.
-        auto connectNewCellAndNeighbor = [&newConnectionCinfo, &newConnections, &edgesToRemove](const NewCell& newCell, const NeighborEdge& neighbor)
+        // Helper function to create a new connection.
+        auto createNewConnection = [&newConnectionCinfo, &newConnections](int cellId1, int cellId2)
         {
             // Connect the new cell and the neighbor cell.
-            newConnectionCinfo.m_vA = neighbor.m_otherVertex;
-            newConnectionCinfo.m_vB = newCell.m_cellIdx;
-            newConnections.push_back(newConnectionCinfo);
-            // Remove the existing edge between the new cell's parent and the neighbor cell.
-            edgesToRemove.push_back(neighbor.m_edgeIdx);
-        };
-
-        // Helper function to connect two newly divided cells.
-        auto connectNewCells = [&newConnectionCinfo, &newConnections](const NewCell& newCell1, const NewCell& newCell2)
-        {
-            newConnectionCinfo.m_vA = std::min(newCell1.m_cellIdx, newCell2.m_cellIdx);
-            newConnectionCinfo.m_vB = std::max(newCell1.m_cellIdx, newCell2.m_cellIdx);
+            newConnectionCinfo.m_vA = std::min(cellId1, cellId2);
+            newConnectionCinfo.m_vB = std::max(cellId1, cellId2);
             newConnections.push_back(newConnectionCinfo);
         };
 
@@ -188,6 +178,10 @@ void CppnCellCreature::divide()
         newPositions.reserve(numNewCells);
         PointBasedSystem::Velocities newVelocities;
         newVelocities.reserve(numNewCells);
+
+        const SimdFloat createNewCellNeighborEdgeThreshold(-0.1f);
+        const SimdFloat removeParentNeighborEdgeThreshold(0.1f);
+        const SimdFloat keepExistingParentConnectionThreshold(0.75f);
 
         // Iterate over newly added cells and add connections for them.
         for (const NewCell& newCell : newCells)
@@ -208,7 +202,13 @@ void CppnCellCreature::divide()
             for (const NeighborEdge& neighbor : neighbors)
             {
                 const int neighborCellId = neighbor.m_otherVertex;
-                bool neighborIsCloserToDividedCell = (newCell.m_origParentPos - curPositions[neighborCellId]).dot<3>(newCell.m_direction) < SimdFloat_0;
+                Vector4 prevParentToNeighbor = curPositions[neighborCellId] - newCell.m_origParentPos;
+                prevParentToNeighbor.normalize<3>();
+
+                bool createNewCellNeighborEdge = prevParentToNeighbor.dot<3>(newCell.m_direction) > createNewCellNeighborEdgeThreshold;
+                bool removeParentNeighborEdge = prevParentToNeighbor.dot<3>(newCell.m_direction) > removeParentNeighborEdgeThreshold;
+
+                //bool neighborIsCloserToDividedCell = (newCell.m_origParentPos - curPositions[neighborCellId]).dot<3>(newCell.m_direction) < SimdFloat_0;
 
                 if (isCellDivided[neighborCellId])
                 {
@@ -227,19 +227,27 @@ void CppnCellCreature::divide()
 
                     assert(otherNewCell);
 
-                    if (neighborIsCloserToDividedCell)
+                    if (createNewCellNeighborEdge)
                     {
-                        if ((neighborCellId > parentCellId) &&
-                            ((prevPositions[neighborCellId] - newCell.m_position).dot<3>(otherNewCell->m_direction) < SimdFloat_0))
+                        if (removeParentNeighborEdge)
+                        {
+                            // Remove the existing edge between the new cell's parent and the neighbor cell.
+                            edgesToRemove.push_back(neighbor.m_edgeIdx);
+                        }
+
+                        if ((prevPositions[neighborCellId] - newCell.m_position).dot<3>(otherNewCell->m_direction) < SimdFloat_0)
                         {
                             // The two newly divided cells are closer than their parents.
-                            // Add a new connection only when the parent of this new cell is smaller to avoid adding the connection twice.
-                            connectNewCells(newCell, *otherNewCell);
+                            if (neighborCellId > parentCellId)
+                            {
+                                // Add a new connection only when the parent of this new cell is smaller to avoid adding the connection twice.
+                                createNewConnection(newCell.m_cellIdx, otherNewCell->m_cellIdx);
+                            }
                         }
                         else
                         {
                             // This new cell is close to the neighbor cell.
-                            connectNewCellAndNeighbor(newCell, neighbor);
+                            createNewConnection(newCell.m_cellIdx, neighbor.m_otherVertex);
                         }
                     }
                     else if ((neighborCellId > parentCellId) &&
@@ -247,72 +255,31 @@ void CppnCellCreature::divide()
                     {
                         // The two newly divided cells are closer than their parents.
                         // Add a new connection only when the parent of this new cell is smaller to avoid adding the connection twice.
-                        connectNewCells(newCell, *otherNewCell);
+                        createNewConnection(newCell.m_cellIdx, otherNewCell->m_cellIdx);
                     }
                 }
-                else if(neighborIsCloserToDividedCell)
+                else if(createNewCellNeighborEdge)
                 {
-                    // The neighbor cell was not divided.
-                    // If the neighbor cell is closer to the new cell than its parent, then connect the neighbor and the new cell
-                    // (and remove the existing edge between the neighbor and the parent).
-                    connectNewCellAndNeighbor(newCell, neighbor);
-                }
-            }
-        }
+                    // The neighbor cell was not divided and the neighbor cell is closer to the new cell than its parent.
+                    // We connect the neighbor and the new cell and remove the existing edge between the neighbor and the parent if necessary.
+                    createNewConnection(newCell.m_cellIdx, neighbor.m_otherVertex);
 
-        // Add edges between new cells who share the same neighbor even though they are not directly neighbors each other.
-        const SimdFloat distThresholdSq = SimdFloat(edgeLength * edgeLength);
-        for (int i = 0; i < numNewCells; i++)
-        {
-            const NewCell& newCell1 = newCells[i];
-            int parentCell1Id = newCell1.m_parentIdx;
-            const std::vector<NeighborEdge>& neighbors = neighborsList[parentCell1Id];
-
-            for (int j = i + 1; j < numNewCells; j++)
-            {
-                const NewCell& newCell2 = newCells[j];
-
-                for (const NeighborEdge& neighbor : neighbors)
-                {
-                    if (neighbor.m_otherVertex == newCell2.m_parentIdx)
+                    if (removeParentNeighborEdge)
                     {
-                        int vA = std::min(newCell1.m_cellIdx, newCell2.m_cellIdx);
-                        int vB = std::max(newCell1.m_cellIdx, newCell2.m_cellIdx);
-
-                        // Check if these cells already have an edge.
-                        {
-                            bool alreadyHasEdge = false;
-                            for (const auto& c : newConnections)
-                            {
-                                if (c.m_vA == vA && c.m_vB == vB)
-                                {
-                                    alreadyHasEdge = true;
-                                    break;
-                                }
-                            }
-
-                            if (alreadyHasEdge)
-                            {
-                                break;
-                            }
-                        }
-
-                        // Add a connection if the two new cells are close enough.
-                        SimdFloat distanceSq = (newCell1.m_position - newCell2.m_position).lengthSq<3>();
-                        if (distanceSq <= distThresholdSq)
-                        {
-                            newConnectionCinfo.m_vA = vA;
-                            newConnectionCinfo.m_vB = vB;
-                            newConnections.push_back(newConnectionCinfo);
-                            break;
-                        }
+                        // Remove the existing edge between the new cell's parent and the neighbor cell.
+                        edgesToRemove.push_back(neighbor.m_edgeIdx);
                     }
                 }
             }
         }
 
+        // Sort edges to remove and remove duplicates.
+        if (edgesToRemove.size() > 1)
+        {
+            std::sort(edgesToRemove.begin(), edgesToRemove.end());
+            edgesToRemove.erase(std::unique(edgesToRemove.begin(), edgesToRemove.end()), edgesToRemove.end());
+        }
         // Add/remove cells and edges
-        std::sort(edgesToRemove.begin(), edgesToRemove.end());
         m_simulation->addRemoveVerticesAndEdges(newPositions, newVelocities, newConnections, edgesToRemove);
     }
 }

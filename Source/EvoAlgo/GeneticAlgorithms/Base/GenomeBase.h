@@ -25,8 +25,15 @@ public:
     using NetworkPtr = std::shared_ptr<Network>;
     using BakedNetworkPtr = std::shared_ptr<BakedNeuralNetwork>;
 
-    // Constructor
+    //
+    // Constructors
+    //
+
+    // Default constructor.
     GenomeBase() = default;
+
+    // Construct GenomeBase from manually constructed network.
+    GenomeBase(NetworkPtr network, NodeId biasNode);
 
     // Copy constructor and operator.
     GenomeBase(const GenomeBase& other);

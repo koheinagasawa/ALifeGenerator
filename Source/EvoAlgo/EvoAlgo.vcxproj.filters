@@ -53,9 +53,6 @@
     <ClCompile Include="NeuralNetwork\BakedNeuralNetwork.cpp">
       <Filter>NeuralNetwork</Filter>
     </ClCompile>
-    <ClCompile Include="CppnCellDivision\CppnCellGenome.cpp">
-      <Filter>CppnCellDivision</Filter>
-    </ClCompile>
     <ClCompile Include="CppnCellDivision\CppnCellCreature.cpp">
       <Filter>CppnCellDivision</Filter>
     </ClCompile>
@@ -142,9 +139,6 @@
     </ClInclude>
     <ClInclude Include="NeuralNetwork\BakedNeuralNetwork.h">
       <Filter>NeuralNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="CppnCellDivision\CppnCellGenome.h">
-      <Filter>CppnCellDivision</Filter>
     </ClInclude>
     <ClInclude Include="CppnCellDivision\CppnCellCreature.h">
       <Filter>CppnCellDivision</Filter>

@@ -7,9 +7,11 @@
 #include <EvoAlgo/EvoAlgo.h>
 #include <EvoAlgo/CppnCellDivision/CppnCellCreature.h>
 
+#include <algorithm>
+
 CppnCellCreature::CppnCellCreature(const Cinfo& cinfo)
     : m_simulation(cinfo.m_simulation)
-    , m_genome(cinfo.m_genomeCinfo)
+    , m_genome(cinfo.m_genome)
     , m_divisionInterval(cinfo.m_divisionInterval)
     , m_numMaxCells(cinfo.m_numMaxCells)
     , m_stiffness(cinfo.m_connectionStiffness)
@@ -89,9 +91,8 @@ void CppnCellCreature::divide()
 
     // Try to divide all the existing cells.
     {
-        using InputType = CppnCreatureGenome::InputNode;
         std::vector<float> inputNodeValues;
-        inputNodeValues.resize((int)InputType::NUM_INPUT_NODES, 0.f);
+        inputNodeValues.resize((int)InputNode::NUM_INPUT_NODES, 0.f);
 
         for (int cellIdx = 0; cellIdx < numCells; cellIdx++)
         {
@@ -101,9 +102,9 @@ void CppnCellCreature::divide()
             // Set input node values.
             {
                 // Set parent position.
-                inputNodeValues[(int)InputType::PARENT_POSITION_X] = parentPos.getComponent<0>().getFloat();
-                inputNodeValues[(int)InputType::PARENT_POSITION_Y] = parentPos.getComponent<1>().getFloat();
-                inputNodeValues[(int)InputType::PARENT_POSITION_Z] = parentPos.getComponent<2>().getFloat();
+                inputNodeValues[(int)InputNode::PARENT_POSITION_X] = parentPos.getComponent<0>().getFloat();
+                inputNodeValues[(int)InputNode::PARENT_POSITION_Y] = parentPos.getComponent<1>().getFloat();
+                inputNodeValues[(int)InputNode::PARENT_POSITION_Z] = parentPos.getComponent<2>().getFloat();
 
                 const Neighbors& neighbors = neighborsList[cellIdx];
                 const int numNeighbors = (int)neighbors.size();
@@ -118,16 +119,16 @@ void CppnCellCreature::divide()
                     }
                     avgPos /= SimdFloat((float)numNeighbors);
                 }
-                inputNodeValues[(int)InputType::NEIGHBOR_POSITION_X] = avgPos.getComponent<0>().getFloat();
-                inputNodeValues[(int)InputType::NEIGHBOR_POSITION_Y] = avgPos.getComponent<1>().getFloat();
-                inputNodeValues[(int)InputType::NEIGHBOR_POSITION_Z] = avgPos.getComponent<2>().getFloat();
+                inputNodeValues[(int)InputNode::NEIGHBOR_POSITION_X] = avgPos.getComponent<0>().getFloat();
+                inputNodeValues[(int)InputNode::NEIGHBOR_POSITION_Y] = avgPos.getComponent<1>().getFloat();
+                inputNodeValues[(int)InputNode::NEIGHBOR_POSITION_Z] = avgPos.getComponent<2>().getFloat();
 
-                inputNodeValues[(int)InputType::NUM_NEIGHBORS] = (float)numNeighbors;
-                inputNodeValues[(int)InputType::CELL_GENERATIONS] = (float)generation;
+                inputNodeValues[(int)InputNode::NUM_NEIGHBORS] = (float)numNeighbors;
+                inputNodeValues[(int)InputNode::CELL_GENERATIONS] = (float)generation;
             }
 
             Vector4 direction;
-            if (m_genome.evaluateDivision(inputNodeValues, direction))
+            if (evaluateDivision(inputNodeValues, direction))
             {
                 // This cell should divide.
                 const Vector4 offset = SimdFloat(m_simulation->getVertexRadius()) * direction;
@@ -287,4 +288,30 @@ void CppnCellCreature::divide()
         // Add/remove cells and edges
         m_simulation->addRemoveVerticesAndEdges(newPositions, newVelocities, newConnections, edgesToRemove);
     }
+}
+
+bool CppnCellCreature::evaluateDivision(const std::vector<float>& inputNodeValues, Vector4& directionOut)
+{
+    // Set input values
+    m_genome->clearNodeValues();
+    m_genome->setInputNodeValues(inputNodeValues, 1.0f);
+
+    // Evaluate the genome
+    m_genome->evaluate();
+
+    const GenomeBase::Network::NodeIds& outputNodes = m_genome->getOutputNodes();
+    if (m_genome->getNodeValue(outputNodes[(int)OutputNode::DEVIDE]) < 0.5f)
+    {
+        return false;
+    }
+
+    // Set direction of division
+    directionOut.setComponent<0>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_X])));
+    directionOut.setComponent<1>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_Y])));
+    directionOut.setComponent<2>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_Z])));
+    directionOut.normalize<3>();
+
+    // [TODO] Support orientation
+
+    return true;
 }

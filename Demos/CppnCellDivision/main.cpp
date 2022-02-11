@@ -52,6 +52,7 @@
 #include <EvoAlgo/GeneticAlgorithms/Base/GenomeBase.h>
 #include <EvoAlgo/NeuralNetwork/NeuralNetworkFactory.h>
 #include <EvoAlgo/CppnCellDivision/CppnCellCreature.h>
+#include <EvoAlgo/GeneticAlgorithms/Base/Activations/ActivationProvider.h>
 
 using namespace kPhysLib;
 
@@ -123,6 +124,8 @@ public:
             m_world->addSystem(*m_simulation.get());
         }
 
+        m_activationProvider = std::make_shared<DefaultActivationProvider>([](float value) { return 1.f / (1.f + expf(-4.9f * value)); });
+
         {
             CppnCellCreature::Cinfo cinfo;
             cinfo.m_simulation = m_simulation;
@@ -130,18 +133,113 @@ public:
             cinfo.m_numMaxCells = 2000;
             cinfo.m_divisionInterval = 300;
 
-            CppnCreatureGenome::Cinfo& genomeCinfo = cinfo.m_genomeCinfo;
-            genomeCinfo.m_numInitialHiddenLayers = 2;
+            // Create a network
+            {
+                using Network = GenomeBase::Network;
+                using Node = GenomeBase::Node;
+                using Edge = GenomeBase::Edge;
 
-            const int numNodePerHiddenLayer = (int)CppnCreatureGenome::InputNode::NUM_INPUT_NODES;
-            genomeCinfo.m_numNodeInInitialHiddenLayers.push_back(numNodePerHiddenLayer);
-            genomeCinfo.m_numNodeInInitialHiddenLayers.push_back(numNodePerHiddenLayer);
+                constexpr int numInputNodes = (int)CppnCellCreature::InputNode::NUM_INPUT_NODES;
+                constexpr int numOutputNodes = (int)CppnCellCreature::OutputNode::NUM_OUTPUT_NODES;
 
-            m_activationProvider = std::make_shared<DefaultActivationProvider>([](float value) { return 1.f / (1.f + expf(-4.9f * value)); });
-            genomeCinfo.m_activationProvider = m_activationProvider.get();
+                // Calculate the number of nodes
+                int numNodes = numInputNodes + numOutputNodes + 1; // +1 is for bias node
 
-            auto randomGenerator = std::make_shared<PseudoRandom>(seed);
-            genomeCinfo.m_randomWeightsGenerator = randomGenerator.get();
+                constexpr int numHiddenLayers = 2;
+                for (int i = 0; i < numHiddenLayers; i++)
+                {
+                    numNodes += numInputNodes;
+                }
+
+                // Create buffers
+                Network::Nodes nodes;
+                Network::Edges edges;
+                Network::NodeIds outputNodes;
+                Network::NodeIds inputNodes;
+
+                // Create nodes
+                int nodeId = 0;
+                nodes.reserve(numNodes);
+                inputNodes.reserve(numInputNodes);
+                outputNodes.reserve(numOutputNodes);
+
+                // Create input nodes.
+                for (int i = 0; i < numInputNodes; i++)
+                {
+                    NodeId id = nodeId++;
+                    nodes.insert({ id, Node(Node::Type::INPUT) });
+                    inputNodes.push_back(id);
+                }
+
+                // Create hidden nodes
+                for (int i = 0; i < numHiddenLayers; i++)
+                {
+                    for (int j = 0; j < numInputNodes; j++)
+                    {
+                        NodeId id = nodeId++;
+                        nodes.insert({ id, Node(Node::Type::HIDDEN) });
+                        nodes[id].setActivation(m_activationProvider->getActivation());
+                    }
+                }
+
+                // Create output nodes
+                for (int i = 0; i < numOutputNodes; i++)
+                {
+                    NodeId id = nodeId++;
+                    nodes.insert({ id, Node(Node::Type::OUTPUT) });
+                    nodes[id].setActivation(m_activationProvider->getActivation());
+                    outputNodes.push_back(id);
+                }
+
+                // Create a bias node
+                NodeId biasNode;
+                constexpr int biasNodeValue = 1.0f;
+                {
+                    biasNode = nodeId++;
+                    nodes.insert({ biasNode, Node(Node::Type::BIAS) });
+                    nodes[biasNode].setValue(biasNodeValue);
+                }
+
+                // Create fully connected network
+                int edgeId = 0;
+                int startL1Node = 0;
+                for (int layer = 0; layer < numHiddenLayers + 1; layer++)
+                {
+                    int numL1Nodes = numInputNodes;
+                    int numL2Nodes = (layer == numHiddenLayers) ? numOutputNodes : numInputNodes;
+                    int startL2Node = startL1Node + numL1Nodes;
+
+                    // Fully connect each layer
+                    for (int i = 0, inNode = startL1Node; i < numL1Nodes; i++, inNode++)
+                    {
+                        for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
+                        {
+                            edges.insert({ EdgeId(edgeId++), Edge(inNode, outNode) });
+                        }
+                    }
+
+                    // Create edges from the bias node
+                    if (layer > 0)
+                    {
+                        for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
+                        {
+                            edges.insert({ EdgeId(edgeId++), Edge(biasNode, outNode) });
+                        }
+                    }
+
+                    startL1Node += numL1Nodes;
+                }
+
+                // Randomize edge weights
+                auto randomGenerator = std::make_shared<PseudoRandom>(seed);
+                for (auto& edge : edges)
+                {
+                    edge.second.setWeight(randomGenerator->randomReal(-5.0f, 5.0f));
+                }
+
+                GenomeBase::NetworkPtr network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
+                cinfo.m_genome = std::make_shared<GenomeBase>(network, biasNode);
+            }
 
             m_creature = std::make_unique<CppnCellCreature>(cinfo);
             m_world->addSystem(*m_creature.get());

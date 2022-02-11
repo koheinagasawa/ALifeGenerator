@@ -8,6 +8,14 @@
 #include <EvoAlgo/GeneticAlgorithms/Base/GenomeBase.h>
 #include <EvoAlgo/NeuralNetwork/NeuralNetworkEvaluator.h>
 
+GenomeBase::GenomeBase(NetworkPtr network, NodeId biasNode)
+    : m_network(network)
+    , m_biasNode(biasNode)
+{
+    assert(network->getInputNodes().size() > 0 && network->getOutputNodes().size() > 0);
+    assert(!m_biasNode.isValid() || network->hasNode(biasNode));
+}
+
 GenomeBase::GenomeBase(const GenomeBase& other)
     : m_biasNode(other.m_biasNode)
     , m_needRebake(other.m_needRebake)

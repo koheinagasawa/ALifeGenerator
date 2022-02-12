@@ -238,7 +238,8 @@ public:
                 }
 
                 GenomeBase::NetworkPtr network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
-                cinfo.m_genome = std::make_shared<GenomeBase>(network, biasNode);
+                m_genome = std::make_unique<GenomeBase>(network, biasNode);
+                cinfo.m_genome = m_genome.get();
             }
 
             m_creature = std::make_unique<CppnCellCreature>(cinfo);
@@ -266,6 +267,7 @@ public:
     std::unique_ptr<World> m_world;
     std::shared_ptr<PointBasedSystem> m_simulation;
     std::unique_ptr<CppnCellCreature> m_creature;
+    std::unique_ptr<GenomeBase> m_genome;
     std::shared_ptr<DefaultActivationProvider> m_activationProvider;
     MySystem* m_system;
 

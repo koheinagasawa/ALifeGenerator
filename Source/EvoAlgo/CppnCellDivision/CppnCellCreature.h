@@ -79,7 +79,7 @@ public:
         PBSPtr m_simulation;
 
         // The CPPN genome.
-        GenomePtr m_genome;
+        GenomeBase* m_genome;
 
         // The maximum number of cells.
         int m_numMaxCells = 500;
@@ -109,7 +109,7 @@ private:
 
     PBSPtr m_simulation;                    // Pointer to point based simulation.
 
-    GenomePtr m_genome;                     // The genomes.
+    GenomeBase* m_genome;                   // The genomes.
     std::vector<int> m_generationCounts;    // Generation index of each cell.
 
     int m_divisionInterval;                 // Step interval between cell divisions.

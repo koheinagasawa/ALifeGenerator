@@ -17,26 +17,26 @@ public:
 
     enum Type
     {
-        SIGMOID,
-        BIPOLAR_SIGMOID,
-        RELU,
-        GAUSSIAN,
-        ABSOLUTE,
-        SINE,
-        COSINE,
-        TANGENT,
-        HYPERBOLIC_TANGENT,
-        RAMP,
-        STEP,
-        SPIKE,
-        INVERSE,
-        IDENTITY,
-        CLAMPED,
-        LOGARITHMIC,
-        EXPONENTIAL,
-        HAT,
-        SQUARE,
-        CUBE
+        AF_SIGMOID,
+        AF_BIPOLAR_SIGMOID,
+        AF_RELU,
+        AF_GAUSSIAN,
+        AF_ABSOLUTE,
+        AF_SINE,
+        AF_COSINE,
+        AF_TANGENT,
+        AF_HYPERBOLIC_TANGENT,
+        AF_RAMP,
+        AF_STEP,
+        AF_SPIKE,
+        AF_INVERSE,
+        AF_IDENTITY,
+        AF_CLAMPED,
+        AF_LOGARITHMIC,
+        AF_EXPONENTIAL,
+        AF_HAT,
+        AF_SQUARE,
+        AF_CUBE
     };
 
     // Create an activation of the type.

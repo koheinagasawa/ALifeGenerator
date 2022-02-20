@@ -15,35 +15,35 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
 
     switch (type)
     {
-    case SIGMOID:
+    case AF_SIGMOID:
         out = std::make_shared<Activation>([](float val) { return 1.f / (1.f + expf(-4.9f*val)); });
         out->m_name = "sigmoid";
         break;
-    case BIPOLAR_SIGMOID:
+    case AF_BIPOLAR_SIGMOID:
         out = std::make_shared<Activation>([](float val) { return (1.f - expf(-val)) / (1.f + expf(-val)); });
         out->m_name = "bipolar sigmoid";
         break;
-    case RELU:
+    case AF_RELU:
         out = std::make_shared<Activation>([](float val) { return std::max(0.f, val); });
         out->m_name = "relu";
         break;
-    case GAUSSIAN:
+    case AF_GAUSSIAN:
         out = std::make_shared<Activation>([](float val) { return expf(-val * val); });
         out->m_name = "gaussian";
         break;
-    case ABSOLUTE:
+    case AF_ABSOLUTE:
         out = std::make_shared<Activation>([](float val) { return fabsf(val); });
         out->m_name = "abs";
         break;
-    case SINE:
+    case AF_SINE:
         out = std::make_shared<Activation>([](float val) { return sinf(val); });
         out->m_name = "sin";
         break;
-    case COSINE:
+    case AF_COSINE:
         out = std::make_shared<Activation>([](float val) { return cosf(val); });
         out->m_name = "cos";
         break;
-    case TANGENT:
+    case AF_TANGENT:
         out = std::make_shared<Activation>([](float val)
             {
                 constexpr float max = 10000.0f;
@@ -54,52 +54,52 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
             });
         out->m_name = "tan";
         break;
-    case HYPERBOLIC_TANGENT:
+    case AF_HYPERBOLIC_TANGENT:
         out = std::make_shared<Activation>([](float val) { return tanhf(val); });
         out->m_name = "tanh";
         break;
-    case RAMP:
+    case AF_RAMP:
         out = std::make_shared<Activation>([](float val) { return 1.0f - 2.0f * (val - floorf(val)); });
         out->m_name = "ramp";
         break;
-    case STEP:
+    case AF_STEP:
         out = std::make_shared<Activation>([](float val)
             {
                 return (int)floorf(val)%2 ? -1.0f : 1.0f;
             });
         out->m_name = "step";
         break;
-    case SPIKE:
+    case AF_SPIKE:
         out = std::make_shared<Activation>([](float val)
             {
                 return (int)floorf(val) % 2 ? -1.0f + 2.0f * (val - floorf(val)) : (1.f - 2.0f * (val - floorf(val)));
             });
         out->m_name = "spike";
         break;
-    case INVERSE:
+    case AF_INVERSE:
         out = std::make_shared<Activation>([](float val) { return 1.0f/val; });
         out->m_name = "inverse";
         break;
-    case IDENTITY:
+    case AF_IDENTITY:
         out = std::make_shared<Activation>([](float val) { return val; });
         out->m_name = "identity";
         break;
-    case CLAMPED:
+    case AF_CLAMPED:
         out = std::make_shared<Activation>([](float val)
             {
                 return val < 0.f ? 0.f : (val > 1.f ? 1.f : val);
             });
         out->m_name = "clamped";
         break;
-    case LOGARITHMIC:
+    case AF_LOGARITHMIC:
         out = std::make_shared<Activation>([](float val) { return logf(val); });
         out->m_name = "log";
         break;
-    case EXPONENTIAL:
+    case AF_EXPONENTIAL:
         out = std::make_shared<Activation>([](float val) { return expf(val); });
         out->m_name = "exp";
         break;
-    case HAT:
+    case AF_HAT:
         out = std::make_shared<Activation>([](float val) 
             {
                 float valAbs = fabsf(val);
@@ -107,11 +107,11 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
             });
         out->m_name = "hat";
         break;
-    case SQUARE:
+    case AF_SQUARE:
         out = std::make_shared<Activation>([](float val) { return val * val; });
         out->m_name = "square";
         break;
-    case CUBE:
+    case AF_CUBE:
         out = std::make_shared<Activation>([](float val) { return val * val * val; });
         out->m_name = "cube";
         break;

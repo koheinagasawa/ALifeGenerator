@@ -179,25 +179,25 @@ int main()
     ActivationLibrary activationLib;
     {
         std::vector<ActivationFacotry::Type> activationTypes;
-        activationTypes.push_back(ActivationFacotry::SIGMOID);
-        activationTypes.push_back(ActivationFacotry::BIPOLAR_SIGMOID);
-        activationTypes.push_back(ActivationFacotry::RELU);
-        activationTypes.push_back(ActivationFacotry::GAUSSIAN);
-        activationTypes.push_back(ActivationFacotry::ABSOLUTE);
-        activationTypes.push_back(ActivationFacotry::SINE);
-        activationTypes.push_back(ActivationFacotry::COSINE);
-        activationTypes.push_back(ActivationFacotry::HYPERBOLIC_TANGENT);
-        activationTypes.push_back(ActivationFacotry::RAMP);
-        activationTypes.push_back(ActivationFacotry::STEP);
-        activationTypes.push_back(ActivationFacotry::SPIKE);
-        activationTypes.push_back(ActivationFacotry::INVERSE);
-        activationTypes.push_back(ActivationFacotry::IDENTITY);
-        activationTypes.push_back(ActivationFacotry::CLAMPED);
-        activationTypes.push_back(ActivationFacotry::LOGARITHMIC);
-        activationTypes.push_back(ActivationFacotry::EXPONENTIAL);
-        activationTypes.push_back(ActivationFacotry::HAT);
-        activationTypes.push_back(ActivationFacotry::SQUARE);
-        activationTypes.push_back(ActivationFacotry::CUBE);
+        activationTypes.push_back(ActivationFacotry::AF_SIGMOID);
+        activationTypes.push_back(ActivationFacotry::AF_BIPOLAR_SIGMOID);
+        activationTypes.push_back(ActivationFacotry::AF_RELU);
+        activationTypes.push_back(ActivationFacotry::AF_GAUSSIAN);
+        activationTypes.push_back(ActivationFacotry::AF_ABSOLUTE);
+        activationTypes.push_back(ActivationFacotry::AF_SINE);
+        activationTypes.push_back(ActivationFacotry::AF_COSINE);
+        activationTypes.push_back(ActivationFacotry::AF_HYPERBOLIC_TANGENT);
+        activationTypes.push_back(ActivationFacotry::AF_RAMP);
+        activationTypes.push_back(ActivationFacotry::AF_STEP);
+        activationTypes.push_back(ActivationFacotry::AF_SPIKE);
+        activationTypes.push_back(ActivationFacotry::AF_INVERSE);
+        activationTypes.push_back(ActivationFacotry::AF_IDENTITY);
+        activationTypes.push_back(ActivationFacotry::AF_CLAMPED);
+        activationTypes.push_back(ActivationFacotry::AF_LOGARITHMIC);
+        activationTypes.push_back(ActivationFacotry::AF_EXPONENTIAL);
+        activationTypes.push_back(ActivationFacotry::AF_HAT);
+        activationTypes.push_back(ActivationFacotry::AF_SQUARE);
+        activationTypes.push_back(ActivationFacotry::AF_CUBE);
         activationLib.registerActivations(activationTypes);
     }
 

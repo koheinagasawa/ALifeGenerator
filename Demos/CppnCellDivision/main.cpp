@@ -51,6 +51,8 @@
 
 #include <EvoAlgo/GeneticAlgorithms/Base/GenomeBase.h>
 #include <EvoAlgo/NeuralNetwork/NeuralNetworkFactory.h>
+#include <EvoAlgo/NeuralNetwork/Activations/ActivationFactory.h>
+#include <EvoAlgo/NeuralNetwork/Activations/ActivationLibrary.h>
 #include <EvoAlgo/CppnCellDivision/CppnCellCreature.h>
 #include <EvoAlgo/GeneticAlgorithms/Base/Activations/ActivationProvider.h>
 
@@ -91,165 +93,208 @@ class CppnDivision
 public:
     static CppnDivision& getInstance() { return s_instance; }
 
-    void init(MySystem* system, int seed)
+    void init(MySystem* system, int seed, const char* inputFile)
     {
         m_system = system;
 
         m_world = std::make_unique<World>();
 
-        //float stiffness = 0.25f;
+        PointBasedSystem::Cinfo pbsCinfo;
+        CppnCellCreature::Cinfo creatureCinfo;
+
         float stiffness = 0.1f;
+        //float stiffness = 0.25f;
         //float stiffness = 0.05f;
 
+        m_deltaTime = 1.0f/60.f;
+
+        if (inputFile)
         {
-            PointBasedSystem::Cinfo cinfo;
-            cinfo.m_solverIterations = 4;
-            //cinfo.m_dampingFactor = 0.002f;
-            cinfo.m_dampingFactor = 0.1f;
-            cinfo.m_radius = 0.15f;
-            cinfo.m_vertexPositions.push_back(Vector4(-0.15f, 0.f, 0.f));
-            cinfo.m_vertexPositions.push_back(Vector4(0.15f, 0.f, 0.f));
-            cinfo.m_vertexConnectivity.push_back(PointBasedSystem::Cinfo::Connection{ 0, 1, stiffness });
-            cinfo.m_mass = 1.0f;
-            cinfo.m_gravity = Vec4_0;
-
-            m_simulation = std::make_shared<PointBasedSystem>();
-            m_simulation->subscribeToOnParticleAdded(onCellAdded);
-            m_simulation->init(cinfo);
-            //{
-            //    PBD::Solver* solver = static_cast<PBD::Solver*>(m_simulation->getSolver().get());
-            //    solver->setDampingType(PBD::Solver::VelocityDampingType::SHAPE_MATCH);
-            //}
-
-            m_world->addSystem(*m_simulation.get());
+            parseInputFile(inputFile, pbsCinfo, creatureCinfo, stiffness, m_deltaTime);
         }
 
+        if (!inputFile)
+        {
+            pbsCinfo.m_solverIterations = 4;
+            //cinfo.m_dampingFactor = 0.002f;
+            pbsCinfo.m_dampingFactor = 0.1f;
+            pbsCinfo.m_radius = 0.15f;
+            pbsCinfo.m_vertexPositions.push_back(Vector4(-0.15f, 0.f, 0.f));
+            pbsCinfo.m_vertexPositions.push_back(Vector4(0.15f, 0.f, 0.f));
+            pbsCinfo.m_vertexConnectivity.push_back(PointBasedSystem::Cinfo::Connection{ 0, 1, stiffness });
+            pbsCinfo.m_mass = 1.0f;
+            pbsCinfo.m_gravity = Vec4_0;
+        }
+
+        m_simulation = std::make_shared<PointBasedSystem>();
+        m_simulation->subscribeToOnParticleAdded(onCellAdded);
+        m_simulation->init(pbsCinfo);
+
+#if 0   // Use shape match
+        {
+            PBD::Solver* solver = static_cast<PBD::Solver*>(m_simulation->getSolver().get());
+            solver->setDampingType(PBD::Solver::VelocityDampingType::SHAPE_MATCH);
+        }
+#endif
+
+        m_world->addSystem(*m_simulation.get());
+
+#if 0   // Use simple sigmoid activation
         m_activationProvider = std::make_shared<DefaultActivationProvider>([](float value) { return 1.f / (1.f + expf(-4.9f * value)); });
+#else
+        {
+            std::vector<ActivationFacotry::Type> activationTypes;
+            activationTypes.push_back(ActivationFacotry::AF_SIGMOID);
+            activationTypes.push_back(ActivationFacotry::AF_BIPOLAR_SIGMOID);
+            activationTypes.push_back(ActivationFacotry::AF_RELU);
+            activationTypes.push_back(ActivationFacotry::AF_GAUSSIAN);
+            activationTypes.push_back(ActivationFacotry::AF_ABSOLUTE);
+            activationTypes.push_back(ActivationFacotry::AF_SINE);
+            activationTypes.push_back(ActivationFacotry::AF_COSINE);
+            activationTypes.push_back(ActivationFacotry::AF_HYPERBOLIC_TANGENT);
+            activationTypes.push_back(ActivationFacotry::AF_RAMP);
+            activationTypes.push_back(ActivationFacotry::AF_STEP);
+            activationTypes.push_back(ActivationFacotry::AF_SPIKE);
+            activationTypes.push_back(ActivationFacotry::AF_INVERSE);
+            activationTypes.push_back(ActivationFacotry::AF_IDENTITY);
+            activationTypes.push_back(ActivationFacotry::AF_CLAMPED);
+            activationTypes.push_back(ActivationFacotry::AF_LOGARITHMIC);
+            activationTypes.push_back(ActivationFacotry::AF_EXPONENTIAL);
+            activationTypes.push_back(ActivationFacotry::AF_HAT);
+            activationTypes.push_back(ActivationFacotry::AF_SQUARE);
+            activationTypes.push_back(ActivationFacotry::AF_CUBE);
+            m_activationLib.registerActivations(activationTypes);
+
+            m_activationProvider = std::make_shared<RandomActivationProvider>(m_activationLib);
+        }
+#endif
 
         {
-            CppnCellCreature::Cinfo cinfo;
-            cinfo.m_simulation = m_simulation;
-            cinfo.m_connectionStiffness = stiffness;
-            cinfo.m_numMaxCells = 2000;
-            cinfo.m_divisionInterval = 300;
-
-            // Create a network
+            if(!inputFile)
             {
-                using Network = GenomeBase::Network;
-                using Node = GenomeBase::Node;
-                using Edge = GenomeBase::Edge;
+                creatureCinfo.m_simulation = m_simulation;
+                creatureCinfo.m_connectionStiffness = stiffness;
+                creatureCinfo.m_numMaxCells = 2000;
+                creatureCinfo.m_divisionInterval = 300;
 
-                constexpr int numInputNodes = (int)CppnCellCreature::InputNode::NUM_INPUT_NODES;
-                constexpr int numOutputNodes = (int)CppnCellCreature::OutputNode::NUM_OUTPUT_NODES;
-
-                // Calculate the number of nodes
-                int numNodes = numInputNodes + numOutputNodes + 1; // +1 is for bias node
-
-                constexpr int numHiddenLayers = 2;
-                for (int i = 0; i < numHiddenLayers; i++)
+                // Create a network
                 {
-                    numNodes += numInputNodes;
-                }
+                    using Network = GenomeBase::Network;
+                    using Node = GenomeBase::Node;
+                    using Edge = GenomeBase::Edge;
 
-                // Create buffers
-                Network::Nodes nodes;
-                Network::Edges edges;
-                Network::NodeIds outputNodes;
-                Network::NodeIds inputNodes;
+                    constexpr int numInputNodes = (int)CppnCellCreature::InputNode::NUM_INPUT_NODES;
+                    constexpr int numOutputNodes = (int)CppnCellCreature::OutputNode::NUM_OUTPUT_NODES;
 
-                // Create nodes
-                int nodeId = 0;
-                nodes.reserve(numNodes);
-                inputNodes.reserve(numInputNodes);
-                outputNodes.reserve(numOutputNodes);
+                    // Calculate the number of nodes
+                    int numNodes = numInputNodes + numOutputNodes + 1; // +1 is for bias node
 
-                // Create input nodes.
-                for (int i = 0; i < numInputNodes; i++)
-                {
-                    NodeId id = nodeId++;
-                    nodes.insert({ id, Node(Node::Type::INPUT) });
-                    inputNodes.push_back(id);
-                }
+                    constexpr int numHiddenLayers = 2;
+                    for (int i = 0; i < numHiddenLayers; i++)
+                    {
+                        numNodes += numInputNodes;
+                    }
 
-                // Create hidden nodes
-                for (int i = 0; i < numHiddenLayers; i++)
-                {
-                    for (int j = 0; j < numInputNodes; j++)
+                    // Create buffers
+                    Network::Nodes nodes;
+                    Network::Edges edges;
+                    Network::NodeIds outputNodes;
+                    Network::NodeIds inputNodes;
+
+                    // Create nodes
+                    int nodeId = 0;
+                    nodes.reserve(numNodes);
+                    inputNodes.reserve(numInputNodes);
+                    outputNodes.reserve(numOutputNodes);
+
+                    // Create input nodes.
+                    for (int i = 0; i < numInputNodes; i++)
                     {
                         NodeId id = nodeId++;
-                        nodes.insert({ id, Node(Node::Type::HIDDEN) });
+                        nodes.insert({ id, Node(Node::Type::INPUT) });
+                        inputNodes.push_back(id);
+                    }
+
+                    // Create hidden nodes
+                    for (int i = 0; i < numHiddenLayers; i++)
+                    {
+                        for (int j = 0; j < numInputNodes; j++)
+                        {
+                            NodeId id = nodeId++;
+                            nodes.insert({ id, Node(Node::Type::HIDDEN) });
+                            nodes[id].setActivation(m_activationProvider->getActivation());
+                        }
+                    }
+
+                    // Create output nodes
+                    for (int i = 0; i < numOutputNodes; i++)
+                    {
+                        NodeId id = nodeId++;
+                        nodes.insert({ id, Node(Node::Type::OUTPUT) });
                         nodes[id].setActivation(m_activationProvider->getActivation());
+                        outputNodes.push_back(id);
                     }
-                }
 
-                // Create output nodes
-                for (int i = 0; i < numOutputNodes; i++)
-                {
-                    NodeId id = nodeId++;
-                    nodes.insert({ id, Node(Node::Type::OUTPUT) });
-                    nodes[id].setActivation(m_activationProvider->getActivation());
-                    outputNodes.push_back(id);
-                }
-
-                // Create a bias node
-                NodeId biasNode;
-                constexpr int biasNodeValue = 1.0f;
-                {
-                    biasNode = nodeId++;
-                    nodes.insert({ biasNode, Node(Node::Type::BIAS) });
-                    nodes[biasNode].setValue(biasNodeValue);
-                }
-
-                // Create fully connected network
-                int edgeId = 0;
-                int startL1Node = 0;
-                for (int layer = 0; layer < numHiddenLayers + 1; layer++)
-                {
-                    int numL1Nodes = numInputNodes;
-                    int numL2Nodes = (layer == numHiddenLayers) ? numOutputNodes : numInputNodes;
-                    int startL2Node = startL1Node + numL1Nodes;
-
-                    // Fully connect each layer
-                    for (int i = 0, inNode = startL1Node; i < numL1Nodes; i++, inNode++)
+                    // Create a bias node
+                    NodeId biasNode;
+                    constexpr float biasNodeValue = 1.0f;
                     {
-                        for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
-                        {
-                            edges.insert({ EdgeId(edgeId++), Edge(inNode, outNode) });
-                        }
+                        biasNode = nodeId++;
+                        nodes.insert({ biasNode, Node(Node::Type::BIAS) });
+                        nodes[biasNode].setValue(biasNodeValue);
                     }
 
-                    // Create edges from the bias node
-                    if (layer > 0)
+                    // Create fully connected network
+                    int edgeId = 0;
+                    int startL1Node = 0;
+                    for (int layer = 0; layer < numHiddenLayers + 1; layer++)
                     {
-                        for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
+                        int numL1Nodes = numInputNodes;
+                        int numL2Nodes = (layer == numHiddenLayers) ? numOutputNodes : numInputNodes;
+                        int startL2Node = startL1Node + numL1Nodes;
+
+                        // Fully connect each layer
+                        for (int i = 0, inNode = startL1Node; i < numL1Nodes; i++, inNode++)
                         {
-                            edges.insert({ EdgeId(edgeId++), Edge(biasNode, outNode) });
+                            for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
+                            {
+                                edges.insert({ EdgeId(edgeId++), Edge(inNode, outNode) });
+                            }
                         }
+
+                        // Create edges from the bias node
+                        if (layer > 0)
+                        {
+                            for (int j = 0, outNode = startL2Node; j < numL2Nodes; j++, outNode++)
+                            {
+                                edges.insert({ EdgeId(edgeId++), Edge(biasNode, outNode) });
+                            }
+                        }
+
+                        startL1Node += numL1Nodes;
                     }
 
-                    startL1Node += numL1Nodes;
-                }
+                    // Randomize edge weights
+                    auto randomGenerator = std::make_shared<PseudoRandom>(seed);
+                    for (auto& edge : edges)
+                    {
+                        edge.second.setWeight(randomGenerator->randomReal(-5.0f, 5.0f));
+                    }
 
-                // Randomize edge weights
-                auto randomGenerator = std::make_shared<PseudoRandom>(seed);
-                for (auto& edge : edges)
-                {
-                    edge.second.setWeight(randomGenerator->randomReal(-5.0f, 5.0f));
+                    GenomeBase::NetworkPtr network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
+                    m_genome = std::make_unique<GenomeBase>(network, biasNode);
+                    creatureCinfo.m_genome = m_genome.get();
                 }
-
-                GenomeBase::NetworkPtr network = std::make_shared<Network>(nodes, edges, inputNodes, outputNodes);
-                m_genome = std::make_unique<GenomeBase>(network, biasNode);
-                cinfo.m_genome = m_genome.get();
             }
 
-            m_creature = std::make_unique<CppnCellCreature>(cinfo);
+            m_creature = std::make_unique<CppnCellCreature>(creatureCinfo);
             m_world->addSystem(*m_creature.get());
         }
     }
 
     void step()
     {
-        m_world->step(1.0f / 60.f);
+        m_world->step(m_deltaTime);
     }
 
     const CppnCellCreature& getCreature() const { return *m_creature; }
@@ -264,11 +309,20 @@ public:
 
     static void onCellAdded(const std::vector<Vector4>& cellPositions);
 
+    void parseInputFile(const char* inputFile, PointBasedSystem::Cinfo& pbsCinfo, CppnCellCreature::Cinfo& creatureCinfo, float& stiffness, float& deltaTime)
+    {
+
+    }
+
     std::unique_ptr<World> m_world;
     std::shared_ptr<PointBasedSystem> m_simulation;
     std::unique_ptr<CppnCellCreature> m_creature;
     std::unique_ptr<GenomeBase> m_genome;
-    std::shared_ptr<DefaultActivationProvider> m_activationProvider;
+    std::shared_ptr<ActivationProvider> m_activationProvider;
+    ActivationLibrary m_activationLib;
+
+    float m_deltaTime;
+
     MySystem* m_system;
 
     static CppnDivision s_instance;
@@ -343,9 +397,10 @@ public:
         return result;
     }
 
-    void init()
+    void init(const char* inputFile)
     {
-        CppnDivision::getInstance().init(this, m_seed);
+        m_inputFile = inputFile;
+        CppnDivision::getInstance().init(this, m_seed, inputFile);
         initRenderer();
     }
 
@@ -463,7 +518,7 @@ public:
 
         CppnDivision& cd = CppnDivision::getInstance();
         cd.clear();
-        cd.init(this, seed);
+        cd.init(this, seed, m_inputFile);
     }
 
     void postStep()
@@ -544,6 +599,8 @@ public:
     bool m_reset = false;
     int m_seed = 0;
 
+    const char* m_inputFile;
+
     int m_colorCounter = 0;
     static constexpr int NUM_COLORS = 8;
     kMaterialId m_materialIds[NUM_COLORS];
@@ -562,7 +619,9 @@ int main(const int argc, const char** argv)
 {
     MySystem& sys = MySystem::getInstance();
 
-    sys.init();
+    const char* inputFile = argc > 1 ? argv[1] : nullptr;
+
+    sys.init(inputFile);
     sys.run();
     sys.quit();
 

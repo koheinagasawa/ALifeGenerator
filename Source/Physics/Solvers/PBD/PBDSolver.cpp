@@ -47,6 +47,9 @@ namespace PBD
             dir *= halfDiff;
             *m_positionA += dir;
             *m_positionB -= dir;
+
+            assert(!isnan((*m_positionA)(0)) && !isnan((*m_positionA)(1)) && !isnan((*m_positionA)(2)));
+            assert(!isnan((*m_positionB)(0)) && !isnan((*m_positionB)(1)) && !isnan((*m_positionB)(2)));
         }
     }
 
@@ -67,6 +70,8 @@ namespace PBD
         if ((*m_position - m_targetPosition).dot<3>(m_normal) < SimdFloat_0)
         {
             *m_position = m_targetPosition;
+
+            assert(!isnan((*m_position)(0)) && !isnan((*m_position)(1)) && !isnan((*m_position)(2)));
         }
     }
 

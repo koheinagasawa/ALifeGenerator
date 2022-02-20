@@ -23,10 +23,16 @@ namespace PBD
     {
         Vector4 dir = *m_positionA - *m_positionB;
         const SimdFloat curLength = dir.length<3>();
-        dir.normalize<3>();
-        const Vector4 constraint = (curLength - m_length) * dir;
-        const SimdFloat invCombinedMass(SimdFloat_1 / (m_massA + m_massB) * m_stiffness);
-        *m_positionA += -m_massA * invCombinedMass * constraint;
-        *m_positionB += m_massB * invCombinedMass * constraint;
+        if (dir.lengthSq<3>().getFloat() > std::numeric_limits<float>::epsilon())
+        {
+            dir.normalize<3>();
+            const Vector4 constraint = (curLength - m_length) * dir;
+            const SimdFloat invCombinedMass(SimdFloat_1 / (m_massA + m_massB) * m_stiffness);
+            *m_positionA += -m_massA * invCombinedMass * constraint;
+            *m_positionB += m_massB * invCombinedMass * constraint;
+
+            assert(!isnan((*m_positionA)(0)) && !isnan((*m_positionA)(1)) && !isnan((*m_positionA)(2)));
+            assert(!isnan((*m_positionB)(0)) && !isnan((*m_positionB)(1)) && !isnan((*m_positionB)(2)));
+        }
     }
 }

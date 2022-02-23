@@ -42,8 +42,19 @@ namespace PBD
         SimdFloat distSq = dir.lengthSq<3>();
         if (distSq < m_radiusSq)
         {
+            if (distSq.getFloat() >= std::numeric_limits<float>::epsilon())
+            {
+                dir.normalize<3>();
+            }
+            else
+            {
+                // Two particles are completely overlapping.
+                // Move them towards arbitrary direction.
+                // [TODO] Come up with a better solution.
+                dir = Vec4_1000;
+            }
+
             SimdFloat halfDiff = SimdFloat((sqrtf(m_radiusSq.getFloat()) - sqrtf(distSq.getFloat())) * 0.5f);
-            dir.normalize<3>();
             dir *= halfDiff;
             *m_positionA += dir;
             *m_positionB -= dir;

@@ -38,6 +38,9 @@ public:
     // Get an activation function from its id.
     auto getActivation(ActivationId id) const->ActivationPtr;
 
+    // Get an activation function from its name.
+    auto getActivation(const char* name) const->ActivationPtr;
+
     // Return true if the activation is registered.
     bool hasActivation(ActivationPtr activation) const;
 

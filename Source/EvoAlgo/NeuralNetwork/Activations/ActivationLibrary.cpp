@@ -56,6 +56,19 @@ auto ActivationLibrary::getActivation(ActivationId id) const->ActivationPtr
     }
 }
 
+auto ActivationLibrary::getActivation(const char* name) const->ActivationPtr
+{
+    std::string str(name);
+    for (const auto& activation : m_registry)
+    {
+        if (str.compare(activation.second->m_name) == 0)
+        {
+            return activation.second;
+        }
+    }
+    return nullptr;
+}
+
 bool ActivationLibrary::hasActivation(ActivationPtr activation) const
 {
     for (auto& elem : m_registry)

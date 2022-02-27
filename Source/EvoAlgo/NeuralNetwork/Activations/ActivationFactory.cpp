@@ -115,11 +115,11 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "hat";
         break;
     case AF_SQUARE:
-        out = std::make_shared<Activation>([](float val) { return val * val; });
+        out = std::make_shared<Activation>([](float val) { return clamp(val * val); });
         out->m_name = "square";
         break;
     case AF_CUBE:
-        out = std::make_shared<Activation>([](float val) { return val * val * val; });
+        out = std::make_shared<Activation>([](float val) { return clamp(val * val * val); });
         out->m_name = "cube";
         break;
     default:

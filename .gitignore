@@ -342,3 +342,4 @@ healthchecksdb
 #test
 /Demos/XorNEAT/result.txt
 /Demos/CppnImageGen/Output/*
+/Demos/EvolveCppnCreature/Output/*

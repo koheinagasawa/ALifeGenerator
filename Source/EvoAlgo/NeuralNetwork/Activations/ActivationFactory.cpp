@@ -9,6 +9,13 @@
 
 #include <algorithm>
 
+#define FLOAT_HIGH 1E+10f
+
+inline float clamp(float v)
+{
+    return std::max(-FLOAT_HIGH, std::min(FLOAT_HIGH, v));
+}
+
 auto ActivationFacotry::create(Type type)->ActivationPtr
 {
     ActivationPtr out;
@@ -20,7 +27,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "sigmoid";
         break;
     case AF_BIPOLAR_SIGMOID:
-        out = std::make_shared<Activation>([](float val) { return (1.f - expf(-val)) / (1.f + expf(-val)); });
+        out = std::make_shared<Activation>([](float val) { return clamp(1.f - expf(-val)) / clamp(1.f + expf(-val)); });
         out->m_name = "bipolar sigmoid";
         break;
     case AF_RELU:
@@ -28,7 +35,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "relu";
         break;
     case AF_GAUSSIAN:
-        out = std::make_shared<Activation>([](float val) { return expf(-val * val); });
+        out = std::make_shared<Activation>([](float val) { return clamp(-val * val); });
         out->m_name = "gaussian";
         break;
     case AF_ABSOLUTE:
@@ -77,7 +84,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "spike";
         break;
     case AF_INVERSE:
-        out = std::make_shared<Activation>([](float val) { return 1.0f/val; });
+        out = std::make_shared<Activation>([](float val) { return clamp(1.0f/val); });
         out->m_name = "inverse";
         break;
     case AF_IDENTITY:
@@ -92,11 +99,11 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "clamped";
         break;
     case AF_LOGARITHMIC:
-        out = std::make_shared<Activation>([](float val) { return logf(val); });
+        out = std::make_shared<Activation>([](float val) { return clamp(logf(val)); });
         out->m_name = "log";
         break;
     case AF_EXPONENTIAL:
-        out = std::make_shared<Activation>([](float val) { return expf(val); });
+        out = std::make_shared<Activation>([](float val) { return clamp(expf(val)); });
         out->m_name = "exp";
         break;
     case AF_HAT:

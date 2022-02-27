@@ -300,7 +300,7 @@ bool CppnCellCreature::evaluateDivision(const std::vector<float>& inputNodeValue
     m_genome->evaluate();
 
     const GenomeBase::Network::NodeIds& outputNodes = m_genome->getOutputNodes();
-    if (m_genome->getNodeValue(outputNodes[(int)OutputNode::DEVIDE]) < 0.5f)
+    if (m_genome->getNodeValue(outputNodes[(int)OutputNode::DIVIDE]) < 0.5f)
     {
         return false;
     }
@@ -309,6 +309,13 @@ bool CppnCellCreature::evaluateDivision(const std::vector<float>& inputNodeValue
     directionOut.setComponent<0>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_X])));
     directionOut.setComponent<1>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_Y])));
     directionOut.setComponent<2>(SimdFloat(m_genome->getNodeValue(outputNodes[(int)OutputNode::DIRECTION_Z])));
+
+    // We cannot divide the cell there is no valid direction.
+    if (directionOut.lengthSq<3>() == SimdFloat_0)
+    {
+        return false;
+    }
+
     directionOut.normalize<3>();
 
     // [TODO] Support orientation

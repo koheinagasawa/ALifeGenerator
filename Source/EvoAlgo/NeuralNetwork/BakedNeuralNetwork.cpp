@@ -221,5 +221,6 @@ void BakedNeuralNetwork::evaluate()
         // Activate the value.
         ActivationFunc activation = m_activationFuncs[node.m_activationFunc];
         node.m_activatedValue = (*activation)(valueSum);
+        assert(!isnan(node.m_activatedValue) && !isinf(node.m_activatedValue));
     }
 }

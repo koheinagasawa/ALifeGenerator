@@ -56,9 +56,9 @@ public:
     enum class OutputNode : uint16_t
     {
         // Divide? (boolean) : 1
-        DEVIDE = 0,
+        DIVIDE = 0,
 
-        // Direction : 3
+        // Direction of divide : 3
         DIRECTION_X,
         DIRECTION_Y,
         DIRECTION_Z,

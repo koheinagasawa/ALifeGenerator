@@ -23,7 +23,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
     switch (type)
     {
     case AF_SIGMOID:
-        out = std::make_shared<Activation>([](float val) { return 1.f / (1.f + expf(-4.9f*val)); });
+        out = std::make_shared<Activation>([](float val) { return clamp(1.f / 1.f + expf(-4.9f*val)); });
         out->m_name = "sigmoid";
         break;
     case AF_BIPOLAR_SIGMOID:
@@ -66,7 +66,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
         out->m_name = "tanh";
         break;
     case AF_RAMP:
-        out = std::make_shared<Activation>([](float val) { return 1.0f - 2.0f * (val - floorf(val)); });
+        out = std::make_shared<Activation>([](float val) { return clamp(1.0f - 2.0f * (val - floorf(val))); });
         out->m_name = "ramp";
         break;
     case AF_STEP:
@@ -79,7 +79,7 @@ auto ActivationFacotry::create(Type type)->ActivationPtr
     case AF_SPIKE:
         out = std::make_shared<Activation>([](float val)
             {
-                return (int)floorf(val) % 2 ? -1.0f + 2.0f * (val - floorf(val)) : (1.f - 2.0f * (val - floorf(val)));
+                return clamp((int)floorf(val) % 2 ? -1.0f + 2.0f * (val - floorf(val)) : (1.f - 2.0f * (val - floorf(val))));
             });
         out->m_name = "spike";
         break;
